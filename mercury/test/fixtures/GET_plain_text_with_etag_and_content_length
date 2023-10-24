@@ -1,0 +1,7 @@
+HTTP/1.1 200 OK
+Content-Type: text/plain
+x-custom-header: hello-world
+eTag: "foo"
+Content-Length: 10
+
+CachedData

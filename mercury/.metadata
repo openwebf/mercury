@@ -1,0 +1,14 @@
+# This file tracks properties of this Flutter project.
+# Used by Flutter tool to assess capabilities and perform upgrades etc.
+#
+# This file should be version controlled and should not be manually edited.
+
+version:
+  revision: f36a35d20ac5dc2936cab6ccc60f5d9afa34466e
+  channel: unknown
+
+# Plugin packages is a specialized Dart package that contains an API written
+# in Dart code combined with one or more platform-specific implementations.
+# Plugin packages can be written for Android (using Kotlin or Java),
+# iOS (using Swift or Objective-C), web (using Dart), macos (using Dart), or any combination thereof. 
+project_type: plugin
