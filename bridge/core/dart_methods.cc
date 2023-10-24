@@ -6,9 +6,9 @@
 #include "dart_methods.h"
 #include <cassert>
 
-namespace webf {
+namespace mercury {
 
-webf::DartMethodPointer::DartMethodPointer(const uint64_t* dart_methods, int32_t dart_methods_length) {
+mercury::DartMethodPointer::DartMethodPointer(const uint64_t* dart_methods, int32_t dart_methods_length) {
   size_t i = 0;
   invokeModule = reinterpret_cast<InvokeModule>(dart_methods[i++]);
   requestBatchUpdate = reinterpret_cast<RequestBatchUpdate>(dart_methods[i++]);
@@ -33,4 +33,4 @@ webf::DartMethodPointer::DartMethodPointer(const uint64_t* dart_methods, int32_t
 
   assert_m(i == dart_methods_length, "Dart native methods count is not equal with C++ side method registrations.");
 }
-}  // namespace webf
+}  // namespace mercury

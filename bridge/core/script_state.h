@@ -8,7 +8,7 @@
 #include <quickjs/quickjs.h>
 #include <cassert>
 
-namespace webf {
+namespace mercury {
 
 class DartIsolateContext;
 
@@ -35,6 +35,6 @@ class ScriptState {
   DartIsolateContext* dart_isolate_context_{nullptr};
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_CORE_SCRIPT_STATE_H_

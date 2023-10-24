@@ -5,13 +5,13 @@
 
 import 'dart:isolate';
 import 'dart:ffi';
-import 'package:webf/webf.dart';
-import 'package:webf/devtools.dart';
+import 'package:mercury/mercury.dart';
+import 'package:mercury/devtools.dart';
 
 typedef NativePostTaskToInspectorThread = Void Function(Int32 contextId, Pointer<Void> context, Pointer<Void> callback);
 typedef DartPostTaskToInspectorThread = void Function(int contextId, Pointer<Void> context, Pointer<Void> callback);
 
-void spawnIsolateInspectorServer(DevToolsService devTool, WebFController controller,
+void spawnIsolateInspectorServer(DevToolsService devTool, MercuryController controller,
     {int port = INSPECTOR_DEFAULT_PORT, String? address}) {
   ReceivePort serverIsolateReceivePort = ReceivePort();
 

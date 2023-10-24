@@ -3,7 +3,7 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
-#include "window.h"
+#include "global.h"
 #include <modp_b64/modp_b64.h>
 #include "binding_call_methods.h"
 #include "bindings/qjs/cppgc/garbage_collected.h"
@@ -15,7 +15,7 @@
 #include "event_type_names.h"
 #include "foundation/native_value_converter.h"
 
-namespace webf {
+namespace mercury {
 
 Window::Window(ExecutingContext* context) : EventTargetWithInlineData(context) {
   context->uiCommandBuffer()->addCommand(UICommand::kCreateWindow, nullptr, (void*)bindingObject(), nullptr);
@@ -232,7 +232,7 @@ void Window::cancelAnimationFrame(double request_id, ExceptionState& exception_s
   GetExecutingContext()->document()->CancelAnimationFrame(static_cast<uint32_t>(request_id), exception_state);
 }
 
-bool Window::IsWindowOrWorkerGlobalScope() const {
+bool Window::IsGlobalOrWorkerScope() const {
   return true;
 }
 
@@ -245,4 +245,4 @@ JSValue Window::ToQuickJS() const {
   return JS_GetGlobalObject(ctx());
 }
 
-}  // namespace webf
+}  // namespace mercury

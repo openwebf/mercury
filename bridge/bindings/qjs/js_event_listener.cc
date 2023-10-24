@@ -9,7 +9,7 @@
 #include <utility>
 #include "core/dom/events/event_target.h"
 
-namespace webf {
+namespace mercury {
 
 JSEventListener::JSEventListener(std::shared_ptr<QJSFunction> listener) : event_listener_(std::move(listener)) {}
 JSValue JSEventListener::GetListenerObject() {
@@ -29,4 +29,4 @@ void JSEventListener::Trace(GCVisitor* visitor) const {
   event_listener_->Trace(visitor);
 }
 
-}  // namespace webf
+}  // namespace mercury

@@ -3,8 +3,8 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
-import 'package:webf/devtools.dart';
-import 'package:webf/webf.dart';
+import 'package:mercury/devtools.dart';
+import 'package:mercury/mercury.dart';
 
 abstract class _InspectorModule {
   String get name;

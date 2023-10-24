@@ -24,7 +24,7 @@
 #include "inspector/impl/jsc_console_client_impl.h"
 #endif
 
-namespace webf {
+namespace mercury {
 namespace {
 
 const char* StripDots(const char* path) {
@@ -70,7 +70,7 @@ LogMessage::~LogMessage() {
       priority = ANDROID_LOG_ERROR;
       break;
   }
-  __android_log_write(priority, "WEBF_NATIVE_LOG", stream_.str().c_str());
+  __android_log_write(priority, "MERCURY_NATIVE_LOG", stream_.str().c_str());
 #elif defined(IS_IOS)
   syslog(LOG_ALERT, "%s", stream_.str().c_str());
 #else
@@ -89,7 +89,7 @@ void pipeMessageToInspector(JSGlobalContextRef ctx, const std::string message, c
   JSObjectRef globalObjectRef = JSContextGetGlobalObject(ctx);
   auto client = JSObjectGetPrivate(globalObjectRef);
   if (client && client != ((void*)0x1)) {
-    auto client_impl = reinterpret_cast<webf::debugger::JSCConsoleClientImpl*>(client);
+    auto client_impl = reinterpret_cast<mercury::debugger::JSCConsoleClientImpl*>(client);
     client_impl->sendMessageToConsole(logLevel, message);
   }
 };
@@ -99,31 +99,31 @@ void printLog(ExecutingContext* context, std::stringstream& stream, std::string 
   MessageLevel _log_level = MessageLevel::Info;
   switch (level[0]) {
     case 'l':
-      WEBF_LOG(VERBOSE) << stream.str();
+      MERCURY_LOG(VERBOSE) << stream.str();
       _log_level = MessageLevel::Log;
       break;
     case 'i':
-      WEBF_LOG(INFO) << stream.str();
+      MERCURY_LOG(INFO) << stream.str();
       _log_level = MessageLevel::Info;
       break;
     case 'd':
-      WEBF_LOG(DEBUG) << stream.str();
+      MERCURY_LOG(DEBUG) << stream.str();
       _log_level = MessageLevel::Debug;
       break;
     case 'w':
-      WEBF_LOG(WARN) << stream.str();
+      MERCURY_LOG(WARN) << stream.str();
       _log_level = MessageLevel::Warning;
       break;
     case 'e':
-      WEBF_LOG(ERROR) << stream.str();
+      MERCURY_LOG(ERROR) << stream.str();
       _log_level = MessageLevel::Error;
       break;
     default:
-      WEBF_LOG(VERBOSE) << stream.str();
+      MERCURY_LOG(VERBOSE) << stream.str();
   }
 
-  if (webf::WebFPage::consoleMessageHandler != nullptr) {
-    webf::WebFPage::consoleMessageHandler(ctx, stream.str(), static_cast<int>(_log_level));
+  if (mercury::MercuryPage::consoleMessageHandler != nullptr) {
+    mercury::MercuryPage::consoleMessageHandler(ctx, stream.str(), static_cast<int>(_log_level));
   }
 
   if (context->dartMethodPtr()->onJsLog != nullptr) {
@@ -131,4 +131,4 @@ void printLog(ExecutingContext* context, std::stringstream& stream, std::string 
   }
 }
 
-}  // namespace webf
+}  // namespace mercury

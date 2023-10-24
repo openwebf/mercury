@@ -447,7 +447,7 @@ JSGCPhaseEnum JS_GetEnginePhase(JSRuntime* runtime) {
   return runtime->gc_phase;
 }
 
-webf::StringView JSAtomToStringView(JSRuntime* runtime, JSAtom atom) {
+mercury::StringView JSAtomToStringView(JSRuntime* runtime, JSAtom atom) {
   JSString* string = runtime->atom_array[atom];
-  return webf::StringView(string->u.str8, string->len, string->is_wide_char);
+  return mercury::StringView(string->u.str8, string->len, string->is_wide_char);
 }

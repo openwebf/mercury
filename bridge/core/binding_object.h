@@ -14,7 +14,7 @@
 #include "foundation/native_type.h"
 #include "foundation/native_value.h"
 
-namespace webf {
+namespace mercury {
 
 class BindingObject;
 struct NativeBindingObject;
@@ -142,6 +142,6 @@ class BindingObject : public ScriptWrappable {
   std::set<BindingObjectPromiseContext*> pending_promise_contexts_;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_CORE_DOM_BINDING_OBJECT_H_

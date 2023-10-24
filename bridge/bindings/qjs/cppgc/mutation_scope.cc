@@ -7,7 +7,7 @@
 #include "bindings/qjs/script_wrappable.h"
 #include "core/executing_context.h"
 
-namespace webf {
+namespace mercury {
 
 MemberMutationScope::MemberMutationScope(ExecutingContext* context)
     : context_(context), runtime_(context->GetScriptState()->runtime()) {
@@ -43,4 +43,4 @@ void MemberMutationScope::ApplyRecord() {
   }
 }
 
-}  // namespace webf
+}  // namespace mercury

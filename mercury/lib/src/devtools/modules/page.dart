@@ -8,9 +8,9 @@ import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:webf/dom.dart';
-import 'package:webf/launcher.dart';
-import 'package:webf/devtools.dart';
+import 'package:mercury/dom.dart';
+import 'package:mercury/launcher.dart';
+import 'package:mercury/devtools.dart';
 
 String enumKey(String key) {
   return key.split('.').last;

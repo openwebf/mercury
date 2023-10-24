@@ -7,7 +7,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:test/test.dart';
-import 'package:webf/foundation.dart';
+import 'package:mercury/foundation.dart';
 
 import '../../local_http_server.dart';
 
@@ -20,7 +20,7 @@ void main() {
 
     test('beforeRequest', () async {
       var request = await httpClient.openUrl('GET', server.getUri('json_with_content_length'));
-      WebFHttpOverrides.setContextHeader(request.headers, contextId);
+      MercuryHttpOverrides.setContextHeader(request.headers, contextId);
       request.headers.add('x-test-id', 'beforeRequest-001');
 
       var res = await request.close();
@@ -34,7 +34,7 @@ void main() {
 
     test('afterResponse', () async {
       var request = await httpClient.openUrl('GET', server.getUri('json_with_content_length'));
-      WebFHttpOverrides.setContextHeader(request.headers, contextId);
+      MercuryHttpOverrides.setContextHeader(request.headers, contextId);
       request.headers.add('x-test-id', 'afterResponse-001');
 
       var response = await request.close();
@@ -43,7 +43,7 @@ void main() {
 
     test('shouldInterceptRequest', () async {
       var request = await httpClient.openUrl('GET', server.getUri('json_with_content_length'));
-      WebFHttpOverrides.setContextHeader(request.headers, contextId);
+      MercuryHttpOverrides.setContextHeader(request.headers, contextId);
       request.headers.add('x-test-id', 'shouldInterceptRequest-001');
 
       var response = await request.close();

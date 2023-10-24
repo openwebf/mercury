@@ -14,7 +14,7 @@
 #include "foundation/native_string.h"
 #include "qjs_event_init.h"
 
-namespace webf {
+namespace mercury {
 
 class EventTarget;
 class ExceptionState;
@@ -272,6 +272,6 @@ class Event : public ScriptWrappable {
                              ExceptionState& exception_state);
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_EVENT_H

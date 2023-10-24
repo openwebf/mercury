@@ -9,7 +9,7 @@
 #include "atomic_string.h"
 #include "gtest/gtest.h"
 
-using namespace webf;
+using namespace mercury;
 
 using TestCallback = void (*)(JSContext* ctx);
 

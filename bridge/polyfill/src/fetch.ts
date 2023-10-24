@@ -3,7 +3,7 @@
 * Copyright (C) 2022-present The WebF authors. All rights reserved.
 */
 
-import { webf } from './webf';
+import { mercury } from './mercury';
 
 function normalizeName(name: any) {
   if (typeof name !== 'string') {
@@ -302,7 +302,7 @@ export function fetch(input: Request | string, init?: RequestInit) {
         headers = new Headers(headers);
       }
 
-      webf.invokeModule('Fetch', url, ({
+      mercury.invokeModule('Fetch', url, ({
         ...init,
         headers: (headers as Headers).map
       }), (e, data) => {

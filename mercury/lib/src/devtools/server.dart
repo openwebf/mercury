@@ -8,8 +8,8 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:ffi';
 
-import 'package:webf/webf.dart';
-import 'package:webf/devtools.dart';
+import 'package:mercury/mercury.dart';
+import 'package:mercury/devtools.dart';
 import 'package:ffi/ffi.dart';
 
 const String CONTENT_TYPE = 'Content-Type';
@@ -248,7 +248,7 @@ class IsolateInspectorServer extends IsolateInspector {
       {
         'faviconUrl': FAVICON,
         'devtoolsFrontendUrl': '$INSPECTOR_URL?ws=$entryURL',
-        'title': 'WebF App',
+        'title': 'Mercury App',
         'id': pageId,
         'type': 'page',
         'url': bundleURL,

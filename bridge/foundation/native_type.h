@@ -11,7 +11,7 @@
 #include "bindings/qjs/script_value.h"
 #include "foundation/native_string.h"
 
-namespace webf {
+namespace mercury {
 
 // Shared C struct which can be read by dart through Dart FFI.
 struct DartReadable {
@@ -63,6 +63,6 @@ struct NativeTypeFunction final : public NativeTypeBaseHelper<std::shared_ptr<QJ
 // Async function
 struct NativeTypeAsyncFunction final : public NativeTypeBaseHelper<std::shared_ptr<QJSFunction>> {};
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_FOUNDATION_NATIVE_TYPE_H_

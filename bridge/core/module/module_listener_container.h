@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include "module_listener.h"
 
-namespace webf {
+namespace mercury {
 
 class ModuleListenerContainer final {
  public:
@@ -22,6 +22,6 @@ class ModuleListenerContainer final {
   friend ModuleListener;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_MODULE_LISTENER_CONTAINER_H

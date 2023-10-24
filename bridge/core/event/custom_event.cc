@@ -6,7 +6,7 @@
 #include "bindings/qjs/cppgc/gc_visitor.h"
 #include "native_value_converter.h"
 
-namespace webf {
+namespace mercury {
 
 CustomEvent* CustomEvent::Create(ExecutingContext* context, const AtomicString& type, ExceptionState& exception_state) {
   return MakeGarbageCollected<CustomEvent>(context, type, exception_state);
@@ -74,4 +74,4 @@ void CustomEvent::Trace(GCVisitor* visitor) const {
   detail_.Trace(visitor);
 }
 
-}  // namespace webf
+}  // namespace mercury

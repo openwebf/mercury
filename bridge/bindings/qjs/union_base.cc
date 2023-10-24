@@ -5,4 +5,4 @@
 
 #include "union_base.h"
 
-namespace webf {}
+namespace mercury {}

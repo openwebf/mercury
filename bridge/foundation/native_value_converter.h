@@ -10,7 +10,7 @@
 #include "native_type.h"
 #include "native_value.h"
 
-namespace webf {
+namespace mercury {
 
 // NativeValueConverter converts types back and forth from C++ types to NativeValue. The template
 // parameter |T| determines what kind of type conversion to perform.
@@ -199,6 +199,6 @@ struct NativeValueConverter<NativeTypeArray<T>> : public NativeValueConverterBas
   }
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_FOUNDATION_NATIVE_VALUE_CONVERTER_H_

@@ -8,12 +8,12 @@
 
 #include <quickjs/quickjs.h>
 
-namespace webf {
+namespace mercury {
 
 class ExecutingContext;
 
 void InstallBindings(ExecutingContext* context);
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_BINDING_INITIALIZER_H

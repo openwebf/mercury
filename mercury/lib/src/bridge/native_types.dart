@@ -13,7 +13,7 @@ import 'native_value.dart';
 // All the class which extends Struct class has a corresponding struct in C++ code.
 // All class members include variables and functions must be follow the same order with C++ struct, to keep the same memory layout cross dart and C++ code.
 
-class NativeWebFInfo extends Struct {
+class NativeMercuryInfo extends Struct {
   external Pointer<Utf8> app_name;
   external Pointer<Utf8> app_version;
   external Pointer<Utf8> app_revision;

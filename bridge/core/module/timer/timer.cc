@@ -10,10 +10,10 @@
 #include "core/executing_context.h"
 
 #if UNIT_TEST
-#include "webf_test_env.h"
+#include "mercury_test_env.h"
 #endif
 
-namespace webf {
+namespace mercury {
 
 std::shared_ptr<DOMTimer> DOMTimer::create(ExecutingContext* context,
                                            const std::shared_ptr<QJSFunction>& callback,
@@ -47,4 +47,4 @@ void DOMTimer::setTimerId(int32_t timerId) {
   timer_id_ = timerId;
 }
 
-}  // namespace webf
+}  // namespace mercury

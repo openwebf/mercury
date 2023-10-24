@@ -28,30 +28,30 @@ function moveFile(path, realPath, replaceDll = false) {
   }
 }
 
-const krakenDir = PATH.join(__dirname, "../webf");
+const krakenDir = PATH.join(__dirname, "../mercury");
 
 const symbolFiles = [
   "android/jniLibs/arm64-v8a/libc++_shared.so",
-  "android/jniLibs/arm64-v8a/libwebf.so",
+  "android/jniLibs/arm64-v8a/libmercury.so",
   "android/jniLibs/arm64-v8a/libquickjs.so",
   "android/jniLibs/armeabi-v7a/libc++_shared.so",
-  "android/jniLibs/armeabi-v7a/libwebf.so",
+  "android/jniLibs/armeabi-v7a/libmercury.so",
   "android/jniLibs/armeabi-v7a/libquickjs.so",
   "android/jniLibs/x86/libc++_shared.so",
-  "android/jniLibs/x86/libwebf.so",
+  "android/jniLibs/x86/libmercury.so",
   "android/jniLibs/x86/libquickjs.so",
-  "ios/Frameworks/webf_bridge.xcframework",
+  "ios/Frameworks/mercury_bridge.xcframework",
   "ios/Frameworks/quickjs.xcframework",
-  "linux/libwebf.so",
+  "linux/libmercury.so",
   "linux/libquickjs.so",
-  "macos/libwebf.dylib",
+  "macos/libmercury.dylib",
   "macos/libquickjs.dylib",
 ];
 
 const txtFiles = [
   'windows/pthreadVC2.txt',
   'windows/quickjs.txt',
-  'windows/webf.txt'
+  'windows/mercury.txt'
 ];
 
 for (let file of symbolFiles) {

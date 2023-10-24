@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:webf/dom.dart';
-import 'package:webf/module.dart';
+import 'package:mercury/dom.dart';
+import 'package:mercury/module.dart';
 import 'package:web_socket_channel/io.dart';
 
 enum _ConnectionState { closed }

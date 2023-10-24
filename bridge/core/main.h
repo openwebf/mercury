@@ -3,8 +3,8 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
-#ifndef WEBF_JS_QJS_BRIDGE_H_
-#define WEBF_JS_QJS_BRIDGE_H_
+#ifndef MERCURY_JS_QJS_BRIDGE_H_
+#define MERCURY_JS_QJS_BRIDGE_H_
 
 #include <quickjs/quickjs.h>
 #include <atomic>
@@ -15,27 +15,27 @@
 #include "core/executing_context.h"
 #include "foundation/native_string.h"
 
-namespace webf {
+namespace mercury {
 
-class WebFPage;
+class MercuryPage;
 class DartContext;
 
-using JSBridgeDisposeCallback = void (*)(WebFPage* bridge);
+using JSBridgeDisposeCallback = void (*)(MercuryPage* bridge);
 using ConsoleMessageHandler = std::function<void(void* ctx, const std::string& message, int logLevel)>;
 
-/// WebFPage is class which manage all js objects create by <WebF> flutter widget.
-/// Every <WebF> flutter widgets have a corresponding WebFPage, and all objects created by JavaScript are stored here,
-/// and there is no data sharing between objects between different WebFPages.
-/// It's safe to allocate many WebFPages at the same times on one thread, but not safe for multi-threads, only one
-/// thread can enter to WebFPage at the same time.
-class WebFPage final {
+/// MercuryPage is class which manage all js objects create by <Mercury> flutter widget.
+/// Every <Mercury> flutter widgets have a corresponding MercuryPage, and all objects created by JavaScript are stored here,
+/// and there is no data sharing between objects between different MercuryPages.
+/// It's safe to allocate many MercuryPages at the same times on one thread, but not safe for multi-threads, only one
+/// thread can enter to MercuryPage at the same time.
+class MercuryPage final {
  public:
   static ConsoleMessageHandler consoleMessageHandler;
-  WebFPage() = delete;
-  WebFPage(DartIsolateContext* dart_isolate_context, int32_t jsContext, const JSExceptionHandler& handler);
-  ~WebFPage();
+  MercuryPage() = delete;
+  MercuryPage(DartIsolateContext* dart_isolate_context, int32_t jsContext, const JSExceptionHandler& handler);
+  ~MercuryPage();
 
-  // Bytecodes which registered by webf plugins.
+  // Bytecodes which registered by mercury plugins.
   static std::unordered_map<std::string, NativeByteCode> pluginByteCode;
 
   // evaluate JavaScript source codes in standard mode.
@@ -80,6 +80,6 @@ class WebFPage final {
   JSExceptionHandler handler_;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
-#endif  // WEBF_JS_QJS_BRIDGE_H_
+#endif  // MERCURY_JS_QJS_BRIDGE_H_

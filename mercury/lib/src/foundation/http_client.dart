@@ -10,11 +10,11 @@ import 'http_client_request.dart';
 import 'http_overrides.dart';
 
 class ProxyHttpClient implements HttpClient {
-  ProxyHttpClient(HttpClient nativeHttpClient, WebFHttpOverrides httpOverrides)
+  ProxyHttpClient(HttpClient nativeHttpClient, MercuryHttpOverrides httpOverrides)
       : _nativeHttpClient = nativeHttpClient,
         _httpOverrides = httpOverrides;
 
-  final WebFHttpOverrides _httpOverrides;
+  final MercuryHttpOverrides _httpOverrides;
   final HttpClient _nativeHttpClient;
 
   bool _closed = false;

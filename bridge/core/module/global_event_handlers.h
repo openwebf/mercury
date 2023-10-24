@@ -9,10 +9,10 @@
 #include "event_type_names.h"
 #include "foundation/macros.h"
 
-namespace webf {
+namespace mercury {
 
 class WindowEventHandlers {
-  WEBF_STATIC_ONLY(WindowEventHandlers);
+  MERCURY_STATIC_ONLY(WindowEventHandlers);
 
  public:
   DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(beforeunload, kbeforeunload);
@@ -27,6 +27,6 @@ class WindowEventHandlers {
   DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(unload, kunload);
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_CORE_FRAME_WINDOW_EVENT_HANDLERS_H_

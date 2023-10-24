@@ -7,7 +7,7 @@
 #include "core/dom/events/event.h"
 #include "qjs_message_event.h"
 
-namespace webf {
+namespace mercury {
 
 MessageEvent* MessageEvent::Create(ExecutingContext* context,
                                    const AtomicString& type,
@@ -85,4 +85,4 @@ bool MessageEvent::IsMessageEvent() const {
   return true;
 }
 
-}  // namespace webf
+}  // namespace mercury

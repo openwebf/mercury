@@ -1,4 +1,4 @@
-#include "include/webf/webf_plugin.h"
+#include "include/mercury/mercury_plugin.h"
 
 #include <flutter_linux/flutter_linux.h>
 #include <gtk/gtk.h>
@@ -6,19 +6,19 @@
 
 #include <cstring>
 
-#define WEBF_PLUGIN(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST((obj), webf_plugin_get_type(), \
-                              WebfPlugin))
+#define MERCURY_PLUGIN(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST((obj), mercury_plugin_get_type(), \
+                              MercuryPlugin))
 
-struct _WebfPlugin {
+struct _MercuryPlugin {
   GObject parent_instance;
 };
 
-G_DEFINE_TYPE(WebfPlugin, webf_plugin, g_object_get_type())
+G_DEFINE_TYPE(MercuryPlugin, mercury_plugin, g_object_get_type())
 
 // Called when a method call is received from Flutter.
-static void webf_plugin_handle_method_call(
-    WebfPlugin* self,
+static void mercury_plugin_handle_method_call(
+    MercuryPlugin* self,
     FlMethodCall* method_call) {
   g_autoptr(FlMethodResponse) response = nullptr;
 
@@ -41,30 +41,30 @@ static void webf_plugin_handle_method_call(
   fl_method_call_respond(method_call, response, nullptr);
 }
 
-static void webf_plugin_dispose(GObject* object) {
-  G_OBJECT_CLASS(webf_plugin_parent_class)->dispose(object);
+static void mercury_plugin_dispose(GObject* object) {
+  G_OBJECT_CLASS(mercury_plugin_parent_class)->dispose(object);
 }
 
-static void webf_plugin_class_init(WebfPluginClass* klass) {
-  G_OBJECT_CLASS(klass)->dispose = webf_plugin_dispose;
+static void mercury_plugin_class_init(MercuryPluginClass* klass) {
+  G_OBJECT_CLASS(klass)->dispose = mercury_plugin_dispose;
 }
 
-static void webf_plugin_init(WebfPlugin* self) {}
+static void mercury_plugin_init(MercuryPlugin* self) {}
 
 static void method_call_cb(FlMethodChannel* channel, FlMethodCall* method_call,
                            gpointer user_data) {
-  WebfPlugin* plugin = WEBF_PLUGIN(user_data);
-  webf_plugin_handle_method_call(plugin, method_call);
+  MercuryPlugin* plugin = MERCURY_PLUGIN(user_data);
+  mercury_plugin_handle_method_call(plugin, method_call);
 }
 
-void webf_plugin_register_with_registrar(FlPluginRegistrar* registrar) {
-  WebfPlugin* plugin = WEBF_PLUGIN(
-      g_object_new(webf_plugin_get_type(), nullptr));
+void mercury_plugin_register_with_registrar(FlPluginRegistrar* registrar) {
+  MercuryPlugin* plugin = MERCURY_PLUGIN(
+      g_object_new(mercury_plugin_get_type(), nullptr));
 
   g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();
   g_autoptr(FlMethodChannel) channel =
       fl_method_channel_new(fl_plugin_registrar_get_messenger(registrar),
-                            "webf",
+                            "mercury",
                             FL_METHOD_CODEC(codec));
   fl_method_channel_set_method_call_handler(channel, method_call_cb,
                                             g_object_ref(plugin),

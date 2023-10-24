@@ -13,7 +13,7 @@
 #include "foundation/macros.h"
 #include "local_handle.h"
 
-namespace webf {
+namespace mercury {
 
 template <typename T>
 class MakeGarbageCollectedTrait;
@@ -83,6 +83,6 @@ T* MakeGarbageCollected(Args&&... args) {
   return MakeLocal<T>(MakeGarbageCollectedTrait<T>::Allocate(std::forward<Args>(args)...)).Get();
 }
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_GARBAGE_COLLECTED_H

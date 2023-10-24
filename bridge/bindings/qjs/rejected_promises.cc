@@ -7,7 +7,7 @@
 #include "bindings/qjs/cppgc/mutation_scope.h"
 #include "core/executing_context.h"
 
-namespace webf {
+namespace mercury {
 
 RejectedPromises::Message::Message(ExecutingContext* context, JSValue promise, JSValue reason)
     : m_runtime(context->dartIsolateContext()->runtime()),
@@ -69,4 +69,4 @@ void RejectedPromises::Process(ExecutingContext* context) {
   }
 }
 
-}  // namespace webf
+}  // namespace mercury

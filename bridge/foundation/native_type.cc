@@ -8,7 +8,7 @@
 #include <Windows.h>
 #endif
 
-namespace webf {
+namespace mercury {
 
 void* DartReadable::operator new(std::size_t size) {
 #if WIN32
@@ -26,4 +26,4 @@ void DartReadable::operator delete(void* memory) noexcept {
 #endif
 }
 
-}  // namespace webf
+}  // namespace mercury

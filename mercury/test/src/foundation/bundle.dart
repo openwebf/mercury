@@ -8,7 +8,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:test/test.dart';
-import 'package:webf/foundation.dart';
+import 'package:mercury/foundation.dart';
 
 import '../../local_http_server.dart';
 
@@ -60,11 +60,11 @@ void main() {
       expect(bundle.data, bytecode);
     });
 
-    test('WebFBundle', () async {
+    test('MercuryBundle', () async {
       Uint8List bytecode = Uint8List.fromList(List.generate(10, (index) => index, growable: false));
-      var bundle = WebFBundle.fromBytecode(bytecode);
+      var bundle = MercuryBundle.fromBytecode(bytecode);
       await bundle.resolve(1);
-      expect(bundle.contentType.mimeType, 'application/vnd.webf.bc1');
+      expect(bundle.contentType.mimeType, 'application/vnd.mercury.bc1');
     });
   });
 }

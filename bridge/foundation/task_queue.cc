@@ -5,7 +5,7 @@
 
 #include "task_queue.h"
 
-namespace webf {
+namespace mercury {
 
 int32_t TaskQueue::registerTask(const Task& task, void* data) {
   std::lock_guard<std::mutex> guard(queue_mutex_);
@@ -32,4 +32,4 @@ void TaskQueue::flushTask() {
   m_map.clear();
 }
 
-}  // namespace webf
+}  // namespace mercury

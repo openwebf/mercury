@@ -9,7 +9,7 @@
 #include "core/events/error_event.h"
 #include "event_type_names.h"
 
-namespace webf {
+namespace mercury {
 
 std::shared_ptr<JSEventHandler> JSEventHandler::CreateOrNull(JSContext* ctx,
                                                              JSValue value,
@@ -35,10 +35,10 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target, Event& event, Exc
 
   // Step 3. Let special error event handling be true if event is an ErrorEvent
   // object, event's type is error, and event's currentTarget implements the
-  // WindowOrWorkerGlobalScope mixin. Otherwise, let special error event
+  // GlobalOrWorkerScope mixin. Otherwise, let special error event
   // handling be false.
   const bool special_error_event_handling = IsA<ErrorEvent>(event) && event.type() == event_type_names::kerror &&
-                                            event.currentTarget()->IsWindowOrWorkerGlobalScope();
+                                            event.currentTarget()->IsGlobalOrWorkerScope();
 
   // Step 4. Process the Event object event as follows:
   //   If special error event handling is true
@@ -102,4 +102,4 @@ void JSEventHandler::Trace(GCVisitor* visitor) const {
   event_handler_->Trace(visitor);
 }
 
-}  // namespace webf
+}  // namespace mercury

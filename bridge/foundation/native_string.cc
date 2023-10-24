@@ -9,7 +9,7 @@
 #include <Windows.h>
 #endif
 
-namespace webf {
+namespace mercury {
 
 SharedNativeString::SharedNativeString(const uint16_t* string, uint32_t length) : length_(length), string_(string) {}
 
@@ -51,4 +51,4 @@ void SharedNativeString::operator delete(void* memory) noexcept {
 #endif
 }
 
-}  // namespace webf
+}  // namespace mercury

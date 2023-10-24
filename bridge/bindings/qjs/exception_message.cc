@@ -8,7 +8,7 @@
 #include <cstdarg>
 #include <vector>
 
-namespace webf {
+namespace mercury {
 
 std::string ExceptionMessage::FormatString(const char* format, ...) {
   va_list args;
@@ -52,4 +52,4 @@ std::string ExceptionMessage::ArgumentNullOrIncorrectType(int argument_index, co
   return FormatString("The %d argument provided is either null, or an invalid %s object.", argument_index, expect_type);
 }
 
-}  // namespace webf
+}  // namespace mercury

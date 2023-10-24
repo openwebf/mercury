@@ -3,7 +3,7 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
-import 'package:webf/module.dart';
+import 'package:mercury/module.dart';
 import 'package:test/test.dart';
 
 import '../../local_http_server.dart';

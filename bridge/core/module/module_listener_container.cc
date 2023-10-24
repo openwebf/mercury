@@ -5,7 +5,7 @@
 #include "module_listener_container.h"
 #include "bindings/qjs/cppgc/gc_visitor.h"
 
-namespace webf {
+namespace mercury {
 
 void ModuleListenerContainer::AddModuleListener(const AtomicString& name,
                                                 const std::shared_ptr<ModuleListener>& listener) {
@@ -26,4 +26,4 @@ void ModuleListenerContainer::Clear() {
   listeners_.clear();
 }
 
-}  // namespace webf
+}  // namespace mercury

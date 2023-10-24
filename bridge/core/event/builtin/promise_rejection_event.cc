@@ -6,7 +6,7 @@
 #include "promise_rejection_event.h"
 #include "event_type_names.h"
 
-namespace webf {
+namespace mercury {
 
 PromiseRejectionEvent* PromiseRejectionEvent::Create(ExecutingContext* context,
                                                      const AtomicString& type,
@@ -38,4 +38,4 @@ bool PromiseRejectionEvent::IsPromiseRejectionEvent() const {
   return true;
 }
 
-}  // namespace webf
+}  // namespace mercury

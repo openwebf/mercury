@@ -17,37 +17,37 @@ const os = require('os');
 const uploader = require('./utils/uploader');
 
 program
-.option('--static-quickjs', 'Build quickjs as static library and bundled into webf library.', false)
+.option('--static-quickjs', 'Build quickjs as static library and bundled into mercury library.', false)
 .parse(process.argv);
 
 const SUPPORTED_JS_ENGINES = ['jsc', 'quickjs'];
-const targetJSEngine = process.env.WEBF_JS_ENGINE || 'quickjs';
+const targetJSEngine = process.env.MERCURY_JS_ENGINE || 'quickjs';
 
 if (SUPPORTED_JS_ENGINES.indexOf(targetJSEngine) < 0) {
   throw new Error('Unsupported js engine:' + targetJSEngine);
 }
 
-const WEBF_ROOT = join(__dirname, '..');
-const TARGET_PATH = join(WEBF_ROOT, 'targets');
+const MERCURY_ROOT = join(__dirname, '..');
+const TARGET_PATH = join(MERCURY_ROOT, 'targets');
 const platform = os.platform();
-const buildMode = process.env.WEBF_BUILD || 'Debug';
+const buildMode = process.env.MERCURY_BUILD || 'Debug';
 const paths = {
-  targets: resolveWebF('targets'),
-  scripts: resolveWebF('scripts'),
-  example: resolveWebF('webf/example'),
-  webf: resolveWebF('webf'),
-  bridge: resolveWebF('bridge'),
-  polyfill: resolveWebF('bridge/polyfill'),
-  codeGen: resolveWebF('bridge/scripts/code_generator'),
-  thirdParty: resolveWebF('third_party'),
-  tests: resolveWebF('integration_tests'),
-  sdk: resolveWebF('sdk'),
-  templates: resolveWebF('scripts/templates'),
-  performanceTests: resolveWebF('performance_tests')
+  targets: resolveMercury('targets'),
+  scripts: resolveMercury('scripts'),
+  example: resolveMercury('mercury/example'),
+  mercury: resolveMercury('mercury'),
+  bridge: resolveMercury('bridge'),
+  polyfill: resolveMercury('bridge/polyfill'),
+  codeGen: resolveMercury('bridge/scripts/code_generator'),
+  thirdParty: resolveMercury('third_party'),
+  tests: resolveMercury('integration_tests'),
+  sdk: resolveMercury('sdk'),
+  templates: resolveMercury('scripts/templates'),
+  performanceTests: resolveMercury('performance_tests')
 };
 
 const NPM = platform == 'win32' ? 'npm.cmd' : 'npm';
-const pkgVersion = readFileSync(path.join(paths.webf, 'pubspec.yaml'), 'utf-8').match(/version: (.*)/)[1].trim();
+const pkgVersion = readFileSync(path.join(paths.mercury, 'pubspec.yaml'), 'utf-8').match(/version: (.*)/)[1].trim();
 const isProfile = process.env.ENABLE_PROFILE === 'true';
 
 exports.paths = paths;
@@ -62,8 +62,8 @@ if (platform == 'win32') {
   }
 }
 
-function resolveWebF(submodule) {
-  return resolve(WEBF_ROOT, submodule);
+function resolveMercury(submodule) {
+  return resolve(MERCURY_ROOT, submodule);
 }
 
 task('clean', () => {
@@ -82,10 +82,10 @@ task('clean', () => {
 
 const libOutputPath = join(TARGET_PATH, platform, 'lib');
 
-task('build-darwin-webf-lib', done => {
+task('build-darwin-mercury-lib', done => {
   let externCmakeArgs = [];
   let buildType = 'Debug';
-  if (process.env.WEBF_BUILD === 'Release') {
+  if (process.env.MERCURY_BUILD === 'Release') {
     buildType = 'RelWithDebInfo';
   }
 
@@ -101,7 +101,7 @@ task('build-darwin-webf-lib', done => {
     externCmakeArgs.push('-DUSE_SYSTEM_MALLOC=true');
   }
 
-  // Bundle quickjs into webf.
+  // Bundle quickjs into mercury.
   if (program.staticQuickjs) {
     externCmakeArgs.push('-DSTATIC_QUICKJS=true');
   }
@@ -112,25 +112,25 @@ task('build-darwin-webf-lib', done => {
     stdio: 'inherit',
     env: {
       ...process.env,
-      WEBF_JS_ENGINE: targetJSEngine,
+      MERCURY_JS_ENGINE: targetJSEngine,
       LIBRARY_OUTPUT_DIR: path.join(paths.bridge, 'build/macos/lib/x86_64')
     }
   });
 
-  let webfTargets = ['webf'];
+  let mercuryTargets = ['mercury'];
   if (targetJSEngine === 'quickjs') {
-    webfTargets.push('webf_unit_test');
+    mercuryTargets.push('mercury_unit_test');
   }
   if (buildMode === 'Debug') {
-    webfTargets.push('webf_test');
+    mercuryTargets.push('mercury_test');
   }
 
   let cpus = os.cpus();
-  execSync(`cmake --build ${paths.bridge}/cmake-build-macos-x86_64 --target ${webfTargets.join(' ')} -- -j ${cpus.length}`, {
+  execSync(`cmake --build ${paths.bridge}/cmake-build-macos-x86_64 --target ${mercuryTargets.join(' ')} -- -j ${cpus.length}`, {
     stdio: 'inherit'
   });
 
-  const binaryPath = path.join(paths.bridge, `build/macos/lib/x86_64/libwebf.dylib`);
+  const binaryPath = path.join(paths.bridge, `build/macos/lib/x86_64/libmercury.dylib`);
 
   if (buildMode == 'Release' || buildMode == 'RelWithDebInfo') {
     execSync(`dsymutil ${binaryPath}`, { stdio: 'inherit' });
@@ -142,11 +142,11 @@ task('build-darwin-webf-lib', done => {
 
 task('run-bridge-unit-test', done => {
   if (platform === 'darwin') {
-    execSync(`${path.join(paths.bridge, 'build/macos/lib/x86_64/webf_unit_test')}`, {stdio: 'inherit'});
+    execSync(`${path.join(paths.bridge, 'build/macos/lib/x86_64/mercury_unit_test')}`, {stdio: 'inherit'});
   } else if (platform === 'linux') {
-    execSync(`${path.join(paths.bridge, 'build/linux/lib/webf_unit_test')}`, {stdio: 'inherit'});
+    execSync(`${path.join(paths.bridge, 'build/linux/lib/mercury_unit_test')}`, {stdio: 'inherit'});
   } else if (platform == 'win32') {
-    execSync(`${path.join(paths.bridge, 'build/windows/lib/webf_unit_test.exe')}`, {stdio: 'inherit'});
+    execSync(`${path.join(paths.bridge, 'build/windows/lib/mercury_unit_test.exe')}`, {stdio: 'inherit'});
   }
    done();
 });
@@ -163,7 +163,7 @@ task('compile-polyfill', (done) => {
     cwd: paths.polyfill,
     env: {
       ...process.env,
-      WEBF_JS_ENGINE: targetJSEngine
+      MERCURY_JS_ENGINE: targetJSEngine
     },
     stdio: 'inherit'
   });
@@ -265,7 +265,7 @@ task('plugin-test', (done) => {
 task('unit-test', (done) => {
   const childProcess = spawn('flutter', ['test', '--coverage'], {
     stdio: 'pipe',
-    cwd: paths.webf
+    cwd: paths.mercury
   });
 
   let stdout = '';
@@ -304,7 +304,7 @@ task('unit-test', (done) => {
 task('unit-test-coverage-reporter', (done) => {
   const childProcess = spawn('npm', ['run', 'test:unit:report'], {
     stdio: 'inherit',
-    cwd: WEBF_ROOT,
+    cwd: MERCURY_ROOT,
   });
   childProcess.on('exit', () => {
     done();
@@ -337,7 +337,7 @@ function patchiOSFrameworkPList(frameworkPath) {
   }
 }
 
-task(`build-ios-webf-lib`, (done) => {
+task(`build-ios-mercury-lib`, (done) => {
   const buildType = (buildMode == 'Release' || buildMode === 'RelWithDebInfo')  ? 'RelWithDebInfo' : 'Debug';
   let externCmakeArgs = [];
 
@@ -345,7 +345,7 @@ task(`build-ios-webf-lib`, (done) => {
     externCmakeArgs.push('-DENABLE_ASAN=true');
   }
 
-  // Bundle quickjs into webf.
+  // Bundle quickjs into mercury.
   if (program.staticQuickjs) {
     externCmakeArgs.push('-DSTATIC_QUICKJS=true');
   }
@@ -367,7 +367,7 @@ task(`build-ios-webf-lib`, (done) => {
     stdio: 'inherit',
     env: {
       ...process.env,
-      WEBF_JS_ENGINE: targetJSEngine,
+      MERCURY_JS_ENGINE: targetJSEngine,
       LIBRARY_OUTPUT_DIR: path.join(paths.bridge, 'build/ios/lib/simulator_x86')
     }
   });
@@ -384,7 +384,7 @@ task(`build-ios-webf-lib`, (done) => {
     stdio: 'inherit',
     env: {
       ...process.env,
-      WEBF_JS_ENGINE: targetJSEngine,
+      MERCURY_JS_ENGINE: targetJSEngine,
       LIBRARY_OUTPUT_DIR: path.join(paths.bridge, 'build/ios/lib/simulator_arm64')
     }
   });
@@ -392,12 +392,12 @@ task(`build-ios-webf-lib`, (done) => {
   let cpus = os.cpus();
 
   // build for simulator x86
-  execSync(`cmake --build ${paths.bridge}/cmake-build-ios-simulator-x86 --target webf -- -j ${cpus.length}`, {
+  execSync(`cmake --build ${paths.bridge}/cmake-build-ios-simulator-x86 --target mercury -- -j ${cpus.length}`, {
     stdio: 'inherit'
   });
 
   // build for simulator arm64
-  execSync(`cmake --build ${paths.bridge}/cmake-build-ios-simulator-arm64 --target webf -- -j ${cpus.length}`, {
+  execSync(`cmake --build ${paths.bridge}/cmake-build-ios-simulator-arm64 --target mercury -- -j ${cpus.length}`, {
     stdio: 'inherit'
   });
 
@@ -414,17 +414,17 @@ task(`build-ios-webf-lib`, (done) => {
     stdio: 'inherit',
     env: {
       ...process.env,
-      WEBF_JS_ENGINE: targetJSEngine,
+      MERCURY_JS_ENGINE: targetJSEngine,
       LIBRARY_OUTPUT_DIR: path.join(paths.bridge, 'build/ios/lib/arm64')
     }
   });
 
   // Build for ARM64
-  execSync(`cmake --build ${paths.bridge}/cmake-build-ios-arm64 --target webf -- -j ${cpus.length}`, {
+  execSync(`cmake --build ${paths.bridge}/cmake-build-ios-arm64 --target mercury -- -j ${cpus.length}`, {
     stdio: 'inherit'
   });
 
-  const targetSourceFrameworks = ['webf_bridge'];
+  const targetSourceFrameworks = ['mercury_bridge'];
 
   // If quickjs is not static, there will be another framework called quickjs.framework.
   if (!program.staticQuickjs) {
@@ -449,13 +449,13 @@ task(`build-ios-webf-lib`, (done) => {
     const frameworkPath = `${targetDynamicSDKPath}/${target}.xcframework`;
     mkdirp.sync(targetDynamicSDKPath);
 
-    // dSYM file are located at /path/to/webf/build/ios/lib/${arch}/target.dSYM.
+    // dSYM file are located at /path/to/mercury/build/ios/lib/${arch}/target.dSYM.
     // Create dSYM for simulator.
     execSync(`dsymutil ${simulatorX64DynamicSDKPath}/${target} --out ${simulatorX64DynamicSDKPath}/../${target}.dSYM`, { stdio: 'inherit' });
     // Create dSYM for arm64,armv7.
     execSync(`dsymutil ${arm64DynamicSDKPath}/${target} --out ${arm64DynamicSDKPath}/../${target}.dSYM`, { stdio: 'inherit' });
 
-    // Generated xcframework at located at /path/to/webf/build/ios/framework/${target}.xcframework.
+    // Generated xcframework at located at /path/to/mercury/build/ios/framework/${target}.xcframework.
     // Generate xcframework with dSYM.
     if (buildMode === 'RelWithDebInfo') {
       execSync(`xcodebuild -create-xcframework \
@@ -474,7 +474,7 @@ task(`build-ios-webf-lib`, (done) => {
   done();
 });
 
-task('build-linux-webf-lib', (done) => {
+task('build-linux-mercury-lib', (done) => {
   const buildType = buildMode == 'Release' ? 'Release' : 'RelWithDebInfo';
   const cmakeGeneratorTemplate = platform == 'win32' ? 'Ninja' : 'Unix Makefiles';
 
@@ -498,22 +498,22 @@ task('build-linux-webf-lib', (done) => {
       stdio: 'inherit',
       env: {
         ...process.env,
-        WEBF_JS_ENGINE: targetJSEngine,
+        MERCURY_JS_ENGINE: targetJSEngine,
         LIBRARY_OUTPUT_DIR: soBinaryDirectory
       }
     });
 
   // build
-  execSync(`cmake --build ${bridgeCmakeDir} --target webf ${buildMode != 'Release' ? 'webf_test' : ''} webf_unit_test -- -j 12`, {
+  execSync(`cmake --build ${bridgeCmakeDir} --target mercury ${buildMode != 'Release' ? 'mercury_test' : ''} mercury_unit_test -- -j 12`, {
     stdio: 'inherit'
   });
 
   const libs = [
-    'libwebf.so'
+    'libmercury.so'
   ];
 
   if (buildMode != 'Release') {
-    libs.push('libwebf_test.so');
+    libs.push('libmercury_test.so');
   }
 
   libs.forEach(lib => {
@@ -560,7 +560,7 @@ task('generate-bindings-code', (done) => {
   done();
 });
 
-task('build-window-webf-lib', (done) => {
+task('build-window-mercury-lib', (done) => {
   const buildType = buildMode == 'Release' ? 'RelWithDebInfo' : 'Debug';
 
   let externCmakeArgs = [];
@@ -578,15 +578,15 @@ task('build-window-webf-lib', (done) => {
       stdio: 'inherit',
       env: {
         ...process.env,
-        WEBF_JS_ENGINE: targetJSEngine,
+        MERCURY_JS_ENGINE: targetJSEngine,
         LIBRARY_OUTPUT_DIR: soBinaryDirectory
       }
     });
 
-  const webfTargets = ['webf'];
+  const mercuryTargets = ['mercury'];
 
   // build
-  execSync(`cmake --build ${bridgeCmakeDir} --target ${webfTargets.join(' ')} --verbose --config ${buildType}`, {
+  execSync(`cmake --build ${bridgeCmakeDir} --target ${mercuryTargets.join(' ')} --verbose --config ${buildType}`, {
     stdio: 'inherit'
   });
 
@@ -597,7 +597,7 @@ task('build-window-webf-lib', (done) => {
   done();
 });
 
-task('build-android-webf-lib', (done) => {
+task('build-android-mercury-lib', (done) => {
   let ndkDir = '';
 
   // If ANDROID_NDK_HOME env defined, use it.
@@ -639,13 +639,13 @@ task('build-android-webf-lib', (done) => {
     externCmakeArgs.push('-DUSE_SYSTEM_MALLOC=true');
   }
 
-  // Bundle quickjs into webf.
+  // Bundle quickjs into mercury.
   if (program.staticQuickjs) {
     externCmakeArgs.push('-DSTATIC_QUICKJS=true');
   }
 
   const soFileNames = [
-    'libwebf',
+    'libmercury',
     'libc++_shared'
   ];
 
@@ -675,13 +675,13 @@ task('build-android-webf-lib', (done) => {
         stdio: 'inherit',
         env: {
           ...process.env,
-          WEBF_JS_ENGINE: targetJSEngine,
+          MERCURY_JS_ENGINE: targetJSEngine,
           LIBRARY_OUTPUT_DIR: soBinaryDirectory
         }
       });
 
     // build
-    execSync(`cmake --build ${bridgeCmakeDir} --target webf -- -j 12`, {
+    execSync(`cmake --build ${bridgeCmakeDir} --target mercury -- -j 12`, {
       stdio: 'inherit'
     });
 

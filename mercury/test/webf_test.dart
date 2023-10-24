@@ -8,7 +8,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:webf/webf.dart';
+import 'package:mercury/mercury.dart';
 
 import 'local_http_server.dart';
 import 'src/css/style_animations_parser.dart' as style_animations_parser;
@@ -37,12 +37,12 @@ void main() {
   print('Local HTTP Server started at ${httpServer.getUri()}');
 
   // Inject a custom user agent, to avoid reading from bridge.
-  NavigatorModule.setCustomUserAgent('webf/test');
+  NavigatorModule.setCustomUserAgent('mercury/test');
 
   // Work around with path_provider.
   Directory tempDirectory = Directory('./temp');
-  MethodChannel webfChannel = getWebFMethodChannel();
-  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(webfChannel, (MethodCall methodCall) async {
+  MethodChannel mercuryChannel = getMercuryMethodChannel();
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(mercuryChannel, (MethodCall methodCall) async {
     if (methodCall.method == 'getTemporaryDirectory') {
       return tempDirectory.path;
     }

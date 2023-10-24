@@ -5,12 +5,12 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:webf/webf.dart';
+import 'package:mercury/mercury.dart';
 
 // ignore: avoid_annotating_with_dynamic
 typedef MethodCallCallback = Future<dynamic> Function(String method, dynamic args);
 const String METHOD_CHANNEL_NOT_INITIALIZED = 'MethodChannel not initialized.';
-const String CONTROLLER_NOT_INITIALIZED = 'WebF controller not initialized.';
+const String CONTROLLER_NOT_INITIALIZED = 'Mercury controller not initialized.';
 const String METHOD_CHANNEL_NAME = 'MethodChannel';
 
 class MethodChannelModule extends BaseModule {
@@ -34,7 +34,7 @@ class MethodChannelModule extends BaseModule {
   }
 }
 
-abstract class WebFMethodChannel {
+abstract class MercuryMethodChannel {
   MethodCallCallback? _onJSMethodCallCallback;
 
   set _onJSMethodCall(MethodCallCallback? value) {
@@ -44,7 +44,7 @@ abstract class WebFMethodChannel {
 
   Future<dynamic> invokeMethodFromJavaScript(String method, List arguments);
 
-  static void setJSMethodCallCallback(WebFController controller) {
+  static void setJSMethodCallCallback(MercuryController controller) {
     controller.methodChannel?._onJSMethodCall = (String method, arguments) async {
       try {
         return controller.module.moduleManager.emitModuleEvent(METHOD_CHANNEL_NAME, data: [method, arguments]);
@@ -55,7 +55,7 @@ abstract class WebFMethodChannel {
   }
 }
 
-class WebFJavaScriptChannel extends WebFMethodChannel {
+class MercuryJavaScriptChannel extends MercuryMethodChannel {
   Future<dynamic> invokeMethod(String method, arguments) async {
     MethodCallCallback? jsMethodCallCallback = _onJSMethodCallCallback;
     if (jsMethodCallCallback != null) {
@@ -85,10 +85,10 @@ class WebFJavaScriptChannel extends WebFMethodChannel {
   }
 }
 
-Future<dynamic> _invokeMethodFromJavaScript(WebFController? controller, String method, List args) {
-  WebFMethodChannel? webFMethodChannel = controller?.methodChannel;
-  if (webFMethodChannel != null) {
-    return webFMethodChannel.invokeMethodFromJavaScript(method, args);
+Future<dynamic> _invokeMethodFromJavaScript(MercuryController? controller, String method, List args) {
+  MercuryMethodChannel? mercuryMethodChannel = controller?.methodChannel;
+  if (mercuryMethodChannel != null) {
+    return mercuryMethodChannel.invokeMethodFromJavaScript(method, args);
   } else {
     return Future.error(FlutterError(METHOD_CHANNEL_NOT_INITIALIZED));
   }

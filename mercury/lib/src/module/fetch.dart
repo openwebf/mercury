@@ -7,8 +7,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:webf/foundation.dart';
-import 'package:webf/module.dart';
+import 'package:mercury/foundation.dart';
+import 'package:mercury/module.dart';
 
 String EMPTY_STRING = '';
 
@@ -40,7 +40,7 @@ class FetchModule extends BaseModule {
     }
   }
 
-  static const String fallbackUserAgent = 'WebF';
+  static const String fallbackUserAgent = 'Mercury';
   static String? _defaultUserAgent;
   static String _getDefaultUserAgent() {
     if (_defaultUserAgent == null) {

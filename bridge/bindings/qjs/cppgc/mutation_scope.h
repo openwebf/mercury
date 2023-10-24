@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include "foundation/macros.h"
 
-namespace webf {
+namespace mercury {
 
 class ExecutingContext;
 class ScriptWrappable;
@@ -19,7 +19,7 @@ class ScriptWrappable;
  * A stack-allocated class that record all members mutations in stack scope.
  */
 class MemberMutationScope {
-  WEBF_DISALLOW_NEW();
+  MERCURY_DISALLOW_NEW();
 
  public:
   MemberMutationScope() = delete;
@@ -40,6 +40,6 @@ class MemberMutationScope {
   std::unordered_map<ScriptWrappable*, int> mutation_records_;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_BINDINGS_QJS_CPPGC_MUTATION_SCOPE_H_

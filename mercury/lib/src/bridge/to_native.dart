@@ -11,7 +11,7 @@ import 'dart:typed_data';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:webf/webf.dart';
+import 'package:mercury/mercury.dart';
 
 // Steps for using dart:ffi to call a C function from Dart:
 // 1. Import dart:ffi.
@@ -21,39 +21,39 @@ import 'package:webf/webf.dart';
 // 5. Get a reference to the C function, and put it into a variable.
 // 6. Call the C function.
 
-class WebFInfo {
-  final Pointer<NativeWebFInfo> _nativeWebFInfo;
+class MercuryInfo {
+  final Pointer<NativeMercuryInfo> _nativeMercuryInfo;
 
-  WebFInfo(Pointer<NativeWebFInfo> info) : _nativeWebFInfo = info;
+  MercuryInfo(Pointer<NativeMercuryInfo> info) : _nativeMercuryInfo = info;
 
   String get appName {
-    if (_nativeWebFInfo.ref.app_name == nullptr) return '';
-    return _nativeWebFInfo.ref.app_name.toDartString();
+    if (_nativeMercuryInfo.ref.app_name == nullptr) return '';
+    return _nativeMercuryInfo.ref.app_name.toDartString();
   }
 
   String get appVersion {
-    if (_nativeWebFInfo.ref.app_version == nullptr) return '';
-    return _nativeWebFInfo.ref.app_version.toDartString();
+    if (_nativeMercuryInfo.ref.app_version == nullptr) return '';
+    return _nativeMercuryInfo.ref.app_version.toDartString();
   }
 
   String get appRevision {
-    if (_nativeWebFInfo.ref.app_revision == nullptr) return '';
-    return _nativeWebFInfo.ref.app_revision.toDartString();
+    if (_nativeMercuryInfo.ref.app_revision == nullptr) return '';
+    return _nativeMercuryInfo.ref.app_revision.toDartString();
   }
 
   String get systemName {
-    if (_nativeWebFInfo.ref.system_name == nullptr) return '';
-    return _nativeWebFInfo.ref.system_name.toDartString();
+    if (_nativeMercuryInfo.ref.system_name == nullptr) return '';
+    return _nativeMercuryInfo.ref.system_name.toDartString();
   }
 }
 
-typedef NativeGetWebFInfo = Pointer<NativeWebFInfo> Function();
-typedef DartGetWebFInfo = Pointer<NativeWebFInfo> Function();
+typedef NativeGetMercuryInfo = Pointer<NativeMercuryInfo> Function();
+typedef DartGetMercuryInfo = Pointer<NativeMercuryInfo> Function();
 
-final DartGetWebFInfo _getWebFInfo =
-    WebFDynamicLibrary.ref.lookup<NativeFunction<NativeGetWebFInfo>>('getWebFInfo').asFunction();
+final DartGetMercuryInfo _getMercuryInfo =
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeGetMercuryInfo>>('getMercuryInfo').asFunction();
 
-final WebFInfo _cachedInfo = WebFInfo(_getWebFInfo());
+final MercuryInfo _cachedInfo = MercuryInfo(_getMercuryInfo());
 
 final HashMap<int, Pointer<Void>> _allocatedPages = HashMap();
 
@@ -61,7 +61,7 @@ Pointer<Void>? getAllocatedPage(int contextId) {
   return _allocatedPages[contextId];
 }
 
-WebFInfo getWebFInfo() {
+MercuryInfo getMercuryInfo() {
   return _cachedInfo;
 }
 
@@ -72,13 +72,13 @@ typedef DartInvokeEventListener = Pointer<NativeValue> Function(
     Pointer<Void>, Pointer<NativeString>, Pointer<Utf8> eventType, Pointer<Void> nativeEvent, Pointer<NativeValue>);
 
 final DartInvokeEventListener _invokeModuleEvent =
-    WebFDynamicLibrary.ref.lookup<NativeFunction<NativeInvokeEventListener>>('invokeModuleEvent').asFunction();
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeInvokeEventListener>>('invokeModuleEvent').asFunction();
 
 dynamic invokeModuleEvent(int contextId, String moduleName, Event? event, extra) {
-  if (WebFController.getControllerOfJSContextId(contextId) == null) {
+  if (MercuryController.getControllerOfJSContextId(contextId) == null) {
     return null;
   }
-  WebFController controller = WebFController.getControllerOfJSContextId(contextId)!;
+  MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
   Pointer<NativeString> nativeModuleName = stringToNativeString(moduleName);
   Pointer<Void> rawEvent = event == null ? nullptr : event.toRaw().cast<Void>();
   Pointer<NativeValue> extraData = malloc.allocate(sizeOf<NativeValue>());
@@ -104,7 +104,7 @@ typedef NativeCreateScreen = Pointer<Void> Function(Double, Double);
 typedef DartCreateScreen = Pointer<Void> Function(double, double);
 
 final DartCreateScreen _createScreen =
-    WebFDynamicLibrary.ref.lookup<NativeFunction<NativeCreateScreen>>('createScreen').asFunction();
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeCreateScreen>>('createScreen').asFunction();
 
 Pointer<Void> createScreen(double width, double height) {
   return _createScreen(width, height);
@@ -121,10 +121,10 @@ typedef NativeParseHTML = Void Function(Pointer<Void>, Pointer<Utf8> code, Int32
 typedef DartParseHTML = void Function(Pointer<Void>, Pointer<Utf8> code, int length);
 
 final DartEvaluateScripts _evaluateScripts =
-    WebFDynamicLibrary.ref.lookup<NativeFunction<NativeEvaluateScripts>>('evaluateScripts').asFunction();
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeEvaluateScripts>>('evaluateScripts').asFunction();
 
 final DartParseHTML _parseHTML =
-    WebFDynamicLibrary.ref.lookup<NativeFunction<NativeParseHTML>>('parseHTML').asFunction();
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeParseHTML>>('parseHTML').asFunction();
 
 int _anonymousScriptEvaluationId = 0;
 
@@ -134,7 +134,7 @@ class ScriptByteCode {
 }
 
 Future<bool> evaluateScripts(int contextId, String code, {String? url, int line = 0}) async {
-  if (WebFController.getControllerOfJSContextId(contextId) == null) {
+  if (MercuryController.getControllerOfJSContextId(contextId) == null) {
     return false;
   }
   // Assign `vm://$id` for no url (anonymous scripts).
@@ -182,12 +182,12 @@ Future<bool> evaluateScripts(int contextId, String code, {String? url, int line 
 typedef NativeEvaluateQuickjsByteCode = Int8 Function(Pointer<Void>, Pointer<Uint8> bytes, Int32 byteLen);
 typedef DartEvaluateQuickjsByteCode = int Function(Pointer<Void>, Pointer<Uint8> bytes, int byteLen);
 
-final DartEvaluateQuickjsByteCode _evaluateQuickjsByteCode = WebFDynamicLibrary.ref
+final DartEvaluateQuickjsByteCode _evaluateQuickjsByteCode = MercuryDynamicLibrary.ref
     .lookup<NativeFunction<NativeEvaluateQuickjsByteCode>>('evaluateQuickjsByteCode')
     .asFunction();
 
 bool evaluateQuickjsByteCode(int contextId, Uint8List bytes) {
-  if (WebFController.getControllerOfJSContextId(contextId) == null) {
+  if (MercuryController.getControllerOfJSContextId(contextId) == null) {
     return false;
   }
   Pointer<Uint8> byteData = malloc.allocate(sizeOf<Uint8>() * bytes.length);
@@ -199,7 +199,7 @@ bool evaluateQuickjsByteCode(int contextId, Uint8List bytes) {
 }
 
 void parseHTML(int contextId, String code) {
-  if (WebFController.getControllerOfJSContextId(contextId) == null) {
+  if (MercuryController.getControllerOfJSContextId(contextId) == null) {
     return;
   }
   Pointer<Utf8> nativeCode = code.toNativeUtf8();
@@ -217,7 +217,7 @@ typedef NativeInitDartIsolateContext = Pointer<Void> Function(Pointer<Uint64> da
 typedef DartInitDartIsolateContext = Pointer<Void> Function(Pointer<Uint64> dartMethods, int methodsLength);
 
 final DartInitDartIsolateContext _initDartIsolateContext =
-    WebFDynamicLibrary.ref.lookup<NativeFunction<NativeInitDartIsolateContext>>('initDartIsolateContext').asFunction();
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeInitDartIsolateContext>>('initDartIsolateContext').asFunction();
 
 Pointer<Void> initDartIsolateContext(List<int> dartMethods) {
   Pointer<Uint64> bytes = malloc.allocate<Uint64>(sizeOf<Uint64>() * dartMethods.length);
@@ -230,7 +230,7 @@ typedef NativeDisposePage = Void Function(Pointer<Void>, Pointer<Void> page);
 typedef DartDisposePage = void Function(Pointer<Void>, Pointer<Void> page);
 
 final DartDisposePage _disposePage =
-    WebFDynamicLibrary.ref.lookup<NativeFunction<NativeDisposePage>>('disposePage').asFunction();
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeDisposePage>>('disposePage').asFunction();
 
 void disposePage(int contextId) {
   Pointer<Void> page = _allocatedPages[contextId]!;
@@ -241,7 +241,7 @@ void disposePage(int contextId) {
 typedef NativeNewPageId = Int64 Function();
 typedef DartNewPageId = int Function();
 
-final DartNewPageId _newPageId = WebFDynamicLibrary.ref.lookup<NativeFunction<NativeNewPageId>>('newPageId').asFunction();
+final DartNewPageId _newPageId = MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeNewPageId>>('newPageId').asFunction();
 
 int newPageId() {
   return _newPageId();
@@ -251,7 +251,7 @@ typedef NativeAllocateNewPage = Pointer<Void> Function(Pointer<Void>, Int32);
 typedef DartAllocateNewPage = Pointer<Void> Function(Pointer<Void>, int);
 
 final DartAllocateNewPage _allocateNewPage =
-    WebFDynamicLibrary.ref.lookup<NativeFunction<NativeAllocateNewPage>>('allocateNewPage').asFunction();
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeAllocateNewPage>>('allocateNewPage').asFunction();
 
 void allocateNewPage(int targetContextId) {
   Pointer<Void> page = _allocateNewPage(dartContext.pointer, targetContextId);
@@ -263,7 +263,7 @@ typedef NativeInitDartDynamicLinking = Void Function(Pointer<Void> data);
 typedef DartInitDartDynamicLinking = void Function(Pointer<Void> data);
 
 final DartInitDartDynamicLinking _initDartDynamicLinking =
-    WebFDynamicLibrary.ref.lookup<NativeFunction<NativeInitDartDynamicLinking>>('init_dart_dynamic_linking').asFunction();
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeInitDartDynamicLinking>>('init_dart_dynamic_linking').asFunction();
 
 void initDartDynamicLinking() {
   _initDartDynamicLinking(NativeApi.initializeApiDLData);
@@ -273,7 +273,7 @@ typedef NativeRegisterDartContextFinalizer = Void Function(Handle object, Pointe
 typedef DartRegisterDartContextFinalizer = void Function(Object object, Pointer<Void> dart_context);
 
 final DartRegisterDartContextFinalizer _registerDartContextFinalizer =
-    WebFDynamicLibrary.ref.lookup<NativeFunction<NativeRegisterDartContextFinalizer>>('register_dart_context_finalizer').asFunction();
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeRegisterDartContextFinalizer>>('register_dart_context_finalizer').asFunction();
 
 void registerDartContextFinalizer(DartContext dartContext) {
   _registerDartContextFinalizer(dartContext, dartContext.pointer);
@@ -283,7 +283,7 @@ typedef NativeRegisterPluginByteCode = Void Function(Pointer<Uint8> bytes, Int32
 typedef DartRegisterPluginByteCode = void Function(Pointer<Uint8> bytes, int length, Pointer<Utf8> pluginName);
 
 final DartRegisterPluginByteCode _registerPluginByteCode =
-    WebFDynamicLibrary.ref.lookup<NativeFunction<NativeRegisterPluginByteCode>>('registerPluginByteCode').asFunction();
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeRegisterPluginByteCode>>('registerPluginByteCode').asFunction();
 
 void registerPluginByteCode(Uint8List bytecode, String name) {
   Pointer<Uint8> bytes = malloc.allocate(sizeOf<Uint8>() * bytecode.length);
@@ -295,7 +295,7 @@ typedef NativeProfileModeEnabled = Int32 Function();
 typedef DartProfileModeEnabled = int Function();
 
 final DartProfileModeEnabled _profileModeEnabled =
-    WebFDynamicLibrary.ref.lookup<NativeFunction<NativeProfileModeEnabled>>('profileModeEnabled').asFunction();
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeProfileModeEnabled>>('profileModeEnabled').asFunction();
 
 const _CODE_ENABLED = 1;
 
@@ -351,19 +351,19 @@ typedef NativeGetUICommandItems = Pointer<Uint64> Function(Pointer<Void>);
 typedef DartGetUICommandItems = Pointer<Uint64> Function(Pointer<Void>);
 
 final DartGetUICommandItems _getUICommandItems =
-    WebFDynamicLibrary.ref.lookup<NativeFunction<NativeGetUICommandItems>>('getUICommandItems').asFunction();
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeGetUICommandItems>>('getUICommandItems').asFunction();
 
 typedef NativeGetUICommandItemSize = Int64 Function(Pointer<Void>);
 typedef DartGetUICommandItemSize = int Function(Pointer<Void>);
 
 final DartGetUICommandItemSize _getUICommandItemSize =
-    WebFDynamicLibrary.ref.lookup<NativeFunction<NativeGetUICommandItemSize>>('getUICommandItemSize').asFunction();
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeGetUICommandItemSize>>('getUICommandItemSize').asFunction();
 
 typedef NativeClearUICommandItems = Void Function(Pointer<Void>);
 typedef DartClearUICommandItems = void Function(Pointer<Void>);
 
 final DartClearUICommandItems _clearUICommandItems =
-    WebFDynamicLibrary.ref.lookup<NativeFunction<NativeClearUICommandItems>>('clearUICommandItems').asFunction();
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeClearUICommandItems>>('clearUICommandItems').asFunction();
 
 class UICommand {
   late final UICommandType type;
@@ -390,7 +390,7 @@ const int args01StringMemOffset = 1;
 const int nativePtrMemOffset = 2;
 const int native2PtrMemOffset = 3;
 
-final bool isEnabledLog = !kReleaseMode && Platform.environment['ENABLE_WEBF_JS_LOG'] == 'true';
+final bool isEnabledLog = !kReleaseMode && Platform.environment['ENABLE_MERCURY_JS_LOG'] == 'true';
 
 // We found there are performance bottleneck of reading native memory with Dart FFI API.
 // So we align all UI instructions to a whole block of memory, and then convert them into a dart array at one time,
@@ -447,13 +447,13 @@ void clearUICommand(int contextId) {
 }
 
 void flushUICommandWithContextId(int contextId) {
-  WebFController? controller = WebFController.getControllerOfJSContextId(contextId);
+  MercuryController? controller = MercuryController.getControllerOfJSContextId(contextId);
   if (controller != null) {
     flushUICommand(controller.view);
   }
 }
 
-void flushUICommand(WebFViewController view) {
+void flushUICommand(MercuryViewController view) {
   assert(_allocatedPages.containsKey(view.contextId));
   Pointer<Uint64> nativeCommandItems = _getUICommandItems(_allocatedPages[view.contextId]!);
   int commandLength = _getUICommandItemSize(_allocatedPages[view.contextId]!);

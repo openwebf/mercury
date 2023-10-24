@@ -9,7 +9,7 @@
 #include "bindings/qjs/binding_initializer.h"
 #include "core/dart_methods.h"
 #include "core/dom/document.h"
-#include "core/frame/window.h"
+#include "core/frame/global.h"
 #include "core/html/html_html_element.h"
 #include "core/html/parser/html_parser.h"
 #include "event_factory.h"
@@ -18,11 +18,11 @@
 #include "page.h"
 #include "polyfill.h"
 
-namespace webf {
+namespace mercury {
 
-ConsoleMessageHandler WebFPage::consoleMessageHandler{nullptr};
+ConsoleMessageHandler MercuryPage::consoleMessageHandler{nullptr};
 
-WebFPage::WebFPage(DartIsolateContext* dart_isolate_context, int32_t contextId, const JSExceptionHandler& handler)
+MercuryPage::MercuryPage(DartIsolateContext* dart_isolate_context, int32_t contextId, const JSExceptionHandler& handler)
     : contextId(contextId), ownerThreadId(std::this_thread::get_id()) {
   context_ = new ExecutingContext(
       dart_isolate_context, contextId,
@@ -30,12 +30,12 @@ WebFPage::WebFPage(DartIsolateContext* dart_isolate_context, int32_t contextId, 
         if (context->dartMethodPtr()->onJsError != nullptr) {
           context->dartMethodPtr()->onJsError(context->contextId(), message);
         }
-        WEBF_LOG(ERROR) << message << std::endl;
+        MERCURY_LOG(ERROR) << message << std::endl;
       },
       this);
 }
 
-bool WebFPage::parseHTML(const char* code, size_t length) {
+bool MercuryPage::parseHTML(const char* code, size_t length) {
   if (!context_->IsContextValid())
     return false;
 
@@ -51,7 +51,7 @@ bool WebFPage::parseHTML(const char* code, size_t length) {
   return true;
 }
 
-NativeValue* WebFPage::invokeModuleEvent(SharedNativeString* native_module_name,
+NativeValue* MercuryPage::invokeModuleEvent(SharedNativeString* native_module_name,
                                          const char* eventType,
                                          void* ptr,
                                          NativeValue* extra) {
@@ -97,7 +97,7 @@ NativeValue* WebFPage::invokeModuleEvent(SharedNativeString* native_module_name,
   return return_value;
 }
 
-bool WebFPage::evaluateScript(const SharedNativeString* script,
+bool MercuryPage::evaluateScript(const SharedNativeString* script,
                               uint8_t** parsed_bytecodes,
                               uint64_t* bytecode_len,
                               const char* url,
@@ -108,7 +108,7 @@ bool WebFPage::evaluateScript(const SharedNativeString* script,
                                       startLine);
 }
 
-bool WebFPage::evaluateScript(const uint16_t* script,
+bool MercuryPage::evaluateScript(const uint16_t* script,
                               size_t length,
                               uint8_t** parsed_bytecodes,
                               uint64_t* bytecode_len,
@@ -119,29 +119,29 @@ bool WebFPage::evaluateScript(const uint16_t* script,
   return context_->EvaluateJavaScript(script, length, parsed_bytecodes, bytecode_len, url, startLine);
 }
 
-void WebFPage::evaluateScript(const char* script, size_t length, const char* url, int startLine) {
+void MercuryPage::evaluateScript(const char* script, size_t length, const char* url, int startLine) {
   if (!context_->IsContextValid())
     return;
   context_->EvaluateJavaScript(script, length, url, startLine);
 }
 
-uint8_t* WebFPage::dumpByteCode(const char* script, size_t length, const char* url, size_t* byteLength) {
+uint8_t* MercuryPage::dumpByteCode(const char* script, size_t length, const char* url, size_t* byteLength) {
   if (!context_->IsContextValid())
     return nullptr;
   return context_->DumpByteCode(script, length, url, byteLength);
 }
 
-bool WebFPage::evaluateByteCode(uint8_t* bytes, size_t byteLength) {
+bool MercuryPage::evaluateByteCode(uint8_t* bytes, size_t byteLength) {
   if (!context_->IsContextValid())
     return false;
   return context_->EvaluateByteCode(bytes, byteLength);
 }
 
-std::thread::id WebFPage::currentThread() const {
+std::thread::id MercuryPage::currentThread() const {
   return ownerThreadId;
 }
 
-WebFPage::~WebFPage() {
+MercuryPage::~MercuryPage() {
 #if IS_TEST
   if (disposeCallback != nullptr) {
     disposeCallback(this);
@@ -150,8 +150,8 @@ WebFPage::~WebFPage() {
   delete context_;
 }
 
-void WebFPage::reportError(const char* errmsg) {
+void MercuryPage::reportError(const char* errmsg) {
   handler_(context_, errmsg);
 }
 
-}  // namespace webf
+}  // namespace mercury

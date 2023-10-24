@@ -26,7 +26,7 @@ const plugins = [
   resolve(),
   replace({
     'process.env.NODE_ENV': JSON.stringify(NODE_ENV),
-    ['import \'es6-promise/dist/es6-promise.auto\'']: (process.env.PATCH_PROMISE_POLYFILL === 'true' && process.env.WEBF_JS_ENGINE === 'jsc') ?
+    ['import \'es6-promise/dist/es6-promise.auto\'']: (process.env.PATCH_PROMISE_POLYFILL === 'true' && process.env.MERCURY_JS_ENGINE === 'jsc') ?
       'import \'es6-promise/dist/es6-promise.auto\';' : '',
     delimiters: ['', ''],
     preventAssignment: false
@@ -43,7 +43,7 @@ module.exports = [
       typescript(),
       NODE_ENV === 'development' ? null : terser(uglifyOptions),
     ],
-    context: 'window'
+    context: 'global'
   },
   {
     input: 'src/test/index.js',

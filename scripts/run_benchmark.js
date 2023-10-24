@@ -11,7 +11,7 @@ process.env.ENABLE_PROFILE = 'true';
 series(
   'android-so-clean',
   'compile-polyfill',
-  'build-android-webf-lib',
+  'build-android-mercury-lib',
   'build-benchmark-app',
   'run-benchmark'
 )(() => {

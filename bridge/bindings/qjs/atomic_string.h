@@ -16,7 +16,7 @@
 #include "native_string_utils.h"
 #include "qjs_engine_patch.h"
 
-namespace webf {
+namespace mercury {
 
 typedef bool (*CharacterMatchFunctionPtr)(char);
 
@@ -25,7 +25,7 @@ typedef bool (*CharacterMatchFunctionPtr)(char);
 // identical. Comparing two AtomicString instances is much faster than comparing
 // two String instances because we just check string storage identity.
 class AtomicString {
-  WEBF_DISALLOW_NEW();
+  MERCURY_DISALLOW_NEW();
 
  public:
   enum class StringKind { kIsLowerCase, kIsUpperCase, kIsMixed, kUnknown };
@@ -122,6 +122,6 @@ bool AtomicString::ContainsOnlyLatin1OrEmpty() const {
     ored |= characters[i];
   return !(ored & 0xFF00);
 }
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_BINDINGS_QJS_ATOMIC_STRING_H_

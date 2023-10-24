@@ -1,4 +1,4 @@
-package com.openwebf.webf_example;
+package com.openwebf.mercury_example;
 
 import io.flutter.embedding.android.FlutterActivity;
 

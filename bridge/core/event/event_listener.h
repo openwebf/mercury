@@ -7,7 +7,7 @@
 
 #include "core/executing_context.h"
 
-namespace webf {
+namespace mercury {
 
 class JSBasedEventListener;
 class Event;
@@ -57,6 +57,6 @@ class EventListener {
   friend JSBasedEventListener;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_CORE_DOM_EVENTS_EVENT_LISTENER_H_

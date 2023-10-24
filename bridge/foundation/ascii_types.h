@@ -34,7 +34,7 @@
 #ifndef BRIDGE_FOUNDATION_ASCII_TYPES_H_
 #define BRIDGE_FOUNDATION_ASCII_TYPES_H_
 
-namespace webf {
+namespace mercury {
 
 template <typename CharType>
 inline bool IsASCII(CharType c) {
@@ -98,6 +98,6 @@ inline CharacterType ToASCIIUpper(CharacterType character) {
   return character & ~(IsASCIILower(character) << 5);
 }
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_FOUNDATION_ASCII_TYPES_H_

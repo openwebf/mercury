@@ -7,7 +7,7 @@ import 'dart:collection';
 import 'dart:io';
 
 import 'package:async/async.dart';
-import 'package:webf/foundation.dart';
+import 'package:mercury/foundation.dart';
 import 'package:path/path.dart' as path;
 
 enum HttpCacheMode {
@@ -35,7 +35,7 @@ class HttpCacheController {
       return _cacheDirectory!;
     }
 
-    final String appTemporaryPath = await getWebFTemporaryPath();
+    final String appTemporaryPath = await getMercuryTemporaryPath();
     final Directory cacheDirectory = Directory(path.join(appTemporaryPath, 'HttpCaches'));
     bool isThere = await cacheDirectory.exists();
     if (!isThere) {

@@ -17,7 +17,7 @@ series(
   'ios-framework-clean',
   'compile-polyfill',
   'generate-bindings-code',
-  'build-ios-webf-lib'
+  'build-ios-mercury-lib'
 )((err) => {
   if (err) {
     console.log(err);

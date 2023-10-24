@@ -3,7 +3,7 @@
 * Copyright (C) 2022-present The WebF authors. All rights reserved.
 */
 
-import {webf} from './webf';
+import {mercury} from './mercury';
 
 function validateUrl(url: string) {
   let protocol = url.substring(0, url.indexOf(':'));
@@ -118,27 +118,27 @@ export class WebSocket extends EventTarget {
     validateUrl(url);
     this.url = url;
     this.readyState = ReadyState.CONNECTING;
-    this.id = webf.invokeModule('WebSocket', 'init', url);
+    this.id = mercury.invokeModule('WebSocket', 'init', url);
     wsClientMap[this.id] = this;
     initPropertyHandlersForEventTargets(this, builtInEvents$1);
   }
 
   addEventListener(type: string, callback: EventListener | EventListenerObject) {
-    webf.invokeModule('WebSocket', 'addEvent', ([this.id, type]));
+    mercury.invokeModule('WebSocket', 'addEvent', ([this.id, type]));
     super.addEventListener(type, callback);
   }
 
   // TODO add blob arrayBuffer ArrayBufferView format support
   send(message: string) {
-    webf.invokeModule('WebSocket', 'send', ([this.id, message]));
+    mercury.invokeModule('WebSocket', 'send', ([this.id, message]));
   }
 
   close(code: string, reason: string) {
     this.readyState = ReadyState.CLOSING;
-    webf.invokeModule('WebSocket', 'close', ([this.id, code, reason]));
+    mercury.invokeModule('WebSocket', 'close', ([this.id, code, reason]));
   }
 }
 
-webf.addWebfModuleListener('WebSocket', function (event, data) {
+mercury.addMercuryModuleListener('WebSocket', function (event, data) {
   dispatchWebSocketEvent(data, event);
 });

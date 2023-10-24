@@ -5,8 +5,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:webf/devtools.dart';
-import 'package:webf/launcher.dart';
+import 'package:mercury/devtools.dart';
+import 'package:mercury/launcher.dart';
 
 const String INSPECTOR_URL = 'devtools://devtools/bundled/inspector.html';
 const int INSPECTOR_DEFAULT_PORT = 9222;
@@ -80,7 +80,7 @@ class UIInspector {
     String remoteAddress = await UIInspector.getConnectedLocalNetworkAddress();
     String inspectorURL = '$INSPECTOR_URL?ws=$remoteAddress:$port';
 
-    print('WebF DevTool listening at ws://$remoteAddress:$port');
+    print('Mercury DevTool listening at ws://$remoteAddress:$port');
     print('Open Chrome/Edge and enter following url to your navigator:');
     print('    $inspectorURL');
   }
@@ -88,7 +88,7 @@ class UIInspector {
   void onClientConnected() {
     assert(devtoolsService is RemoteDevServerService);
     String remoteUrl = (devtoolsService as RemoteDevServerService).url;
-    print('WebF DevTool Connected to $remoteUrl');
+    print('Mercury DevTool Connected to $remoteUrl');
     print('Open Chrome/Edge and connect to $remoteUrl to see the inspector.');
   }
 

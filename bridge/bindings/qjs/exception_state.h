@@ -11,14 +11,14 @@
 
 #define ASSERT_NO_EXCEPTION() ExceptionState().ReturnThis()
 
-namespace webf {
+namespace mercury {
 
 enum ErrorType { TypeError, InternalError, RangeError, ReferenceError, SyntaxError };
 
 // ExceptionState is a scope-like class and provides a way to store an exception.
 class ExceptionState {
   // ExceptionState should only allocate at stack.
-  WEBF_DISALLOW_NEW();
+  MERCURY_DISALLOW_NEW();
 
  public:
   void ThrowException(JSContext* ctx, ErrorType type, const std::string& message);
@@ -33,6 +33,6 @@ class ExceptionState {
   JSValue exception_{JS_NULL};
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_EXCEPTION_STATE_H

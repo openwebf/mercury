@@ -3,24 +3,24 @@
 * Copyright (C) 2022-present The WebF authors. All rights reserved.
 */
 
-declare const __webf_invoke_module__: (module: string, method: string, params?: any | null, fn?: (err: Error, data: any) => any) => any;
-export const webfInvokeModule = __webf_invoke_module__;
+declare const __mercury_invoke_module__: (module: string, method: string, params?: any | null, fn?: (err: Error, data: any) => any) => any;
+export const mercuryInvokeModule = __mercury_invoke_module__;
 
-declare const __webf_add_module_listener__: (moduleName: string, fn: (event: Event, extra: any) => any) => void;
-export const addWebfModuleListener = __webf_add_module_listener__;
+declare const __mercury_add_module_listener__: (moduleName: string, fn: (event: Event, extra: any) => any) => void;
+export const addMercuryModuleListener = __mercury_add_module_listener__;
 
-declare const __webf_clear_module_listener__: () => void;
-export const clearWebfModuleListener = __webf_clear_module_listener__;
+declare const __mercury_clear_module_listener__: () => void;
+export const clearMercuryModuleListener = __mercury_clear_module_listener__;
 
-declare const __webf_remove_module_listener__: (name: string) => void;
-export const removeWebfModuleListener = __webf_remove_module_listener__;
+declare const __mercury_remove_module_listener__: (name: string) => void;
+export const removeMercuryModuleListener = __mercury_remove_module_listener__;
 
-declare const __webf_location_reload__: () => void;
-export const webfLocationReload = __webf_location_reload__;
+declare const __mercury_location_reload__: () => void;
+export const mercuryLocationReload = __mercury_location_reload__;
 
-declare const __webf_print__: (log: string, level?: string) => void;
-export const webfPrint = __webf_print__;
+declare const __mercury_print__: (log: string, level?: string) => void;
+export const mercuryPrint = __mercury_print__;
 
-declare const __webf_is_proxy__: (obj: any) => boolean;
+declare const __mercury_is_proxy__: (obj: any) => boolean;
 
-export const webfIsProxy = __webf_is_proxy__;
+export const mercuryIsProxy = __mercury_is_proxy__;

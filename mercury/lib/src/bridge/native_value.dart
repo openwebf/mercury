@@ -7,9 +7,9 @@ import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
-import 'package:webf/bridge.dart';
-import 'package:webf/launcher.dart';
-import 'package:webf/foundation.dart';
+import 'package:mercury/bridge.dart';
+import 'package:mercury/launcher.dart';
+import 'package:mercury/foundation.dart';
 
 class NativeValue extends Struct {
   @Int64()
@@ -44,7 +44,7 @@ enum JSPointerType {
 typedef AnonymousNativeFunction = dynamic Function(List<dynamic> args);
 typedef AsyncAnonymousNativeFunction = Future<dynamic> Function(List<dynamic> args);
 
-dynamic fromNativeValue(WebFViewController view, Pointer<NativeValue> nativeValue) {
+dynamic fromNativeValue(MercuryViewController view, Pointer<NativeValue> nativeValue) {
   if (nativeValue == nullptr) return null;
 
   JSValueType type = JSValueType.values[nativeValue.ref.tag];

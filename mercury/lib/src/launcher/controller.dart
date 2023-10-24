@@ -18,22 +18,22 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart'
     show RouteInformation, WidgetsBinding, WidgetsBindingObserver, AnimationController;
-import 'package:webf/css.dart';
-import 'package:webf/dom.dart';
-import 'package:webf/gesture.dart';
-import 'package:webf/rendering.dart';
-import 'package:webf/devtools.dart';
-import 'package:webf/webf.dart';
+import 'package:mercury/css.dart';
+import 'package:mercury/dom.dart';
+import 'package:mercury/gesture.dart';
+import 'package:mercury/rendering.dart';
+import 'package:mercury/devtools.dart';
+import 'package:mercury/mercury.dart';
 
 // Error handler when load bundle failed.
 typedef LoadErrorHandler = void Function(FlutterError error, StackTrace stack);
-typedef LoadHandler = void Function(WebFController controller);
+typedef LoadHandler = void Function(MercuryController controller);
 typedef TitleChangedHandler = void Function(String title);
 typedef JSErrorHandler = void Function(String message);
 typedef JSLogHandler = void Function(int level, String message);
 typedef PendingCallback = void Function();
-typedef OnCustomElementAttached = void Function(WebFWidgetElementToWidgetAdapter newWidget);
-typedef OnCustomElementDetached = void Function(WebFWidgetElementToWidgetAdapter detachedWidget);
+typedef OnCustomElementAttached = void Function(MercuryWidgetElementToWidgetAdapter newWidget);
+typedef OnCustomElementDetached = void Function(MercuryWidgetElementToWidgetAdapter detachedWidget);
 
 typedef TraverseElementCallback = void Function(Element element);
 
@@ -83,10 +83,10 @@ abstract class DevToolsService {
     _isolateServerPort = value;
   }
 
-  WebFController? _controller;
-  WebFController? get controller => _controller;
+  MercuryController? _controller;
+  MercuryController? get controller => _controller;
 
-  void init(WebFController controller) {
+  void init(MercuryController controller) {
     _contextDevToolMap[controller.view.contextId] = this;
     _controller = controller;
     spawnIsolateInspectorServer(this, controller);
@@ -117,12 +117,12 @@ abstract class DevToolsService {
 }
 
 // An kraken View Controller designed for multiple kraken view control.
-class WebFViewController implements WidgetsBindingObserver {
-  WebFController rootController;
+class MercuryViewController implements WidgetsBindingObserver {
+  MercuryController rootController;
 
   // The methods of the KrakenNavigateDelegation help you implement custom behaviors that are triggered
   // during a kraken view's process of loading, and completing a navigation request.
-  WebFNavigationDelegate? navigationDelegate;
+  MercuryNavigationDelegate? navigationDelegate;
 
   GestureListener? gestureListener;
 
@@ -148,7 +148,7 @@ class WebFViewController implements WidgetsBindingObserver {
 
   Color? background;
 
-  WebFViewController(this._viewportWidth, this._viewportHeight,
+  MercuryViewController(this._viewportWidth, this._viewportHeight,
       {this.background,
       this.enableDebug = false,
       required this.rootController,
@@ -177,7 +177,7 @@ class WebFViewController implements WidgetsBindingObserver {
 
     // Wait viewport mounted on the outside renderObject tree.
     Future.microtask(() {
-      // Execute UICommand.createDocument and UICommand.createWindow to initialize window and document.
+      // Execute UICommand.createDocument and UICommand.createWindow to initialize global and document.
       flushUICommand(this);
     });
 
@@ -223,7 +223,7 @@ class WebFViewController implements WidgetsBindingObserver {
 
   late RenderViewportBox viewport;
   late Document document;
-  late Window window;
+  late Window global;
 
   void initDocument(view, Pointer<NativeBindingObject> pointer) {
     document = Document(
@@ -234,7 +234,7 @@ class WebFViewController implements WidgetsBindingObserver {
       initialCookies: initialCookies,
     );
 
-    // Listeners need to be registered to window in order to dispatch events on demand.
+    // Listeners need to be registered to global in order to dispatch events on demand.
     if (gestureListener != null) {
       GestureListener listener = gestureListener!;
       if (listener.onTouchStart != null) {
@@ -255,12 +255,12 @@ class WebFViewController implements WidgetsBindingObserver {
     }
   }
 
-  void initWindow(WebFViewController view, Pointer<NativeBindingObject> pointer) {
-    window = Window(BindingContext(view, _contextId, pointer), document);
+  void initWindow(MercuryViewController view, Pointer<NativeBindingObject> pointer) {
+    global = Window(BindingContext(view, _contextId, pointer), document);
     _registerPlatformBrightnessChange();
 
     // Blur input element when new input focused.
-    window.addEventListener(EVENT_CLICK, (event) {
+    global.addEventListener(EVENT_CLICK, (event) {
       if (event.target is Element) {
         Element? focusedElement = document.focusedElement;
         if (focusedElement != null && focusedElement != event.target) {
@@ -280,7 +280,7 @@ class WebFViewController implements WidgetsBindingObserver {
   }
 
   void evaluateJavaScripts(String code) async {
-    assert(!_disposed, 'WebF have already disposed');
+    assert(!_disposed, 'Mercury have already disposed');
     await evaluateScripts(_contextId, code);
   }
 
@@ -322,7 +322,7 @@ class WebFViewController implements WidgetsBindingObserver {
     _nativeObjects.clear();
 
     document.dispose();
-    window.dispose();
+    global.dispose();
   }
 
   VoidCallback? _originalOnPlatformBrightnessChanged;
@@ -341,12 +341,12 @@ class WebFViewController implements WidgetsBindingObserver {
     if (_originalOnPlatformBrightnessChanged != null) {
       _originalOnPlatformBrightnessChanged!();
     }
-    window.dispatchEvent(ColorSchemeChangeEvent(window.colorScheme));
+    global.dispatchEvent(ColorSchemeChangeEvent(global.colorScheme));
   }
 
   // export Uint8List bytes from rendered result.
   Future<Uint8List> toImage(double devicePixelRatio, [Pointer<Void>? eventTargetPointer]) {
-    assert(!_disposed, 'WebF have already disposed');
+    assert(!_disposed, 'Mercury have already disposed');
     Completer<Uint8List> completer = Completer();
     try {
       if (eventTargetPointer != null && !hasBindingObject(eventTargetPointer)) {
@@ -585,20 +585,20 @@ class WebFViewController implements WidgetsBindingObserver {
     }
   }
 
-  Future<void> handleNavigationAction(String? sourceUrl, String targetUrl, WebFNavigationType navigationType) async {
-    WebFNavigationAction action = WebFNavigationAction(sourceUrl, targetUrl, navigationType);
+  Future<void> handleNavigationAction(String? sourceUrl, String targetUrl, MercuryNavigationType navigationType) async {
+    MercuryNavigationAction action = MercuryNavigationAction(sourceUrl, targetUrl, navigationType);
 
-    WebFNavigationDelegate _delegate = navigationDelegate!;
+    MercuryNavigationDelegate _delegate = navigationDelegate!;
 
     try {
-      WebFNavigationActionPolicy policy = await _delegate.dispatchDecisionHandler(action);
-      if (policy == WebFNavigationActionPolicy.cancel) return;
+      MercuryNavigationActionPolicy policy = await _delegate.dispatchDecisionHandler(action);
+      if (policy == MercuryNavigationActionPolicy.cancel) return;
 
       switch (action.navigationType) {
-        case WebFNavigationType.navigate:
-          await rootController.load(WebFBundle.fromUrl(action.target));
+        case MercuryNavigationType.navigate:
+          await rootController.load(MercuryBundle.fromUrl(action.target));
           break;
-        case WebFNavigationType.reload:
+        case MercuryNavigationType.reload:
           await rootController.reload();
           break;
         default:
@@ -608,13 +608,13 @@ class WebFViewController implements WidgetsBindingObserver {
       if (_delegate.errorHandler != null) {
         _delegate.errorHandler!(e, stack);
       } else {
-        print('WebF navigation failed: $e\n$stack');
+        print('Mercury navigation failed: $e\n$stack');
       }
     }
   }
 
   // Call from JS Bridge when the BindingObject class on the JS side had been Garbage collected.
-  void disposeBindingObject(WebFViewController view, Pointer<NativeBindingObject> pointer) async {
+  void disposeBindingObject(MercuryViewController view, Pointer<NativeBindingObject> pointer) async {
     BindingObject? bindingObject = getBindingObject(pointer);
     bindingObject?.dispose();
     view.removeBindingObject(pointer);
@@ -682,7 +682,7 @@ class WebFViewController implements WidgetsBindingObserver {
       }
       // Show keyboard
       if (shouldScrollByToCenter) {
-        window.scrollBy(0, scrollOffset, true);
+        global.scrollBy(0, scrollOffset, true);
       }
     }
     viewport.bottomInset = bottomInsets;
@@ -723,11 +723,11 @@ class WebFViewController implements WidgetsBindingObserver {
 }
 
 // An controller designed to control kraken's functional modules.
-class WebFModuleController with TimerMixin, ScheduleFrameMixin {
+class MercuryModuleController with TimerMixin, ScheduleFrameMixin {
   late ModuleManager _moduleManager;
   ModuleManager get moduleManager => _moduleManager;
 
-  WebFModuleController(WebFController controller, int contextId) {
+  MercuryModuleController(MercuryController controller, int contextId) {
     _moduleManager = ModuleManager(controller, contextId);
   }
 
@@ -742,13 +742,13 @@ class WebFModuleController with TimerMixin, ScheduleFrameMixin {
   }
 }
 
-class WebFController {
-  static final Map<int, WebFController?> _controllerMap = {};
+class MercuryController {
+  static final Map<int, MercuryController?> _controllerMap = {};
   static final Map<String, int> _nameIdMap = {};
 
   UriParser? uriParser;
 
-  static WebFController? getControllerOfJSContextId(int? contextId) {
+  static MercuryController? getControllerOfJSContextId(int? contextId) {
     if (!_controllerMap.containsKey(contextId)) {
       return null;
     }
@@ -756,11 +756,11 @@ class WebFController {
     return _controllerMap[contextId];
   }
 
-  static Map<int, WebFController?> getControllerMap() {
+  static Map<int, MercuryController?> getControllerMap() {
     return _controllerMap;
   }
 
-  static WebFController? getControllerOfName(String name) {
+  static MercuryController? getControllerOfName(String name) {
     if (!_nameIdMap.containsKey(name)) return null;
     int? contextId = _nameIdMap[name];
     return getControllerOfJSContextId(contextId);
@@ -781,9 +781,9 @@ class WebFController {
   final DevToolsService? devToolsService;
   final HttpClientInterceptor? httpClientInterceptor;
 
-  WebFMethodChannel? _methodChannel;
+  MercuryMethodChannel? _methodChannel;
 
-  WebFMethodChannel? get methodChannel => _methodChannel;
+  MercuryMethodChannel? get methodChannel => _methodChannel;
 
   JSLogHandler? _onJSLog;
   JSLogHandler? get onJSLog => _onJSLog;
@@ -791,7 +791,7 @@ class WebFController {
     _onJSLog = jsLogHandler;
   }
 
-  // Internal usable. Notifications to WebF widget when custom element had changed.
+  // Internal usable. Notifications to Mercury widget when custom element had changed.
   OnCustomElementAttached? onCustomElementAttached;
   OnCustomElementDetached? onCustomElementDetached;
 
@@ -815,9 +815,9 @@ class WebFController {
   final GestureListener? _gestureListener;
 
   // The kraken view entrypoint bundle.
-  WebFBundle? _entrypoint;
+  MercuryBundle? _entrypoint;
 
-  WebFController(
+  MercuryController(
     String? name,
     double viewportWidth,
     double viewportHeight, {
@@ -826,9 +826,9 @@ class WebFController {
     bool autoExecuteEntrypoint = true,
     Color? background,
     GestureListener? gestureListener,
-    WebFNavigationDelegate? navigationDelegate,
-    WebFMethodChannel? methodChannel,
-    WebFBundle? entrypoint,
+    MercuryNavigationDelegate? navigationDelegate,
+    MercuryMethodChannel? methodChannel,
+    MercuryBundle? entrypoint,
     this.onCustomElementAttached,
     this.onCustomElementDetached,
     this.onLoad,
@@ -846,31 +846,31 @@ class WebFController {
         _gestureListener = gestureListener {
 
     _methodChannel = methodChannel;
-    WebFMethodChannel.setJSMethodCallCallback(this);
+    MercuryMethodChannel.setJSMethodCallCallback(this);
 
-    _view = WebFViewController(
+    _view = MercuryViewController(
       viewportWidth,
       viewportHeight,
       background: background,
       enableDebug: enableDebug,
       rootController: this,
-      navigationDelegate: navigationDelegate ?? WebFNavigationDelegate(),
+      navigationDelegate: navigationDelegate ?? MercuryNavigationDelegate(),
       gestureListener: _gestureListener,
       initialCookies: initialCookies
     );
 
     final int contextId = _view.contextId;
 
-    _module = WebFModuleController(this, contextId);
+    _module = MercuryModuleController(this, contextId);
 
     if (entrypoint != null) {
       HistoryModule historyModule = module.moduleManager.getModule<HistoryModule>('History')!;
       historyModule.add(entrypoint);
     }
 
-    assert(!_controllerMap.containsKey(contextId), 'found exist contextId of WebFController, contextId: $contextId');
+    assert(!_controllerMap.containsKey(contextId), 'found exist contextId of MercuryController, contextId: $contextId');
     _controllerMap[contextId] = this;
-    assert(!_nameIdMap.containsKey(name), 'found exist name of WebFController, name: $name');
+    assert(!_nameIdMap.containsKey(name), 'found exist name of MercuryController, name: $name');
     if (name != null) {
       _nameIdMap[name] = contextId;
     }
@@ -888,15 +888,15 @@ class WebFController {
     }
   }
 
-  late WebFViewController _view;
+  late MercuryViewController _view;
 
-  WebFViewController get view {
+  MercuryViewController get view {
     return _view;
   }
 
-  late WebFModuleController _module;
+  late MercuryModuleController _module;
 
-  WebFModuleController get module {
+  MercuryModuleController get module {
     return _module;
   }
 
@@ -912,12 +912,12 @@ class WebFController {
     return Uri(scheme: 'vm', host: 'bundle', path: id != null ? '$id' : null);
   }
 
-  void setNavigationDelegate(WebFNavigationDelegate delegate) {
+  void setNavigationDelegate(MercuryNavigationDelegate delegate) {
     _view.navigationDelegate = delegate;
   }
 
   Future<void> unload() async {
-    assert(!_view._disposed, 'WebF have already disposed');
+    assert(!_view._disposed, 'Mercury have already disposed');
     // Should clear previous page cached ui commands
     clearUICommand(_view.contextId);
 
@@ -931,7 +931,7 @@ class WebFController {
 
       int oldId = _view.contextId;
 
-      _view = WebFViewController(view.viewportWidth, view.viewportHeight,
+      _view = MercuryViewController(view.viewportWidth, view.viewportHeight,
           background: _view.background,
           enableDebug: _view.enableDebug,
           rootController: this,
@@ -939,7 +939,7 @@ class WebFController {
           gestureListener: _view.gestureListener,
           originalViewport: _view.viewport);
 
-      _module = WebFModuleController(this, _view.contextId);
+      _module = MercuryModuleController(this, _view.contextId);
 
       // Reconnect the new contextId to the Controller
       _controllerMap.remove(oldId);
@@ -967,13 +967,13 @@ class WebFController {
   String get url => _url ?? '';
   Uri? get uri => _uri;
 
-  _addHistory(WebFBundle bundle) {
+  _addHistory(MercuryBundle bundle) {
     HistoryModule historyModule = module.moduleManager.getModule<HistoryModule>('History')!;
     historyModule.add(bundle);
   }
 
   Future<void> reload() async {
-    assert(!_view._disposed, 'WebF have already disposed');
+    assert(!_view._disposed, 'Mercury have already disposed');
 
     if (devToolsService != null) {
       devToolsService!.willReload();
@@ -989,8 +989,8 @@ class WebFController {
     }
   }
 
-  Future<void> load(WebFBundle bundle) async {
-    assert(!_view._disposed, 'WebF have already disposed');
+  Future<void> load(MercuryBundle bundle) async {
+    assert(!_view._disposed, 'Mercury have already disposed');
 
     if (devToolsService != null) {
       devToolsService!.willReload();
@@ -1010,7 +1010,7 @@ class WebFController {
   }
 
   String? getResourceContent(String? url) {
-    WebFBundle? entrypoint = _entrypoint;
+    MercuryBundle? entrypoint = _entrypoint;
     if (url == this.url && entrypoint != null && entrypoint.isResolved) {
       return utf8.decode(entrypoint.data!);
     }
@@ -1086,9 +1086,9 @@ class WebFController {
   // Resolve the entrypoint bundle.
   // In general you should use executeEntrypoint, which including resolving and evaluating.
   Future<void> _resolveEntrypoint() async {
-    assert(!_view._disposed, 'WebF have already disposed');
+    assert(!_view._disposed, 'Mercury have already disposed');
 
-    WebFBundle? bundleToLoad = _entrypoint;
+    MercuryBundle? bundleToLoad = _entrypoint;
     if (bundleToLoad == null) {
       // Do nothing if bundle is null.
       return;
@@ -1119,11 +1119,11 @@ class WebFController {
       return;
     }
 
-    assert(!_view._disposed, 'WebF have already disposed');
+    assert(!_view._disposed, 'Mercury have already disposed');
     if (_entrypoint != null) {
-      WebFBundle entrypoint = _entrypoint!;
+      MercuryBundle entrypoint = _entrypoint!;
       int contextId = _view.contextId;
-      assert(entrypoint.isResolved, 'The webf bundle $entrypoint is not resolved to evaluate.');
+      assert(entrypoint.isResolved, 'The mercury bundle $entrypoint is not resolved to evaluate.');
 
       // entry point start parse.
       _view.document.parsing = true;
@@ -1196,8 +1196,8 @@ class WebFController {
 
   void _dispatchDOMContentLoadedEvent() {
     Event event = Event(EVENT_DOM_CONTENT_LOADED);
-    EventTarget window = view.window;
-    window.dispatchEvent(event);
+    EventTarget global = view.global;
+    global.dispatchEvent(event);
     _view.document.dispatchEvent(event);
     if (onDOMContentLoaded != null) {
       onDOMContentLoaded!(this);
@@ -1208,7 +1208,7 @@ class WebFController {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       // DOM element are created at next frame, so we should trigger onload callback in the next frame.
       Event event = Event(EVENT_LOAD);
-      _view.window.dispatchEvent(event);
+      _view.global.dispatchEvent(event);
 
       if (onLoad != null) {
         onLoad!(this);

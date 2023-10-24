@@ -9,7 +9,7 @@
 #include "built_in_string.h"
 #include "core/executing_context.h"
 
-namespace webf {
+namespace mercury {
 
 class BlobReaderClient {
  public:
@@ -179,4 +179,4 @@ void Blob::AppendBytes(uint8_t* buffer, uint32_t length) {
   }
 }
 
-}  // namespace webf
+}  // namespace mercury

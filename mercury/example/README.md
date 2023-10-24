@@ -1,6 +1,6 @@
-# webf_example
+# mercury_example
 
-Demonstrates how to use the webf plugin.
+Demonstrates how to use the mercury plugin.
 
 ## Getting Started
 

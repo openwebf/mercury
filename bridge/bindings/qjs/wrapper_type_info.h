@@ -9,7 +9,7 @@
 #include <cassert>
 #include "bindings/qjs/qjs_engine_patch.h"
 
-namespace webf {
+namespace mercury {
 
 class EventTarget;
 class TouchList;
@@ -170,6 +170,6 @@ class WrapperTypeInfo final {
   StringPropertyDeleteHandler property_delete_handler_{nullptr};
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_WRAPPER_TYPE_INFO_H

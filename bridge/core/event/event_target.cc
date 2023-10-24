@@ -16,10 +16,10 @@
 #define PROPAGATION_CONTINUE 0
 
 #if UNIT_TEST
-#include "webf_test_env.h"
+#include "mercury_test_env.h"
 #endif
 
-namespace webf {
+namespace mercury {
 
 struct EventDispatchResult : public DartReadable {
   bool canceled{false};
@@ -479,6 +479,6 @@ void EventTargetWithInlineData::Trace(GCVisitor* visitor) const {
   data_.Trace(visitor);
 }
 
-}  // namespace webf
+}  // namespace mercury
 
-// namespace webf::binding::qjs
+// namespace mercury::binding::qjs

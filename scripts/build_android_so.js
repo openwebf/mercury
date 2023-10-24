@@ -11,7 +11,7 @@ const buildTasks = [
   'android-so-clean',
   'compile-polyfill',
   'generate-bindings-code',
-  'build-android-webf-lib'
+  'build-android-mercury-lib'
 ];
 
 if (os.platform() == 'win32') {

@@ -9,7 +9,7 @@
 #include <memory>
 #include "core/executing_context.h"
 
-namespace webf {
+namespace mercury {
 
 class BlobPropertyBag final {
  public:
@@ -24,6 +24,6 @@ class BlobPropertyBag final {
   std::string m_type;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_CORE_FILEAPI_BLOB_PROPERTY_BAG_H_

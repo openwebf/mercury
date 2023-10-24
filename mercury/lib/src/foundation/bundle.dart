@@ -8,9 +8,9 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:webf/foundation.dart';
-import 'package:webf/launcher.dart';
-import 'package:webf/module.dart';
+import 'package:mercury/foundation.dart';
+import 'package:mercury/launcher.dart';
+import 'package:mercury/module.dart';
 
 const String DEFAULT_URL = 'about:blank';
 const String UTF_8 = 'utf-8';
@@ -21,14 +21,14 @@ final ContentType javascriptContentType = ContentType('text', 'javascript', char
 final ContentType htmlContentType = ContentType('text', 'html', charset: UTF_8);
 final ContentType _javascriptApplicationContentType = ContentType('application', 'javascript', charset: UTF_8);
 final ContentType _xJavascriptContentType = ContentType('application', 'x-javascript', charset: UTF_8);
-final ContentType webfBc1ContentType = ContentType('application', 'vnd.webf.bc1');
+final ContentType mercuryBc1ContentType = ContentType('application', 'vnd.mercury.bc1');
 
 const List<String> _supportedByteCodeVersions = ['1'];
 
 bool _isSupportedBytecode(String mimeType, Uri? uri) {
   if (uri != null) {
     for (int i = 0; i < _supportedByteCodeVersions.length; i++) {
-      if (mimeType.contains('application/vnd.webf.bc' + _supportedByteCodeVersions[i])) return true;
+      if (mimeType.contains('application/vnd.mercury.bc' + _supportedByteCodeVersions[i])) return true;
       // @NOTE: This is useful for most http server that did not recognize a .kbc1 file.
       // Simply treat some.kbc1 file as the bytecode.
       if (uri.path.endsWith('.kbc' + _supportedByteCodeVersions[i])) return true;
@@ -52,7 +52,7 @@ bool isGzip(List<int> data) {
 // The default accept request header.
 // The order is HTML -> KBC -> JavaScript.
 String _acceptHeader() {
-  String bc = _supportedByteCodeVersions.map((String v) => 'application/vnd.webf.bc$v').join(',');
+  String bc = _supportedByteCodeVersions.map((String v) => 'application/vnd.mercury.bc$v').join(',');
   return 'text/html,$bc,application/javascript';
 }
 
@@ -80,8 +80,8 @@ void _failedToResolveBundle(String url) {
   throw FlutterError('Failed to resolve bundle for $url');
 }
 
-abstract class WebFBundle {
-  WebFBundle(this.url);
+abstract class MercuryBundle {
+  MercuryBundle(this.url);
 
   // Unique resource locator.
   final String url;
@@ -110,7 +110,7 @@ abstract class WebFBundle {
     // Source is input by user, do not trust it's a valid URL.
     _uri = Uri.tryParse(url);
     if (contextId != null && _uri != null) {
-      WebFController? controller = WebFController.getControllerOfJSContextId(contextId);
+      MercuryController? controller = MercuryController.getControllerOfJSContextId(contextId);
       if (controller != null) {
         _uri = controller.uriParser!.resolve(Uri.parse(controller.url), _uri!);
       }
@@ -132,7 +132,7 @@ abstract class WebFBundle {
     await cacheObject.remove();
   }
 
-  static WebFBundle fromUrl(String url, {Map<String, String>? additionalHttpHeaders}) {
+  static MercuryBundle fromUrl(String url, {Map<String, String>? additionalHttpHeaders}) {
     if (_isHttpScheme(url)) {
       return NetworkBundle(url, additionalHttpHeaders: additionalHttpHeaders);
     } else if (_isAssetsScheme(url)) {
@@ -148,12 +148,12 @@ abstract class WebFBundle {
     }
   }
 
-  static WebFBundle fromContent(String content, {String url = DEFAULT_URL, ContentType? contentType}) {
+  static MercuryBundle fromContent(String content, {String url = DEFAULT_URL, ContentType? contentType}) {
     return DataBundle.fromString(content, url, contentType: contentType ?? javascriptContentType);
   }
 
-  static WebFBundle fromBytecode(Uint8List data, {String url = DEFAULT_URL}) {
-    return DataBundle(data, url, contentType: webfBc1ContentType);
+  static MercuryBundle fromBytecode(Uint8List data, {String url = DEFAULT_URL}) {
+    return DataBundle(data, url, contentType: mercuryBc1ContentType);
   }
 
   bool get isHTML => contentType.mimeType == ContentType.html.mimeType;
@@ -166,7 +166,7 @@ abstract class WebFBundle {
 }
 
 // The bundle that output input data.
-class DataBundle extends WebFBundle {
+class DataBundle extends MercuryBundle {
   DataBundle(Uint8List data, String url, {ContentType? contentType}) : super(url) {
     this.data = data;
     this.contentType = contentType ?? ContentType.binary;
@@ -186,7 +186,7 @@ class DataBundle extends WebFBundle {
 }
 
 // The bundle that source from http or https.
-class NetworkBundle extends WebFBundle {
+class NetworkBundle extends MercuryBundle {
   // Do not access this field directly; use [_httpClient] instead.
   static final HttpClient _sharedHttpClient = HttpClient()
     ..userAgent = NavigatorModule.getUserAgent();
@@ -204,7 +204,7 @@ class NetworkBundle extends WebFBundle {
     request.headers.set('Accept', _acceptHeader());
     additionalHttpHeaders?.forEach(request.headers.set);
     if (contextId != null) {
-      WebFHttpOverrides.setContextHeader(request.headers, contextId);
+      MercuryHttpOverrides.setContextHeader(request.headers, contextId);
     }
 
     final HttpClientResponse response = await request.close();
@@ -215,7 +215,7 @@ class NetworkBundle extends WebFBundle {
       ]);
     Uint8List bytes = await consolidateHttpClientResponseBytes(response);
 
-    // To maintain compatibility with older versions of WebF, which save Gzip content in caches, we should check the bytes
+    // To maintain compatibility with older versions of Mercury, which save Gzip content in caches, we should check the bytes
     // and decode them if they are in gzip format.
     if (isGzip(bytes)) {
       bytes = Uint8List.fromList(gzip.decoder.convert(bytes));
@@ -231,11 +231,11 @@ class NetworkBundle extends WebFBundle {
   }
 }
 
-class AssetsBundle extends WebFBundle with _ExtensionContentTypeResolver {
+class AssetsBundle extends MercuryBundle with _ExtensionContentTypeResolver {
   AssetsBundle(String url) : super(url);
 
   @override
-  Future<WebFBundle> resolve(int? contextId) async {
+  Future<MercuryBundle> resolve(int? contextId) async {
     super.resolve(contextId);
     final Uri? _resolvedUri = resolvedUri;
     if (_resolvedUri != null) {
@@ -263,11 +263,11 @@ class AssetsBundle extends WebFBundle with _ExtensionContentTypeResolver {
 }
 
 /// The bundle that source from local io.
-class FileBundle extends WebFBundle with _ExtensionContentTypeResolver {
+class FileBundle extends MercuryBundle with _ExtensionContentTypeResolver {
   FileBundle(String url) : super(url);
 
   @override
-  Future<WebFBundle> resolve(int? contextId) async {
+  Future<MercuryBundle> resolve(int? contextId) async {
     super.resolve(contextId);
 
     Uri uri = _uri!;
@@ -283,9 +283,9 @@ class FileBundle extends WebFBundle with _ExtensionContentTypeResolver {
   }
 }
 
-/// [_ExtensionContentTypeResolver] is useful for [WebFBundle] to determine
+/// [_ExtensionContentTypeResolver] is useful for [MercuryBundle] to determine
 /// content-type by uri's extension.
-mixin _ExtensionContentTypeResolver on WebFBundle {
+mixin _ExtensionContentTypeResolver on MercuryBundle {
   ContentType? _contentType;
 
   @override
@@ -297,7 +297,7 @@ mixin _ExtensionContentTypeResolver on WebFBundle {
     } else if (_isUriExt(uri, '.html')) {
       return ContentType.html;
     } else if (_isSupportedBytecode('', uri)) {
-      return webfBc1ContentType;
+      return mercuryBc1ContentType;
     } else if (_isUriExt(uri, '.css')) {
       return _cssContentType;
     }

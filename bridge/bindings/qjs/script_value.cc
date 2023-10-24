@@ -19,7 +19,7 @@
 #include <Windows.h>
 #endif
 
-namespace webf {
+namespace mercury {
 
 static JSValue FromNativeValue(ExecutingContext* context,
                                const NativeValue& native_value,
@@ -273,4 +273,4 @@ void ScriptValue::Trace(GCVisitor* visitor) const {
   visitor->TraceValue(value_);
 }
 
-}  // namespace webf
+}  // namespace mercury

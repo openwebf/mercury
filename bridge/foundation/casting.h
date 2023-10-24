@@ -38,7 +38,7 @@
 #include <cassert>
 #include <type_traits>
 
-namespace webf {
+namespace mercury {
 
 // Helpers for downcasting in a class hierarchy.
 //
@@ -171,6 +171,6 @@ Derived* DynamicTo(Base& from) {
   return IsA<Derived>(from) ? &To<Derived>(from) : nullptr;
 }
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_FOUNDATION_CASTING_H_

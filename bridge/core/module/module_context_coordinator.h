@@ -11,7 +11,7 @@
 #include "module_callback.h"
 #include "module_manager.h"
 
-namespace webf {
+namespace mercury {
 
 class ModuleListener;
 class ModuleContext;
@@ -25,6 +25,6 @@ class ModuleContextCoordinator final {
   friend ModuleListener;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_MODULE_CALLBACK_COORDINATOR_H

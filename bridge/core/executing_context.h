@@ -30,7 +30,7 @@
 #include "frame/module_listener_container.h"
 #include "script_state.h"
 
-namespace webf {
+namespace mercury {
 
 struct NativeByteCode {
   uint8_t* bytes;
@@ -51,7 +51,7 @@ using JSExceptionHandler = std::function<void(ExecutingContext* context, const c
 bool isContextValid(int32_t contextId);
 
 // An environment in which script can execute. This class exposes the common
-// properties of script execution environments on the webf.
+// properties of script execution environments on the mercury.
 // Window : Document : ExecutionContext = 1 : 1 : 1 at any point in time.
 class ExecutingContext {
  public:
@@ -102,10 +102,10 @@ class ExecutingContext {
   // not be used after the ExecutionContext is destroyed.
   DOMTimerCoordinator* Timers();
 
-  // Gets the ModuleListeners which registered by `webf.addModuleListener API`.
+  // Gets the ModuleListeners which registered by `mercury.addModuleListener API`.
   ModuleListenerContainer* ModuleListeners();
 
-  // Gets the ModuleCallbacks which from the 4th parameter of `webf.invokeModule` function.
+  // Gets the ModuleCallbacks which from the 4th parameter of `mercury.invokeModule` function.
   ModuleContextCoordinator* ModuleContexts();
 
   // Get current script state.
@@ -117,7 +117,7 @@ class ExecutingContext {
   void ClearMutationScope();
 
   FORCE_INLINE Document* document() const { return document_; };
-  FORCE_INLINE Window* window() const { return window_; }
+  FORCE_INLINE Window* global() const { return global_; }
   FORCE_INLINE DartIsolateContext* dartIsolateContext() const { return dart_isolate_context_; };
   FORCE_INLINE Performance* performance() const { return performance_; }
   FORCE_INLINE UICommandBuffer* uiCommandBuffer() { return &ui_command_buffer_; };
@@ -140,9 +140,9 @@ class ExecutingContext {
   static void DispatchGlobalRejectionHandledEvent(ExecutingContext* context, JSValueConst promise, JSValueConst error);
   static void DispatchGlobalErrorEvent(ExecutingContext* context, JSValueConst error);
 
-  // Bytecodes which registered by webf plugins.
+  // Bytecodes which registered by mercury plugins.
   static std::unordered_map<std::string, NativeByteCode> plugin_byte_code;
-  // Raw string codes which registered by webf plugins.
+  // Raw string codes which registered by mercury plugins.
   static std::unordered_map<std::string, std::string> plugin_string_code;
 
  private:
@@ -180,7 +180,7 @@ class ExecutingContext {
   void* owner_;
   JSValue global_object_{JS_NULL};
   Document* document_{nullptr};
-  Window* window_{nullptr};
+  Window* global_{nullptr};
   Performance* performance_{nullptr};
   DOMTimerCoordinator timers_;
   ModuleListenerContainer module_listener_container_;
@@ -193,7 +193,7 @@ class ExecutingContext {
 };
 
 class ObjectProperty {
-  WEBF_DISALLOW_COPY_ASSIGN_AND_MOVE(ObjectProperty);
+  MERCURY_DISALLOW_COPY_ASSIGN_AND_MOVE(ObjectProperty);
 
  public:
   ObjectProperty() = delete;
@@ -210,6 +210,6 @@ class ObjectProperty {
   JSValue m_value{JS_NULL};
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_JS_CONTEXT_H

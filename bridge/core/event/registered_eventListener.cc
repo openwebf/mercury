@@ -6,7 +6,7 @@
 #include "event.h"
 #include "qjs_add_event_listener_options.h"
 
-namespace webf {
+namespace mercury {
 
 RegisteredEventListener::RegisteredEventListener() = default;
 
@@ -62,4 +62,4 @@ bool operator==(const RegisteredEventListener& lhs, const RegisteredEventListene
   return lhs.Callback()->Matches(*rhs.Callback()) && lhs.Capture() == rhs.Capture();
 }
 
-}  // namespace webf
+}  // namespace mercury

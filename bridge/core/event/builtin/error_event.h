@@ -10,7 +10,7 @@
 #include "core/dom/events/event.h"
 #include "qjs_error_event_init.h"
 
-namespace webf {
+namespace mercury {
 
 class ErrorEvent : public Event {
   DEFINE_WRAPPERTYPEINFO();
@@ -55,6 +55,6 @@ struct DowncastTraits<ErrorEvent> {
   static bool AllowFrom(const Event& event) { return event.IsErrorEvent(); }
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_CORE_DOM_EVENTS_ERROR_EVENT_H_

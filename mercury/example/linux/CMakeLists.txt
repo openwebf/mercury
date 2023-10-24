@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(runner LANGUAGES CXX)
 
-set(BINARY_NAME "webf_example")
-set(APPLICATION_ID "com.example.webf")
+set(BINARY_NAME "mercury_example")
+set(APPLICATION_ID "com.example.mercury")
 
 cmake_policy(SET CMP0063 NEW)
 

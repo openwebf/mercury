@@ -1,2 +1,2 @@
-window.B = 'B';
-window.bundleBLoadTime = Date.now();
+global.B = 'B';
+global.bundleBLoadTime = Date.now();

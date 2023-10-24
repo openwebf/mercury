@@ -6,19 +6,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-String? _webfTemporaryPath;
-Future<String> getWebFTemporaryPath() async {
-  if (_webfTemporaryPath == null) {
-    String? temporaryDirectory = await getWebFMethodChannel().invokeMethod<String>('getTemporaryDirectory');
+String? _mercuryTemporaryPath;
+Future<String> getMercuryTemporaryPath() async {
+  if (_mercuryTemporaryPath == null) {
+    String? temporaryDirectory = await getMercuryMethodChannel().invokeMethod<String>('getTemporaryDirectory');
     if (temporaryDirectory == null) {
       throw FlutterError('Can\'t get temporary directory from native side.');
     }
-    _webfTemporaryPath = temporaryDirectory;
+    _mercuryTemporaryPath = temporaryDirectory;
   }
-  return _webfTemporaryPath!;
+  return _mercuryTemporaryPath!;
 }
 
-MethodChannel _methodChannel = const MethodChannel('webf');
-MethodChannel getWebFMethodChannel() {
+MethodChannel _methodChannel = const MethodChannel('mercury');
+MethodChannel getMercuryMethodChannel() {
   return _methodChannel;
 }

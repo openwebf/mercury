@@ -8,10 +8,10 @@
 #include "dom_timer.h"
 
 #if UNIT_TEST
-#include "webf_test_env.h"
+#include "mercury_test_env.h"
 #endif
 
-namespace webf {
+namespace mercury {
 
 void DOMTimerCoordinator::installNewTimer(ExecutingContext* context,
                                           int32_t timer_id,
@@ -48,4 +48,4 @@ std::shared_ptr<DOMTimer> DOMTimerCoordinator::getTimerById(int32_t timer_id) {
   return active_timers_[timer_id];
 }
 
-}  // namespace webf
+}  // namespace mercury

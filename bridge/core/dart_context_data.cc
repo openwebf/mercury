@@ -4,7 +4,7 @@
 
 #include "dart_context_data.h"
 
-namespace webf {
+namespace mercury {
 
 const WidgetElementShape* DartContextData::GetWidgetElementShape(const AtomicString& key) {
   return widget_element_shapes_[key].get();
@@ -18,4 +18,4 @@ void DartContextData::SetWidgetElementShape(const AtomicString& key, const std::
   widget_element_shapes_[key] = shape;
 }
 
-}  // namespace webf
+}  // namespace mercury

@@ -8,9 +8,9 @@
 #include "built_in_string.h"
 #include "foundation/logging.h"
 
-namespace webf {
+namespace mercury {
 
-void Console::__webf_print__(ExecutingContext* context,
+void Console::__mercury_print__(ExecutingContext* context,
                              const AtomicString& log,
                              const AtomicString& level,
                              ExceptionState& exception) {
@@ -21,15 +21,15 @@ void Console::__webf_print__(ExecutingContext* context,
            nullptr);
 }
 
-void Console::__webf_print__(ExecutingContext* context, const AtomicString& log, ExceptionState& exception_state) {
+void Console::__mercury_print__(ExecutingContext* context, const AtomicString& log, ExceptionState& exception_state) {
   std::stringstream stream;
   std::string buffer = log.ToStdString(context->ctx());
   stream << buffer;
   printLog(context, stream, "info", nullptr);
 }
 
-bool Console::__webf_is_proxy__(ExecutingContext* context, const ScriptValue& log, ExceptionState& exception_state) {
+bool Console::__mercury_is_proxy__(ExecutingContext* context, const ScriptValue& log, ExceptionState& exception_state) {
   return JS_IsProxy(log.QJSValue());
 }
 
-}  // namespace webf
+}  // namespace mercury

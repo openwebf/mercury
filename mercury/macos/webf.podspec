@@ -1,13 +1,13 @@
 #
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
-# Run `pod lib lint webf.podspec' to validate before publishing.
+# Run `pod lib lint mercury.podspec' to validate before publishing.
 #
 Pod::Spec.new do |s|
-  s.name             = 'webf'
+  s.name             = 'mercury'
   s.version          = '0.1.0'
-  s.summary          = 'A W3C standard compliant Web rendering engine based on Flutter.'
+  s.summary          = 'A W3C standard compliant library with integrated JavaScript engine & extension utils based on Flutter.'
   s.description      = <<-DESC
-A W3C standard compliant Web rendering engine based on Flutter..
+  Mercury is a W3C standards-compliant library with integrated JavaScript engine & extension utils based on Flutter, allowing JavaScript to run natively within Flutter.
                        DESC
   s.homepage         = 'https://openwebf.com'
   s.license          = { :file => '../LICENSE' }
@@ -16,7 +16,7 @@ A W3C standard compliant Web rendering engine based on Flutter..
   s.source_files     = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'FlutterMacOS'
-  s.vendored_libraries = 'libwebf.dylib', 'libquickjs.dylib'
+  s.vendored_libraries = 'libmercury.dylib', 'libquickjs.dylib'
   s.prepare_command = 'bash prepare.sh'
 
   s.platform = :osx, '10.11'

@@ -13,10 +13,10 @@
 #include "event_type_names.h"
 #include "foundation/logging.h"
 #include "polyfill.h"
-#include "qjs_window.h"
+#include "qjs_global.h"
 #include "timing/performance.h"
 
-namespace webf {
+namespace mercury {
 
 static std::atomic<int32_t> context_unique_id{0};
 
@@ -64,7 +64,7 @@ ExecutingContext::ExecutingContext(DartIsolateContext* dart_isolate_context,
   // Install document.
   InstallDocument();
 
-  // Binding global object and window.
+  // Binding global object and global.
   InstallGlobal();
 
   // Install performance
@@ -320,7 +320,7 @@ static void DispatchPromiseRejectionEvent(const AtomicString& event_type,
   event_init->setReason(Converter<IDLAny>::FromValue(context->ctx(), reason, exception_state));
   auto event = PromiseRejectionEvent::Create(context, event_type, event_init, exception_state);
 
-  context->window()->dispatchEvent(event, exception_state);
+  context->global()->dispatchEvent(event, exception_state);
   if (exception_state.HasException()) {
     context->ReportError(reason);
   }
@@ -345,7 +345,7 @@ void ExecutingContext::DispatchErrorEventInterval(ErrorEvent* error_event) {
   assert(!in_dispatch_error_event_);
   in_dispatch_error_event_ = true;
   ExceptionState exception_state;
-  window_->dispatchEvent(error_event, exception_state);
+  global_->dispatchEvent(error_event, exception_state);
   in_dispatch_error_event_ = false;
 
   if (exception_state.HasException()) {
@@ -430,9 +430,9 @@ void ExecutingContext::InstallPerformance() {
 
 void ExecutingContext::InstallGlobal() {
   MemberMutationScope mutation_scope{this};
-  window_ = MakeGarbageCollected<Window>(this);
-  JS_SetPrototype(ctx(), Global(), window_->ToQuickJSUnsafe());
-  JS_SetOpaque(Global(), window_);
+  global_ = MakeGarbageCollected<Window>(this);
+  JS_SetPrototype(ctx(), Global(), global_->ToQuickJSUnsafe());
+  JS_SetOpaque(Global(), global_);
 }
 
 void ExecutingContext::RegisterActiveScriptWrappers(ScriptWrappable* script_wrappable) {
@@ -450,4 +450,4 @@ bool isContextValid(int32_t contextId) {
   return valid_contexts[contextId];
 }
 
-}  // namespace webf
+}  // namespace mercury

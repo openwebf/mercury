@@ -11,7 +11,7 @@
 #include "page.h"
 #include "svg_element_factory.h"
 
-namespace webf {
+namespace mercury {
 
 thread_local std::set<DartWireContext*> alive_wires;
 
@@ -94,7 +94,7 @@ void DartIsolateContext::AddNewPage(std::unique_ptr<WebFPage>&& new_page) {
   pages_.insert(std::move(new_page));
 }
 
-void DartIsolateContext::RemovePage(const webf::WebFPage* page) {
+void DartIsolateContext::RemovePage(const mercury::WebFPage* page) {
   for (auto it = pages_.begin(); it != pages_.end(); ++it) {
     if (it->get() == page) {
       pages_.erase(it);
@@ -103,4 +103,4 @@ void DartIsolateContext::RemovePage(const webf::WebFPage* page) {
   }
 }
 
-}  // namespace webf
+}  // namespace mercury

@@ -8,7 +8,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:test/test.dart';
-import 'package:webf/foundation.dart';
+import 'package:mercury/foundation.dart';
 
 import '../../local_http_server.dart';
 
@@ -23,7 +23,7 @@ void main() {
     test('Simple http request with expires', () async {
       var request =
           await httpClient.openUrl('GET', server.getUri('json_with_content_length_expires_etag_last_modified'));
-      WebFHttpOverrides.setContextHeader(request.headers, contextId);
+      MercuryHttpOverrides.setContextHeader(request.headers, contextId);
       var response = await request.close();
       expect(response.statusCode, 200);
       expect(response.headers.value(HttpHeaders.expiresHeader), 'Mon, 16 Aug 2221 10:17:45 GMT');
@@ -38,7 +38,7 @@ void main() {
       // second request
       var requestSecond =
           await httpClient.openUrl('GET', server.getUri('json_with_content_length_expires_etag_last_modified'));
-      WebFHttpOverrides.setContextHeader(requestSecond.headers, contextId);
+      MercuryHttpOverrides.setContextHeader(requestSecond.headers, contextId);
       var responseSecond = await requestSecond.close();
       expect(responseSecond.headers.value('cache-hits'), 'HIT');
     });
@@ -46,7 +46,7 @@ void main() {
     test('Negotiation cache last-modified', () async {
       // First request to save cache.
       var req = await httpClient.openUrl('GET', server.getUri('plain_text_with_content_length_and_last_modified'));
-      WebFHttpOverrides.setContextHeader(req.headers, contextId);
+      MercuryHttpOverrides.setContextHeader(req.headers, contextId);
       req.headers.ifModifiedSince = HttpDate.parse('Sun, 15 Mar 2020 11:32:20 GMT');
       var res = await req.close();
       expect(String.fromCharCodes(await consolidateHttpClientResponseBytes(res)), 'CachedData');
@@ -63,14 +63,14 @@ void main() {
     test('Update cache last-modified', () async {
       // First request to save cache.
       var req = await httpClient.openUrl('GET', server.getUri('plain_text_with_current_time_last_modified'));
-      WebFHttpOverrides.setContextHeader(req.headers, contextId);
+      MercuryHttpOverrides.setContextHeader(req.headers, contextId);
       req.headers.ifModifiedSince = HttpDate.parse('Sun, 15 Mar 2020 11:32:20 GMT');
       var res = await req.close();
       expect(String.fromCharCodes(await consolidateHttpClientResponseBytes(res)), 'CachedData');
 
       // Second request and updating cache.
       var req2 = await httpClient.openUrl('GET', server.getUri('plain_text_with_current_time_last_modified'));
-      WebFHttpOverrides.setContextHeader(req2.headers, contextId);
+      MercuryHttpOverrides.setContextHeader(req2.headers, contextId);
       var res2 = await req2.close();
 
       // Must miss cache, and update cache.
@@ -89,7 +89,7 @@ void main() {
     test('Negotiation cache eTag', () async {
       // First request to save cache.
       var req = await httpClient.openUrl('GET', server.getUri('plain_text_with_etag_and_content_length'));
-      WebFHttpOverrides.setContextHeader(req.headers, contextId);
+      MercuryHttpOverrides.setContextHeader(req.headers, contextId);
       req.headers.set(HttpHeaders.ifNoneMatchHeader, '"foo"');
 
       var res = await req.close();
@@ -106,7 +106,7 @@ void main() {
       HttpCacheController.mode = HttpCacheMode.NO_CACHE;
       var request =
           await httpClient.openUrl('GET', server.getUri('json_with_content_length_expires_etag_last_modified'));
-      WebFHttpOverrides.setContextHeader(request.headers, contextId);
+      MercuryHttpOverrides.setContextHeader(request.headers, contextId);
       var response = await request.close();
       expect(response.statusCode, 200);
       expect(response.headers.value(HttpHeaders.expiresHeader), 'Mon, 16 Aug 2221 10:17:45 GMT');
@@ -121,7 +121,7 @@ void main() {
       // second request
       var requestSecond =
           await httpClient.openUrl('GET', server.getUri('json_with_content_length_expires_etag_last_modified'));
-      WebFHttpOverrides.setContextHeader(requestSecond.headers, contextId);
+      MercuryHttpOverrides.setContextHeader(requestSecond.headers, contextId);
       var responseSecond = await requestSecond.close();
 
       // Note: This line is different.
@@ -132,7 +132,7 @@ void main() {
     test('HttpCacheMode.CACHE_ONLY', () async {
       HttpCacheController.mode = HttpCacheMode.CACHE_ONLY;
       var request = await httpClient.openUrl('GET', server.getUri('network'));
-      WebFHttpOverrides.setContextHeader(request.headers, contextId);
+      MercuryHttpOverrides.setContextHeader(request.headers, contextId);
 
       var error;
       try {
@@ -152,7 +152,7 @@ void main() {
 
       // Local request to save cache.
       var req = await httpClient.openUrl('GET', uri);
-      WebFHttpOverrides.setContextHeader(req.headers, contextId);
+      MercuryHttpOverrides.setContextHeader(req.headers, contextId);
       var res = await req.close();
       Uint8List bytes = await consolidateHttpClientResponseBytes(res);
       expect(bytes.lengthInBytes, res.contentLength);
@@ -174,7 +174,7 @@ void main() {
     test('Cache should contain response headers.', () async {
       // First request to save cache.
       var req = await httpClient.openUrl('GET', server.getUri('plain_text_with_etag_and_content_length'));
-      WebFHttpOverrides.setContextHeader(req.headers, contextId);
+      MercuryHttpOverrides.setContextHeader(req.headers, contextId);
       var res = await req.close();
       expect(String.fromCharCodes(await consolidateHttpClientResponseBytes(res)), 'CachedData');
 
@@ -200,7 +200,7 @@ void main() {
 
     test('Will ignore set-cookie header in cache', () async {
       var req = await httpClient.openUrl('GET', server.getUri('text_with_set_cookie'));
-      WebFHttpOverrides.setContextHeader(req.headers, contextId);
+      MercuryHttpOverrides.setContextHeader(req.headers, contextId);
       var res = await req.close();
       Uint8List bytes = await consolidateHttpClientResponseBytes(res);
       expect(bytes.lengthInBytes, res.contentLength);
@@ -216,7 +216,7 @@ void main() {
     test('Handle gzipped content', () async {
       // First request to save cache.
       var req = await httpClient.openUrl('GET', server.getUri('js_gzipped'));
-      WebFHttpOverrides.setContextHeader(req.headers, contextId);
+      MercuryHttpOverrides.setContextHeader(req.headers, contextId);
       var res = await req.close();
       expect(String.fromCharCodes(await consolidateHttpClientResponseBytes(res))[0], '!');
 

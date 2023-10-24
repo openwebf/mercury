@@ -3,7 +3,7 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
-import 'package:webf/foundation.dart';
+import 'package:mercury/foundation.dart';
 import 'package:test/test.dart';
 
 void main() {

@@ -1,4 +1,4 @@
-name: webf
+name: mercury
 description: W3C standards-compliant web rendering engine based on Flutter, allowing web applications to run natively on Flutter.
 version: 0.16.0-beta.1
 homepage: https://openwebf.com
@@ -36,13 +36,13 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.openwebf.webf
-        pluginClass: WebFPlugin
+        package: com.openwebf.mercury
+        pluginClass: MercuryPlugin
       ios:
-        pluginClass: WebFPlugin
+        pluginClass: MercuryPlugin
       macos:
-        pluginClass: WebFPlugin
+        pluginClass: MercuryPlugin
       linux:
-        pluginClass: WebfPlugin
+        pluginClass: MercuryPlugin
       windows:
-        pluginClass: WebfPlugin
+        pluginClass: MercuryPlugin

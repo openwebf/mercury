@@ -9,7 +9,7 @@
 #include <quickjs/quickjs.h>
 #include <initializer_list>
 
-namespace webf {
+namespace mercury {
 
 class ExecutingContext;
 
@@ -49,6 +49,6 @@ class MemberInstaller {
   static void InstallFunctions(ExecutingContext* context, JSValue root, std::initializer_list<FunctionConfig> config);
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_MEMBER_INSTALLER_H

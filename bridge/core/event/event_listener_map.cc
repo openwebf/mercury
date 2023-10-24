@@ -4,7 +4,7 @@
  */
 #include "event_listener_map.h"
 
-namespace webf {
+namespace mercury {
 
 EventListenerMap::EventListenerMap() {}
 
@@ -128,4 +128,4 @@ void EventListenerMap::Trace(GCVisitor* visitor) const {
   }
 }
 
-}  // namespace webf
+}  // namespace mercury

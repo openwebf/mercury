@@ -8,7 +8,7 @@
 
 #include "task_queue.h"
 
-namespace webf {
+namespace mercury {
 
 class InspectorTaskQueue;
 using Task = void (*)(void*);
@@ -34,6 +34,6 @@ class InspectorTaskQueue : public TaskQueue {
   static fml::RefPtr<InspectorTaskQueue> instance_;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_INSPECTOR_TASK_QUEUE_H

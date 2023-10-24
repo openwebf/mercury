@@ -7,19 +7,19 @@
 #include "core/dom/events/event.h"
 #include "event_type_names.h"
 #include "gtest/gtest.h"
-#include "webf_test_env.h"
+#include "mercury_test_env.h"
 
-using namespace webf;
+using namespace mercury;
 
 TEST(EventTarget, addEventListener) {
   bool static errorCalled = false;
   bool static logCalled = false;
-  webf::WebFPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
+  mercury::MercuryPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
     EXPECT_STREQ(message.c_str(), "1234");
     logCalled = true;
   };
   auto env = TEST_init([](int32_t contextId, const char* errmsg) {
-    WEBF_LOG(VERBOSE) << errmsg;
+    MERCURY_LOG(VERBOSE) << errmsg;
     errorCalled = true;
   });
   auto context = env->page()->GetExecutingContext();
@@ -34,9 +34,9 @@ TEST(EventTarget, addEventListener) {
 TEST(EventTarget, removeEventListener) {
   bool static errorCalled = false;
   bool static logCalled = false;
-  webf::WebFPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) { logCalled = true; };
+  mercury::MercuryPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) { logCalled = true; };
   auto env = TEST_init([](int32_t contextId, const char* errmsg) {
-    WEBF_LOG(VERBOSE) << errmsg;
+    MERCURY_LOG(VERBOSE) << errmsg;
     errorCalled = true;
   });
   auto context = env->page()->GetExecutingContext();
@@ -51,12 +51,12 @@ TEST(EventTarget, removeEventListener) {
 TEST(EventTarget, setNoEventTargetProperties) {
   bool static errorCalled = false;
   bool static logCalled = false;
-  webf::WebFPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
+  mercury::MercuryPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
     logCalled = true;
     EXPECT_STREQ(message.c_str(), "{name: 1}");
   };
   auto env = TEST_init([](int32_t contextId, const char* errmsg) {
-    WEBF_LOG(VERBOSE) << errmsg;
+    MERCURY_LOG(VERBOSE) << errmsg;
     errorCalled = true;
   });
 
@@ -71,12 +71,12 @@ TEST(EventTarget, setNoEventTargetProperties) {
 TEST(EventTarget, propertyEventHandler) {
   bool static errorCalled = false;
   bool static logCalled = false;
-  webf::WebFPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
+  mercury::MercuryPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
     logCalled = true;
     EXPECT_STREQ(message.c_str(), "ƒ () 1234");
   };
   auto env = TEST_init([](int32_t contextId, const char* errmsg) {
-    WEBF_LOG(VERBOSE) << errmsg;
+    MERCURY_LOG(VERBOSE) << errmsg;
     errorCalled = true;
   });
   auto context = env->page()->GetExecutingContext();
@@ -94,9 +94,9 @@ TEST(EventTarget, propertyEventHandler) {
 TEST(EventTarget, overwritePropertyEventHandler) {
   bool static errorCalled = false;
   bool static logCalled = false;
-  webf::WebFPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {};
+  mercury::MercuryPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {};
   auto env = TEST_init([](int32_t contextId, const char* errmsg) {
-    WEBF_LOG(VERBOSE) << errmsg;
+    MERCURY_LOG(VERBOSE) << errmsg;
     errorCalled = true;
   });
   auto context = env->page()->GetExecutingContext();
@@ -112,18 +112,18 @@ TEST(EventTarget, overwritePropertyEventHandler) {
 TEST(EventTarget, propertyEventOnWindow) {
   bool static errorCalled = false;
   bool static logCalled = false;
-  webf::WebFPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
+  mercury::MercuryPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
     logCalled = true;
     EXPECT_STREQ(message.c_str(), "1234");
   };
   auto env = TEST_init([](int32_t contextId, const char* errmsg) {
-    WEBF_LOG(VERBOSE) << errmsg;
+    MERCURY_LOG(VERBOSE) << errmsg;
     errorCalled = true;
   });
   auto context = env->page()->GetExecutingContext();
   const char* code =
-      "window.onclick = function() { console.log(1234); };"
-      "window.dispatchEvent(new Event('click'));";
+      "global.onclick = function() { console.log(1234); };"
+      "global.dispatchEvent(new Event('click'));";
   env->page()->evaluateScript(code, strlen(code), "vm://", 0);
   EXPECT_EQ(errorCalled, false);
   EXPECT_EQ(logCalled, true);
@@ -132,12 +132,12 @@ TEST(EventTarget, propertyEventOnWindow) {
 TEST(EventTarget, asyncFunctionCallback) {
   bool static errorCalled = false;
   bool static logCalled = false;
-  webf::WebFPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
+  mercury::MercuryPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
     logCalled = true;
     EXPECT_STREQ(message.c_str(), "done");
   };
   auto env = TEST_init([](int32_t contextId, const char* errmsg) {
-    WEBF_LOG(VERBOSE) << errmsg;
+    MERCURY_LOG(VERBOSE) << errmsg;
     errorCalled = true;
   });
   auto context = env->page()->GetExecutingContext();
@@ -173,9 +173,9 @@ TEST(EventTarget, asyncFunctionCallback) {
 TEST(EventTarget, ClassInheritEventTarget) {
   bool static errorCalled = false;
   bool static logCalled = false;
-  webf::WebFPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) { logCalled = true; };
+  mercury::MercuryPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) { logCalled = true; };
   auto env = TEST_init([](int32_t contextId, const char* errmsg) {
-    WEBF_LOG(VERBOSE) << errmsg;
+    MERCURY_LOG(VERBOSE) << errmsg;
     errorCalled = true;
   });
   auto context = env->page()->GetExecutingContext();
@@ -222,7 +222,7 @@ TEST(EventTarget, wontLeakWithStringProperty) {
 
 TEST(EventTarget, globalBindListener) {
   bool static logCalled = false;
-  webf::WebFPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
+  mercury::MercuryPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
     logCalled = true;
     EXPECT_STREQ(message.c_str(), "clicked");
   };
@@ -235,7 +235,7 @@ TEST(EventTarget, globalBindListener) {
 TEST(EventTarget, shouldKeepAtom) {
   auto env = TEST_init();
   bool static logCalled = false;
-  webf::WebFPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
+  mercury::MercuryPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
     logCalled = true;
     EXPECT_STREQ(message.c_str(), "2");
   };
@@ -256,7 +256,7 @@ TEST(EventTarget, shouldKeepAtom) {
 TEST(EventTarget, shouldWorksWithProxy) {
   auto env = TEST_init();
   bool static logCalled = false;
-  webf::WebFPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
+  mercury::MercuryPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
     logCalled = true;
     EXPECT_STREQ(message.c_str(), "11");
   };

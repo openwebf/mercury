@@ -2,8 +2,8 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
-#ifndef WEBF_BINDINGS_QJS_CPPGC_TRACE_IF_NEEDED_H_
-#define WEBF_BINDINGS_QJS_CPPGC_TRACE_IF_NEEDED_H_
+#ifndef MERCURY_BINDINGS_QJS_CPPGC_TRACE_IF_NEEDED_H_
+#define MERCURY_BINDINGS_QJS_CPPGC_TRACE_IF_NEEDED_H_
 
 // clang-format off
 #include "bindings/qjs/atomic_string.h"
@@ -17,7 +17,7 @@
 #include "member.h"
 // clang-format on
 
-namespace webf {
+namespace mercury {
 
 template <typename T, typename SFINAEHelper = void>
 struct TraceIfNeeded {
@@ -76,6 +76,6 @@ struct TraceIfNeeded<IDLAny> : TraceIfNeededBase<IDLAny> {
   static void Trace(GCVisitor* visitor, const ImplType& value) { value.Trace(visitor); }
 };
 
-}  // namespace webf
+}  // namespace mercury
 
-#endif  // WEBF_BINDINGS_QJS_CPPGC_TRACE_IF_NEEDED_H_
+#endif  // MERCURY_BINDINGS_QJS_CPPGC_TRACE_IF_NEEDED_H_

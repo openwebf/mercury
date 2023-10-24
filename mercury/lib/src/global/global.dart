@@ -4,12 +4,12 @@
  */
 import 'dart:ui';
 
-import 'package:webf/bridge.dart';
-import 'package:webf/dom.dart';
-import 'package:webf/foundation.dart';
-import 'package:webf/rendering.dart';
-import 'package:webf/module.dart';
-import 'package:webf/src/css/computed_style_declaration.dart';
+import 'package:mercury/bridge.dart';
+import 'package:mercury/dom.dart';
+import 'package:mercury/foundation.dart';
+import 'package:mercury/rendering.dart';
+import 'package:mercury/module.dart';
+import 'package:mercury/src/css/computed_style_declaration.dart';
 
 const String WINDOW = 'WINDOW';
 
@@ -49,7 +49,7 @@ class Window extends EventTarget {
 
   void open(String url) {
     String? sourceUrl = document.controller.view.rootController.url;
-    document.controller.view.handleNavigationAction(sourceUrl, url, WebFNavigationType.navigate);
+    document.controller.view.handleNavigationAction(sourceUrl, url, MercuryNavigationType.navigate);
   }
 
   ComputedCSSStyleDeclaration getComputedStyle(Element element) {

@@ -1,6 +1,6 @@
 #import <FlutterMacOS/FlutterMacOS.h>
 
-@interface WebFPlugin : NSObject<FlutterPlugin>
+@interface MercuryPlugin : NSObject<FlutterPlugin>
 
 @property NSObject<FlutterPluginRegistrar> *registrar;
 @property FlutterMethodChannel *channel;

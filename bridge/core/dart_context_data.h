@@ -2,14 +2,14 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
-#ifndef WEBF_CORE_DART_CONTEXT_DATA_H_
-#define WEBF_CORE_DART_CONTEXT_DATA_H_
+#ifndef MERCURY_CORE_DART_CONTEXT_DATA_H_
+#define MERCURY_CORE_DART_CONTEXT_DATA_H_
 
 #include <set>
 #include <unordered_map>
 #include "bindings/qjs/atomic_string.h"
 
-namespace webf {
+namespace mercury {
 
 struct WidgetElementShape {
   std::set<AtomicString> built_in_properties_;
@@ -31,6 +31,6 @@ class DartContextData {
   std::unordered_map<AtomicString, std::shared_ptr<WidgetElementShape>, AtomicString::KeyHasher> widget_element_shapes_;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
-#endif  // WEBF_CORE_DART_CONTEXT_DATA_H_
+#endif  // MERCURY_CORE_DART_CONTEXT_DATA_H_

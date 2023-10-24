@@ -5,19 +5,19 @@
 
 #include "event_target.h"
 #include "gtest/gtest.h"
-#include "webf_test_env.h"
+#include "mercury_test_env.h"
 
-using namespace webf;
+using namespace mercury;
 
 TEST(CustomEvent, instanceofEvent) {
   bool static errorCalled = false;
   bool static logCalled = false;
-  webf::WebFPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
+  mercury::WebFPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
     logCalled = true;
     EXPECT_STREQ(message.c_str(), "true");
   };
   auto env = TEST_init([](int32_t contextId, const char* errmsg) {
-    WEBF_LOG(VERBOSE) << errmsg;
+    MERCURY_LOG(VERBOSE) << errmsg;
     errorCalled = true;
   });
   auto context = env->page()->GetExecutingContext();

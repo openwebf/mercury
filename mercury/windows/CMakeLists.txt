@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.14)
-set(PROJECT_NAME "webf")
+set(PROJECT_NAME "mercury")
 project(${PROJECT_NAME} LANGUAGES CXX)
 
 # This value is used when generating builds using this plugin, so it must
 # not be changed
-set(PLUGIN_NAME "webf_plugin")
+set(PLUGIN_NAME "mercury_plugin")
 
 add_library(${PLUGIN_NAME} SHARED
-  "webf_plugin.cpp"
+  "mercury_plugin.cpp"
 )
 
 apply_standard_settings(${PLUGIN_NAME})
@@ -25,9 +25,9 @@ execute_process(
 )
 
 # List of absolute paths to libraries that should be bundled with the plugin
-set(webf_bundled_libraries
+set(mercury_bundled_libraries
   ${CMAKE_CURRENT_SOURCE_DIR}/pthreadVC2.dll
   ${CMAKE_CURRENT_SOURCE_DIR}/quickjs.dll
-  ${CMAKE_CURRENT_SOURCE_DIR}/webf.dll
+  ${CMAKE_CURRENT_SOURCE_DIR}/mercury.dll
   PARENT_SCOPE
 )

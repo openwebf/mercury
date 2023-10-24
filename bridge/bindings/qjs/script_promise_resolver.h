@@ -8,7 +8,7 @@
 #include "converter_impl.h"
 #include "to_quickjs.h"
 
-namespace webf {
+namespace mercury {
 
 class GCVisitor;
 
@@ -76,6 +76,6 @@ class ScriptPromiseResolver {
   JSValue reject_func_{JS_NULL};
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_BINDINGS_QJS_SCRIPT_PROMISE_RESOLVER_H_

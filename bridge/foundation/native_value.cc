@@ -7,7 +7,7 @@
 #include "bindings/qjs/script_value.h"
 #include "core/executing_context.h"
 
-namespace webf {
+namespace mercury {
 
 NativeValue Native_NewNull() {
 #ifdef _MSC_VER
@@ -142,4 +142,4 @@ NativeValue Native_NewJSON(JSContext* ctx, const ScriptValue& value, ExceptionSt
 #endif
 }
 
-}  // namespace webf
+}  // namespace mercury

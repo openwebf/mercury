@@ -6,7 +6,7 @@
 
 #include <utility>
 
-namespace webf {
+namespace mercury {
 
 std::shared_ptr<ModuleListener> ModuleListener::Create(const std::shared_ptr<QJSFunction>& function) {
   return std::make_shared<ModuleListener>(function);
@@ -18,4 +18,4 @@ const std::shared_ptr<QJSFunction>& ModuleListener::value() {
   return function_;
 }
 
-}  // namespace webf
+}  // namespace mercury

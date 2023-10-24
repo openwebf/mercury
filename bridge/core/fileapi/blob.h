@@ -14,7 +14,7 @@
 #include "blob_part.h"
 #include "blob_property_bag.h"
 
-namespace webf {
+namespace mercury {
 
 class Blob : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -76,6 +76,6 @@ class Blob : public ScriptWrappable {
   std::vector<uint8_t> _data;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_BLOB_H

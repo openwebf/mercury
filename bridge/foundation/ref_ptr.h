@@ -111,12 +111,12 @@ class RefPtr final {
   T* get() const { return ptr_; }
 
   T& operator*() const {
-    WEBF_CHECK(ptr_);
+    MERCURY_CHECK(ptr_);
     return *ptr_;
   }
 
   T* operator->() const {
-    WEBF_CHECK(ptr_);
+    MERCURY_CHECK(ptr_);
     return ptr_;
   }
 
@@ -193,7 +193,7 @@ class RefPtr final {
   friend RefPtr<T> AdoptRef<T>(T*);
 
   enum AdoptTag { ADOPT };
-  RefPtr(T* ptr, AdoptTag) : ptr_(ptr) { WEBF_CHECK(ptr_); }
+  RefPtr(T* ptr, AdoptTag) : ptr_(ptr) { MERCURY_CHECK(ptr_); }
 
   T* ptr_;
 };

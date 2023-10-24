@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-namespace webf {
+namespace mercury {
 
 class ExecutingContext;
 
@@ -31,6 +31,6 @@ class SourceLocation {
   unsigned column_number_;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_BINDINGS_QJS_SOURCE_LOCATION_H_

@@ -7,7 +7,7 @@
 #include "html_element_factory.h"
 #include "names_installer.h"
 
-namespace webf {
+namespace mercury {
 
 thread_local std::atomic<int32_t> runningContexts{0};
 
@@ -32,4 +32,4 @@ ScriptState::~ScriptState() {
 
   ctx_ = nullptr;
 }
-}  // namespace webf
+}  // namespace mercury

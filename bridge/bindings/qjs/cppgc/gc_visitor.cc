@@ -5,10 +5,10 @@
 #include "gc_visitor.h"
 #include "bindings/qjs/script_wrappable.h"
 
-namespace webf {
+namespace mercury {
 
 void GCVisitor::TraceValue(JSValue value) {
   JS_MarkValue(runtime_, value, markFunc_);
 }
 
-}  // namespace webf
+}  // namespace mercury

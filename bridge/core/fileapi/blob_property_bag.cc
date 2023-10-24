@@ -4,7 +4,7 @@
  */
 #include "blob_property_bag.h"
 
-namespace webf {
+namespace mercury {
 
 std::shared_ptr<BlobPropertyBag> BlobPropertyBag::Create(JSContext* ctx,
                                                          JSValue value,
@@ -27,4 +27,4 @@ void BlobPropertyBag::FillMemberFromQuickjsObject(JSContext* ctx, JSValue value,
   JS_FreeValue(ctx, typeValue);
 }
 
-}  // namespace webf
+}  // namespace mercury

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-namespace webf {
+namespace mercury {
 
 std::shared_ptr<ModuleCallback> ModuleCallback::Create(const std::shared_ptr<QJSFunction>& function) {
   return std::make_shared<ModuleCallback>(function);
@@ -18,4 +18,4 @@ std::shared_ptr<QJSFunction> ModuleCallback::value() {
   return function_;
 }
 
-}  // namespace webf
+}  // namespace mercury

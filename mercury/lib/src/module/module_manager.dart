@@ -2,8 +2,8 @@
  * Copyright (C) 2019-2022 The Kraken authors. All rights reserved.
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
-import 'package:webf/bridge.dart' as bridge;
-import 'package:webf/webf.dart';
+import 'package:mercury/bridge.dart' as bridge;
+import 'package:mercury/mercury.dart';
 import 'local_storage.dart';
 import 'session_storage.dart';
 import 'websocket.dart';
@@ -57,7 +57,7 @@ void _defineModule(ModuleCreator moduleCreator) {
 
 class ModuleManager {
   final int contextId;
-  final WebFController controller;
+  final MercuryController controller;
   final Map<String, BaseModule> _moduleMap = {};
   bool disposed = false;
 

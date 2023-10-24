@@ -12,7 +12,7 @@
 #include "qjs_scroll_to_options.h"
 #include "screen.h"
 
-namespace webf {
+namespace mercury {
 
 class Element;
 
@@ -28,7 +28,7 @@ class Window : public EventTargetWithInlineData {
 
   Screen* screen();
 
-  [[nodiscard]] const Window* window() const { return this; }
+  [[nodiscard]] const Window* global() const { return this; }
   [[nodiscard]] const Window* self() const { return this; }
   [[nodiscard]] const Window* parent() const { return this; }
 
@@ -56,11 +56,11 @@ class Window : public EventTargetWithInlineData {
   double requestAnimationFrame(const std::shared_ptr<QJSFunction>& callback, ExceptionState& exceptionState);
   void cancelAnimationFrame(double request_id, ExceptionState& exception_state);
 
-  bool IsWindowOrWorkerGlobalScope() const override;
+  bool IsGlobalOrWorkerScope() const override;
 
   void Trace(GCVisitor* visitor) const override;
 
-  // Override default ToQuickJS() to return Global object when access `window` property.
+  // Override default ToQuickJS() to return Global object when access `global` property.
   JSValue ToQuickJS() const override;
 
  private:
@@ -69,12 +69,12 @@ class Window : public EventTargetWithInlineData {
 
 template <>
 struct DowncastTraits<Window> {
-  static bool AllowFrom(const EventTarget& event_target) { return event_target.IsWindowOrWorkerGlobalScope(); }
+  static bool AllowFrom(const EventTarget& event_target) { return event_target.IsGlobalOrWorkerScope(); }
   static bool AllowFrom(const BindingObject& binding_object) {
-    return binding_object.IsEventTarget() && DynamicTo<EventTarget>(binding_object)->IsWindowOrWorkerGlobalScope();
+    return binding_object.IsEventTarget() && DynamicTo<EventTarget>(binding_object)->IsGlobalOrWorkerScope();
   }
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_WINDOW_H

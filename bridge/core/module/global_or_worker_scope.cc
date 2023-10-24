@@ -2,10 +2,10 @@
  * Copyright (C) 2019-2022 The Kraken authors. All rights reserved.
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
-#include "window_or_worker_global_scope.h"
+#include "global_or_worker_global_scope.h"
 #include "core/frame/dom_timer.h"
 
-namespace webf {
+namespace mercury {
 
 static void handleTimerCallback(DOMTimer* timer, const char* errmsg) {
   auto* context = timer->context();
@@ -75,13 +75,13 @@ static void handlePersistentCallback(void* ptr, int32_t contextId, const char* e
   timer->SetStatus(DOMTimer::TimerStatus::kFinished);
 }
 
-int WindowOrWorkerGlobalScope::setTimeout(ExecutingContext* context,
+int GlobalOrWorkerScope::setTimeout(ExecutingContext* context,
                                           std::shared_ptr<QJSFunction> handler,
                                           ExceptionState& exception) {
   return setTimeout(context, handler, 0.0, exception);
 }
 
-int WindowOrWorkerGlobalScope::setTimeout(ExecutingContext* context,
+int GlobalOrWorkerScope::setTimeout(ExecutingContext* context,
                                           std::shared_ptr<QJSFunction> handler,
                                           int32_t timeout,
                                           ExceptionState& exception) {
@@ -106,13 +106,13 @@ int WindowOrWorkerGlobalScope::setTimeout(ExecutingContext* context,
   return timerId;
 }
 
-int WindowOrWorkerGlobalScope::setInterval(ExecutingContext* context,
+int GlobalOrWorkerScope::setInterval(ExecutingContext* context,
                                            std::shared_ptr<QJSFunction> handler,
                                            ExceptionState& exception) {
   return setInterval(context, handler, 0.0, exception);
 }
 
-int WindowOrWorkerGlobalScope::setInterval(ExecutingContext* context,
+int GlobalOrWorkerScope::setInterval(ExecutingContext* context,
                                            std::shared_ptr<QJSFunction> handler,
                                            int32_t timeout,
                                            ExceptionState& exception) {
@@ -135,7 +135,7 @@ int WindowOrWorkerGlobalScope::setInterval(ExecutingContext* context,
   return timerId;
 }
 
-void WindowOrWorkerGlobalScope::clearTimeout(ExecutingContext* context, int32_t timerId, ExceptionState& exception) {
+void GlobalOrWorkerScope::clearTimeout(ExecutingContext* context, int32_t timerId, ExceptionState& exception) {
   if (context->dartMethodPtr()->clearTimeout == nullptr) {
     exception.ThrowException(context->ctx(), ErrorType::InternalError,
                              "Failed to execute 'clearTimeout': dart method (clearTimeout) is not registered.");
@@ -146,7 +146,7 @@ void WindowOrWorkerGlobalScope::clearTimeout(ExecutingContext* context, int32_t 
   context->Timers()->forceStopTimeoutById(timerId);
 }
 
-void WindowOrWorkerGlobalScope::clearInterval(ExecutingContext* context, int32_t timerId, ExceptionState& exception) {
+void GlobalOrWorkerScope::clearInterval(ExecutingContext* context, int32_t timerId, ExceptionState& exception) {
   if (context->dartMethodPtr()->clearTimeout == nullptr) {
     exception.ThrowException(context->ctx(), ErrorType::InternalError,
                              "Failed to execute 'clearTimeout': dart method (clearTimeout) is not registered.");
@@ -157,11 +157,11 @@ void WindowOrWorkerGlobalScope::clearInterval(ExecutingContext* context, int32_t
   context->Timers()->forceStopTimeoutById(timerId);
 }
 
-void WindowOrWorkerGlobalScope::__gc__(ExecutingContext* context, ExceptionState& exception) {
+void GlobalOrWorkerScope::__gc__(ExecutingContext* context, ExceptionState& exception) {
   JS_RunGC(context->GetScriptState()->runtime());
 }
 
-ScriptValue WindowOrWorkerGlobalScope::__memory_usage__(ExecutingContext* context, ExceptionState& exception) {
+ScriptValue GlobalOrWorkerScope::__memory_usage__(ExecutingContext* context, ExceptionState& exception) {
   JSRuntime* runtime = context->GetScriptState()->runtime();
   JSMemoryUsage memory_usage;
   JS_ComputeMemoryUsage(runtime, &memory_usage);
@@ -175,4 +175,4 @@ ScriptValue WindowOrWorkerGlobalScope::__memory_usage__(ExecutingContext* contex
   return ScriptValue::CreateJsonObject(context->ctx(), buff, strlen(buff));
 }
 
-}  // namespace webf
+}  // namespace mercury

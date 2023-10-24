@@ -4,7 +4,7 @@
 */
 
 // https://console.spec.whatwg.org/
-import { webfPrint, webfIsProxy } from './bridge';
+import { mercuryPrint, mercuryIsProxy } from './bridge';
 
 const SEPARATOR = ' ';
 const INTERPOLATE = /%[sdifoO]/g;
@@ -25,7 +25,7 @@ function printer(message: string, level?: string) {
     message = groupIndent + message;
   }
 
-  webfPrint(message, level);
+  mercuryPrint(message, level);
 }
 
 /**
@@ -117,7 +117,7 @@ function inspect(obj: any, within?: boolean): string {
     return result + '>';
   }
 
-  if (webfIsProxy(obj)) {
+  if (mercuryIsProxy(obj)) {
     return 'Proxy()';
   }
 

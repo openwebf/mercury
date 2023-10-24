@@ -4,16 +4,16 @@
  */
 
 import 'dart:ffi';
-import 'package:webf/dom.dart';
-import 'package:webf/devtools.dart';
-import 'package:webf/launcher.dart';
+import 'package:mercury/dom.dart';
+import 'package:mercury/devtools.dart';
+import 'package:mercury/launcher.dart';
 
 class InspectOverlayModule extends UIInspectorModule {
   @override
   String get name => 'Overlay';
 
   Document get document => devtoolsService.controller!.view.document;
-  WebFViewController get view => devtoolsService.controller!.view;
+  MercuryViewController get view => devtoolsService.controller!.view;
   InspectOverlayModule(DevToolsService devtoolsService) : super(devtoolsService);
 
   @override

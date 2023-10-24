@@ -11,7 +11,7 @@ series(
   'macos-dylib-clean',
   'compile-polyfill',
   'generate-bindings-code',
-  'build-darwin-webf-lib',
+  'build-darwin-mercury-lib',
 )((err) => {
   if (err) {
     console.log(err);

@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include "cppgc/gc_visitor.h"
 
-namespace webf {
+namespace mercury {
 
 template <typename K, typename V>
 class HeapHashMap {
@@ -72,6 +72,6 @@ void HeapHashMap<K, V>::Trace(GCVisitor* visitor) const {
   }
 }
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_BINDINGS_QJS_HEAP_HASHMAP_H_

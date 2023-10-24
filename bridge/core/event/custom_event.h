@@ -8,7 +8,7 @@
 #include "event.h"
 #include "qjs_custom_event_init.h"
 
-namespace webf {
+namespace mercury {
 
 struct NativeCustomEvent {
   NativeEvent native_event;
@@ -62,6 +62,6 @@ struct DowncastTraits<CustomEvent> {
   static bool AllowFrom(const Event& event) { return event.IsCustomEvent(); }
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_CUSTOM_EVENT_H

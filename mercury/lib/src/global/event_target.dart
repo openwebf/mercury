@@ -3,9 +3,9 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 import 'package:flutter/foundation.dart';
-import 'package:webf/html.dart';
-import 'package:webf/dom.dart';
-import 'package:webf/foundation.dart';
+import 'package:mercury/html.dart';
+import 'package:mercury/dom.dart';
+import 'package:mercury/foundation.dart';
 
 typedef EventHandler = void Function(Event event);
 

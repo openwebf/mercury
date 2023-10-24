@@ -2,7 +2,7 @@ import {EventTarget} from "../dom/events/event_target";
 import {ScrollOptions} from "../dom/scroll_options";
 import {ScrollToOptions} from "../dom/scroll_to_options";
 import {Screen} from "./screen";
-import {WindowEventHandlers} from "./window_event_handlers";
+import {WindowEventHandlers} from "./global_event_handlers";
 import {GlobalEventHandlers} from "../dom/global_event_handlers";
 import {ComputedCssStyleDeclaration} from "../css/computed_css_style_declaration";
 import {Element} from "../dom/element";
@@ -27,7 +27,7 @@ interface Window extends EventTarget, WindowEventHandlers, GlobalEventHandlers {
 
   getComputedStyle(element: Element, pseudoElt?: string): ComputedCssStyleDeclaration;
 
-  readonly window: Window;
+  readonly global: Window;
   readonly parent: Window;
   readonly self: Window;
   readonly screen: Screen;

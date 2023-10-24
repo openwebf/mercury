@@ -11,14 +11,14 @@
 #include "foundation/macros.h"
 #include "member.h"
 
-namespace webf {
+namespace mercury {
 
 class ScriptWrappable;
 
 // Use GCVisitor to keep track gc managed members in C++ class.
 class GCVisitor final {
-  WEBF_DISALLOW_NEW();
-  WEBF_DISALLOW_IMPLICIT_CONSTRUCTORS(GCVisitor);
+  MERCURY_DISALLOW_NEW();
+  MERCURY_DISALLOW_IMPLICIT_CONSTRUCTORS(GCVisitor);
 
  public:
   explicit GCVisitor(JSRuntime* rt, JS_MarkFunc* markFunc) : runtime_(rt), markFunc_(markFunc){};
@@ -38,6 +38,6 @@ class GCVisitor final {
   friend class ScriptWrappable;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_GC_VISITOR_H

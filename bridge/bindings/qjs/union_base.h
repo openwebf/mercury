@@ -3,14 +3,14 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
-#ifndef WEBF_BINDINGS_QJS_UNION_BASE_H_
-#define WEBF_BINDINGS_QJS_UNION_BASE_H_
+#ifndef MERCURY_BINDINGS_QJS_UNION_BASE_H_
+#define MERCURY_BINDINGS_QJS_UNION_BASE_H_
 
 #include <quickjs/quickjs.h>
 #include "bindings/qjs/cppgc/trace_if_needed.h"
 #include "exception_state.h"
 
-namespace webf {
+namespace mercury {
 
 class GCVisitor;
 
@@ -21,6 +21,6 @@ class UnionBase {
   virtual void Trace(GCVisitor* visitor) const = 0;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
-#endif  // WEBF_BINDINGS_QJS_UNION_BASE_H_
+#endif  // MERCURY_BINDINGS_QJS_UNION_BASE_H_

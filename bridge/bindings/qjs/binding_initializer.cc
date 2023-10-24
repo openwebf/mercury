@@ -92,15 +92,15 @@
 #include "qjs_transition_event.h"
 #include "qjs_ui_event.h"
 #include "qjs_widget_element.h"
-#include "qjs_window.h"
-#include "qjs_window_or_worker_global_scope.h"
+#include "qjs_global.h"
+#include "qjs_global_or_worker_global_scope.h"
 
-namespace webf {
+namespace mercury {
 
 void InstallBindings(ExecutingContext* context) {
   // Must follow the inheritance order when install.
   // Exp: Node extends EventTarget, EventTarget must be install first.
-  QJSWindowOrWorkerGlobalScope::Install(context);
+  QJSGlobalOrWorkerScope::Install(context);
   QJSLocation::Install(context);
   QJSModuleManager::Install(context);
   QJSConsole::Install(context);
@@ -194,4 +194,4 @@ void InstallBindings(ExecutingContext* context) {
   QJSElementAttributes::Install(context);
 }
 
-}  // namespace webf
+}  // namespace mercury

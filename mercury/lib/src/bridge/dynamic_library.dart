@@ -8,7 +8,7 @@ import 'dart:io' show Platform;
 
 import 'package:path/path.dart';
 
-abstract class WebFDynamicLibrary {
+abstract class MercuryDynamicLibrary {
   static final String _defaultLibraryPath = Platform.isLinux ? '\$ORIGIN' : '';
 
   /// The search path that dynamic library be load, if null using default.
@@ -21,14 +21,14 @@ abstract class WebFDynamicLibrary {
   }
 
   // The kraken library name.
-  static String libName = 'webf';
-  static String testLibName = 'webf_test';
+  static String libName = 'mercury';
+  static String testLibName = 'mercury_test';
 
   static String get _nativeDynamicLibraryName {
     if (Platform.isMacOS) {
       return 'lib$libName.dylib';
     } else if (Platform.isIOS) {
-      return 'webf_bridge.framework/webf_bridge';
+      return 'mercury_bridge.framework/mercury_bridge';
     } else if (Platform.isWindows) {
       return '$libName.dll';
     } else if (Platform.isAndroid || Platform.isLinux) {

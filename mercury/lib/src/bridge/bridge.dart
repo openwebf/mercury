@@ -4,7 +4,7 @@
  */
 
 import 'dart:ffi';
-import 'package:webf/launcher.dart';
+import 'package:mercury/launcher.dart';
 
 import 'binding.dart';
 import 'from_native.dart';
@@ -21,7 +21,7 @@ class DartContext {
 DartContext dartContext = DartContext();
 
 /// Init bridge
-int initBridge(WebFViewController view) {
+int initBridge(MercuryViewController view) {
   // Setup binding bridge.
   BindingBridge.setup();
 

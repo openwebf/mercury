@@ -14,7 +14,7 @@
 #include "foundation/macros.h"
 #include "registered_eventListener.h"
 
-namespace webf {
+namespace mercury {
 
 class AddEventListenerOptions;
 class EventListenerOptions;
@@ -22,7 +22,7 @@ class EventListenerOptions;
 using EventListenerVector = std::vector<RegisteredEventListener>;
 
 class EventListenerMap final {
-  WEBF_DISALLOW_NEW();
+  MERCURY_DISALLOW_NEW();
 
  public:
   EventListenerMap();
@@ -57,6 +57,6 @@ class EventListenerMap final {
   std::vector<std::pair<AtomicString, std::unique_ptr<EventListenerVector>>> entries_;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_BINDINGS_QJS_DOM_EVENT_LISTENER_MAP_H_

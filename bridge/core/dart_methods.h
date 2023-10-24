@@ -3,8 +3,8 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
-#ifndef WEBF_DART_METHODS_H_
-#define WEBF_DART_METHODS_H_
+#ifndef MERCURY_DART_METHODS_H_
+#define MERCURY_DART_METHODS_H_
 
 /// Functions implements at dart side, including timer, Rendering and module API.
 /// Communicate via Dart FFI.
@@ -15,14 +15,14 @@
 #include "foundation/native_value.h"
 
 #if defined(_WIN32)
-#define WEBF_EXPORT_C extern "C" __declspec(dllexport)
-#define WEBF_EXPORT __declspec(dllexport)
+#define MERCURY_EXPORT_C extern "C" __declspec(dllexport)
+#define MERCURY_EXPORT __declspec(dllexport)
 #else
-#define WEBF_EXPORT_C extern "C" __attribute__((visibility("default"))) __attribute__((used))
-#define WEBF_EXPORT __attribute__((__visibility__("default")))
+#define MERCURY_EXPORT_C extern "C" __attribute__((visibility("default"))) __attribute__((used))
+#define MERCURY_EXPORT __attribute__((__visibility__("default")))
 #endif
 
-namespace webf {
+namespace mercury {
 
 using AsyncCallback = void (*)(void* callback_context, int32_t context_id, const char* errmsg);
 using AsyncRAFCallback = void (*)(void* callback_context, int32_t context_id, double result, const char* errmsg);
@@ -120,6 +120,6 @@ struct DartMethodPointer {
 #endif
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif

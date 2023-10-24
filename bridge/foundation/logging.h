@@ -9,19 +9,19 @@
 #include <sstream>
 #include <string>
 
-#define WEBF_LOG_STREAM(severity) ::webf::LogMessage(::webf::severity, __FILE__, __LINE__, nullptr).stream()
+#define MERCURY_LOG_STREAM(severity) ::mercury::LogMessage(::mercury::severity, __FILE__, __LINE__, nullptr).stream()
 
-#define WEBF_LAZY_STREAM(stream, condition) !(condition) ? (void)0 : ::webf::LogMessageVoidify() & (stream)
+#define MERCURY_LAZY_STREAM(stream, condition) !(condition) ? (void)0 : ::mercury::LogMessageVoidify() & (stream)
 
-#define WEBF_EAT_STREAM_PARAMETERS(ignored) \
+#define MERCURY_EAT_STREAM_PARAMETERS(ignored) \
   true || (ignored) ? (void)0 : ::LogMessageVoidify() & ::LogMessage(::LOG_FATAL, 0, 0, nullptr).stream()
 
-#define WEBF_LOG(severity) WEBF_LAZY_STREAM(WEBF_LOG_STREAM(severity), true)
+#define MERCURY_LOG(severity) MERCURY_LAZY_STREAM(MERCURY_LOG_STREAM(severity), true)
 
-#define WEBF_CHECK(condition) \
-  WEBF_LAZY_STREAM(::webf::LogMessage(::webf::FATAL, __FILE__, __LINE__, #condition).stream(), !(condition))
+#define MERCURY_CHECK(condition) \
+  MERCURY_LAZY_STREAM(::mercury::LogMessage(::mercury::FATAL, __FILE__, __LINE__, #condition).stream(), !(condition))
 
-namespace webf {
+namespace mercury {
 
 class ExecutingContext;
 
@@ -65,6 +65,6 @@ class LogMessage {
 
 void printLog(ExecutingContext* context, std::stringstream& stream, std::string level, void* ctx);
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // FOUNDATION_LOGGING_H_

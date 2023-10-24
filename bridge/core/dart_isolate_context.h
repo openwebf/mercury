@@ -2,17 +2,17 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
-#ifndef WEBF_DART_CONTEXT_H_
-#define WEBF_DART_CONTEXT_H_
+#ifndef MERCURY_DART_CONTEXT_H_
+#define MERCURY_DART_CONTEXT_H_
 
 #include <set>
 #include "bindings/qjs/script_value.h"
 #include "dart_context_data.h"
 #include "dart_methods.h"
 
-namespace webf {
+namespace mercury {
 
-class WebFPage;
+class MercuryPage;
 class DartIsolateContext;
 
 struct DartWireContext {
@@ -39,14 +39,14 @@ class DartIsolateContext {
 
   const std::unique_ptr<DartContextData>& EnsureData() const;
 
-  void AddNewPage(std::unique_ptr<WebFPage>&& new_page);
-  void RemovePage(const WebFPage* page);
+  void AddNewPage(std::unique_ptr<MercuryPage>&& new_page);
+  void RemovePage(const MercuryPage* page);
 
   ~DartIsolateContext();
 
  private:
   int is_valid_{false};
-  std::set<std::unique_ptr<WebFPage>> pages_;
+  std::set<std::unique_ptr<MercuryPage>> pages_;
   std::thread::id running_thread_;
   mutable std::unique_ptr<DartContextData> data_;
   static thread_local JSRuntime* runtime_;
@@ -54,6 +54,6 @@ class DartIsolateContext {
   const std::unique_ptr<DartMethodPointer> dart_method_ptr_ = nullptr;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif

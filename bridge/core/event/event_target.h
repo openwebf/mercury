@@ -24,7 +24,7 @@ void TEST_invokeBindingMethod(void* nativePtr, void* returnValue, void* method, 
 #define GetPropertyMagic "%g"
 #define SetPropertyMagic "%s"
 
-namespace webf {
+namespace mercury {
 
 enum class DispatchEventResult {
   // Event was not canceled by event handler or default event handler.
@@ -46,7 +46,7 @@ enum class DispatchEventResult {
 };
 
 struct FiringEventIterator {
-  WEBF_DISALLOW_NEW();
+  MERCURY_DISALLOW_NEW();
 
  public:
   FiringEventIterator(const AtomicString& event_type, size_t& iterator, size_t& end)
@@ -60,7 +60,7 @@ struct FiringEventIterator {
 using FiringEventIteratorVector = std::vector<FiringEventIterator>;
 
 class EventTargetData final {
-  WEBF_DISALLOW_NEW();
+  MERCURY_DISALLOW_NEW();
 
  public:
   EventTargetData();
@@ -131,7 +131,7 @@ class EventTarget : public BindingObject {
 
   EventListenerVector* GetEventListeners(const AtomicString& event_type);
 
-  virtual bool IsWindowOrWorkerGlobalScope() const { return false; }
+  virtual bool IsGlobalOrWorkerScope() const { return false; }
   virtual bool IsNode() const { return false; }
   bool IsEventTarget() const override;
 
@@ -238,6 +238,6 @@ class EventTargetWithInlineData : public EventTarget {
     }                                                                                                                \
   }
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_EVENT_TARGET_H

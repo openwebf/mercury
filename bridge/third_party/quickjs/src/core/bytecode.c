@@ -594,9 +594,9 @@ static int JS_WriteFunctionTag(BCWriterState* s, JSValueConst obj) {
     bc_put_leb128(s, b->debug.pc2column_len);
     dbuf_put(&s->dbuf, b->debug.pc2column_buf, b->debug.pc2column_len);
 
-    /** 
+    /**
      * purely for compatibility with WebF/Kraken V1 quickjs compiler (kbc1 file format).
-     * determination of whether a Self PolyIC is available by 
+     * determination of whether a Self PolyIC is available by
      * adding a special sequence of characters.
      */
     dbuf_putc(&s->dbuf, 255);

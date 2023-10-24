@@ -8,7 +8,7 @@
 
 #include <string>
 
-namespace webf {
+namespace mercury {
 
 class ExceptionMessage {
  public:
@@ -20,6 +20,6 @@ class ExceptionMessage {
  private:
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_BINDINGS_QJS_EXCEPTION_MESSAGE_H_

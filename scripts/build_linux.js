@@ -10,7 +10,7 @@ series(
   'clean',
   'compile-polyfill',
   'generate-bindings-code',
-  'build-linux-webf-lib'
+  'build-linux-mercury-lib'
 )((err) => {
   if (err) {
     console.log(err);

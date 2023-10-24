@@ -1,6 +1,6 @@
-var text1 = document.createTextNode('Hello webf!');
+var text1 = document.createTextNode('Hello mercury!');
 var br = document.createElement('br');
-var text2 = document.createTextNode('你好，webf！');
+var text2 = document.createTextNode('你好，mercury！');
 var p = document.createElement('p');
 p.className = 'p';
 p.style.display = 'inline-block';

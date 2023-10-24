@@ -9,7 +9,7 @@
 #include "foundation/casting.h"
 #include "js_based_event_listener.h"
 
-namespace webf {
+namespace mercury {
 
 // |JSEventHandler| implements EventHandler in the HTML standard.
 // https://html.spec.whatwg.org/C/#event-handler-attributes
@@ -71,6 +71,6 @@ struct DowncastTraits<JSEventHandler> {
   }
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_BINDINGS_QJS_JS_EVENT_HANDLER_H_

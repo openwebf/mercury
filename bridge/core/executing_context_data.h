@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include "bindings/qjs/wrapper_type_info.h"
 
-namespace webf {
+namespace mercury {
 
 class ExecutingContext;
 
@@ -36,6 +36,6 @@ class ExecutionContextData final {
   ExecutingContext* m_context;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_CONTEXT_DATA_H

@@ -12,7 +12,7 @@
 #include <string>
 #include "bindings/qjs/native_string_utils.h"
 
-namespace webf {
+namespace mercury {
 
 enum NativeTag {
   TAG_STRING = 0,
@@ -77,6 +77,6 @@ NativeValue Native_NewList(uint32_t argc, NativeValue* argv);
 NativeValue Native_NewPtr(JSPointerType pointerType, void* ptr);
 NativeValue Native_NewJSON(JSContext* ctx, const ScriptValue& value, ExceptionState& exception_state);
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_NATIVE_VALUE_H

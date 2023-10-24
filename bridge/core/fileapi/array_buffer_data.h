@@ -5,13 +5,13 @@
 #ifndef BRIDGE_CORE_FILEAPI_ARRAY_BUFFER_DATA_H_
 #define BRIDGE_CORE_FILEAPI_ARRAY_BUFFER_DATA_H_
 
-namespace webf {
+namespace mercury {
 
 struct ArrayBufferData {
   uint8_t* buffer;
   int32_t length;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_CORE_FILEAPI_ARRAY_BUFFER_DATA_H_

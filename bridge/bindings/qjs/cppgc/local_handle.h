@@ -12,7 +12,7 @@
 #include "foundation/macros.h"
 #include "mutation_scope.h"
 
-namespace webf {
+namespace mercury {
 
 template <typename T>
 class LocalTrait;
@@ -23,7 +23,7 @@ class ScriptWrappable;
  */
 template <typename T>
 class Local {
-  WEBF_STACK_ALLOCATED();
+  MERCURY_STACK_ALLOCATED();
 
  public:
   static Local<T> Empty() { return Local<T>(nullptr); }
@@ -59,6 +59,6 @@ Local<T> MakeLocal(Args&&... args) {
   return LocalTrait<T>::Allocate(std::forward<Args>(args)...);
 }
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_BINDINGS_QJS_CPPGC_LOCAL_HANDLE_H_

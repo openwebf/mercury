@@ -5,7 +5,7 @@
 #ifndef BRIDGE_BINDINGS_QJS_HEAP_VECTOR_H_
 #define BRIDGE_BINDINGS_QJS_HEAP_VECTOR_H_
 
-namespace webf {
+namespace mercury {
 
 template <typename V>
 class HeapVector final {
@@ -25,6 +25,6 @@ void HeapVector<V>::Trace(GCVisitor* visitor) const {
   }
 }
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_BINDINGS_QJS_HEAP_VECTOR_H_

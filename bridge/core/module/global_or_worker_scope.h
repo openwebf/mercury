@@ -9,9 +9,9 @@
 #include "bindings/qjs/qjs_function.h"
 #include "core/executing_context.h"
 
-namespace webf {
+namespace mercury {
 
-class WindowOrWorkerGlobalScope {
+class GlobalOrWorkerScope {
  public:
   static int setTimeout(ExecutingContext* context,
                         std::shared_ptr<QJSFunction> handler,
@@ -29,6 +29,6 @@ class WindowOrWorkerGlobalScope {
   static ScriptValue __memory_usage__(ExecutingContext* context, ExceptionState& exception_state);
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_WINDOW_OR_WORKER_GLOBAL_SCROPE_H

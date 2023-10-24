@@ -1,4 +1,4 @@
-package com.openwebf.webf;
+package com.openwebf.mercury;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -11,14 +11,14 @@ import io.flutter.embedding.engine.plugins.PluginRegistry;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
-public class WebF {
+public class Mercury {
   private String dynamicLibraryPath;
   private FlutterEngine flutterEngine;
 
   private MethodChannel.MethodCallHandler handler;
-  private static Map<FlutterEngine, WebF> sdkMap = new HashMap<>();
+  private static Map<FlutterEngine, Mercury> sdkMap = new HashMap<>();
 
-  public WebF(FlutterEngine flutterEngine) {
+  public Mercury(FlutterEngine flutterEngine) {
     if (flutterEngine != null) {
       this.flutterEngine = flutterEngine;
       sdkMap.put(flutterEngine, this);
@@ -27,7 +27,7 @@ public class WebF {
     }
   }
 
-  public static WebF get(FlutterEngine engine) {
+  public static Mercury get(FlutterEngine engine) {
     return sdkMap.get(engine);
   }
 

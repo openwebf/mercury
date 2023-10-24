@@ -10,14 +10,14 @@
 #include "qjs_function.h"
 #include "script_value.h"
 
-namespace webf {
+namespace mercury {
 
 // ScriptPromise is the class for representing Promise values in C++ world.
 // ScriptPromise holds a Promise.
 // So holding a ScriptPromise as a member variable in DOM object causes
 // memory leaks since it has a reference from C++ to QuickJS.
 class ScriptPromise final {
-  WEBF_DISALLOW_NEW();
+  MERCURY_DISALLOW_NEW();
 
  public:
   ScriptPromise() = default;
@@ -34,6 +34,6 @@ class ScriptPromise final {
   ScriptValue promise_;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_BINDINGS_QJS_SCRIPT_PROMISE_H_

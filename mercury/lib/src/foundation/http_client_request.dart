@@ -19,7 +19,7 @@ import 'queue.dart';
 final _requestQueue = Queue(parallel: 10);
 
 class ProxyHttpClientRequest extends HttpClientRequest {
-  final WebFHttpOverrides _httpOverrides;
+  final MercuryHttpOverrides _httpOverrides;
   final HttpClient _nativeHttpClient;
   final String _method;
   final Uri _uri;
@@ -33,7 +33,7 @@ class ProxyHttpClientRequest extends HttpClientRequest {
   // Saving request headers.
   final HttpHeaders _httpHeaders = createHttpHeaders();
 
-  ProxyHttpClientRequest(String method, Uri uri, WebFHttpOverrides httpOverrides, HttpClient nativeHttpClient)
+  ProxyHttpClientRequest(String method, Uri uri, MercuryHttpOverrides httpOverrides, HttpClient nativeHttpClient)
       : _method = method.toUpperCase(),
         _uri = uri,
         _httpOverrides = httpOverrides,
@@ -104,7 +104,7 @@ class ProxyHttpClientRequest extends HttpClientRequest {
 
   @override
   Future<HttpClientResponse> close() async {
-    int? contextId = WebFHttpOverrides.getContextHeader(headers);
+    int? contextId = MercuryHttpOverrides.getContextHeader(headers);
     HttpClientRequest request = this;
 
     if (contextId != null) {

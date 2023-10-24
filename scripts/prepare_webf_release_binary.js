@@ -7,24 +7,24 @@ let buildTasks = [
   'sdk-clean',
   'compile-polyfill',
   'generate-bindings-code',
-  'build-android-webf-lib',
+  'build-android-mercury-lib',
 ];
 
 if (os.platform() == 'win32') {
   // TODO: add windows support
   buildTasks.push(
-    'build-window-webf-lib'
+    'build-window-mercury-lib'
   );
 } else if (os.platform() == 'darwin') {
   buildTasks.push(
     'macos-dylib-clean',
-    'build-darwin-webf-lib',
+    'build-darwin-mercury-lib',
     'ios-framework-clean',
-    'build-ios-webf-lib',
+    'build-ios-mercury-lib',
   );
 } else if (os.platform() == 'linux') {
   buildTasks.push(
-    'build-linux-webf-lib'
+    'build-linux-mercury-lib'
   )
 }
 

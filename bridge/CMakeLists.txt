@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.0)
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.11)
-project(WebF)
+project(Mercury)
 
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.11)
 # MSBuild are slower than Clang/GCC to support new CXX standards.
@@ -49,8 +49,8 @@ if(NOT MSVC)
   endif()
 endif()
 
-list(APPEND WEBF_PUBLIC_HEADERS
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/webf_bridge.h
+list(APPEND MERCURY_PUBLIC_HEADERS
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/mercury_bridge.h
 )
 
 set(QUICKJS_PUBLIC_HEADERS
@@ -91,7 +91,7 @@ if (DEFINED PLATFORM)
 endif()
 
 list(APPEND BRIDGE_SOURCE
-  webf_bridge.cc
+  mercury_bridge.cc
   foundation/logging.cc
   foundation/native_string.cc
   foundation/ui_task_queue.cc
@@ -130,8 +130,8 @@ list(APPEND BRIDGE_INCLUDE
   ${ADDITIONAL_INCLUDE_DIRS}
   )
 
-if ($ENV{WEBF_JS_ENGINE} MATCHES "quickjs")
-  add_compile_options(-DWEBF_QUICK_JS_ENGINE=1)
+if ($ENV{MERCURY_JS_ENGINE} MATCHES "quickjs")
+  add_compile_options(-DMERCURY_QUICK_JS_ENGINE=1)
 
   execute_process(
     COMMAND cat ${CMAKE_CURRENT_SOURCE_DIR}/third_party/quickjs/VERSION
@@ -260,13 +260,13 @@ if ($ENV{WEBF_JS_ENGINE} MATCHES "quickjs")
     core/frame/console.cc
     core/frame/dom_timer.cc
     core/frame/dom_timer_coordinator.cc
-    core/frame/window_or_worker_global_scope.cc
+    core/frame/global_or_worker_global_scope.cc
     core/frame/module_listener.cc
     core/frame/module_listener_container.cc
     core/frame/module_manager.cc
     core/frame/module_callback.cc
     core/frame/module_context_coordinator.cc
-    core/frame/window.cc
+    core/frame/global.cc
     core/frame/screen.cc
     core/frame/legacy/location.cc
     core/timing/performance.cc
@@ -380,8 +380,8 @@ if ($ENV{WEBF_JS_ENGINE} MATCHES "quickjs")
     out/names_installer.cc
     out/qjs_console.cc
     out/qjs_module_manager.cc
-    out/qjs_window_or_worker_global_scope.cc
-    out/qjs_window.cc
+    out/qjs_global_or_worker_global_scope.cc
+    out/qjs_global.cc
     out/qjs_location.cc
     out/qjs_blob.cc
     out/qjs_event.cc
@@ -530,17 +530,17 @@ if ($ENV{WEBF_JS_ENGINE} MATCHES "quickjs")
 endif ()
 
 list(APPEND PUBLIC_HEADER
-  include/webf_bridge.h
+  include/mercury_bridge.h
 )
 
-add_library(webf SHARED ${BRIDGE_SOURCE})
-add_library(webf_static STATIC ${BRIDGE_SOURCE})
+add_library(mercury SHARED ${BRIDGE_SOURCE})
+add_library(mercury_static STATIC ${BRIDGE_SOURCE})
 
 if(MSVC)
-  target_compile_options(webf PRIVATE /JMC)
+  target_compile_options(mercury PRIVATE /JMC)
 endif()
 
-target_compile_definitions(webf PUBLIC -DFLUTTER_BACKEND=1)
+target_compile_definitions(mercury PUBLIC -DFLUTTER_BACKEND=1)
 
 add_library(gumbo_parse_static STATIC ${GUMBO_PARSER})
 list(APPEND BRIDGE_LINK_LIBS gumbo_parse_static)
@@ -559,27 +559,27 @@ elseif(${IS_IOS})
 endif()
 
 
-### webf
-target_include_directories(webf PRIVATE
+### mercury
+target_include_directories(mercury PRIVATE
   ${BRIDGE_INCLUDE}
   ${CMAKE_CURRENT_SOURCE_DIR} PUBLIC ./include)
-target_link_libraries(webf PRIVATE ${BRIDGE_LINK_LIBS})
+target_link_libraries(mercury PRIVATE ${BRIDGE_LINK_LIBS})
 
-if ($ENV{WEBF_JS_ENGINE} MATCHES "quickjs" AND NOT MSVC)
+if ($ENV{MERCURY_JS_ENGINE} MATCHES "quickjs" AND NOT MSVC)
   if (${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-    target_compile_options(webf PRIVATE -fno-exceptions -fvisibility=hidden -fno-rtti -fdata-sections -ffunction-sections)
+    target_compile_options(mercury PRIVATE -fno-exceptions -fvisibility=hidden -fno-rtti -fdata-sections -ffunction-sections)
     target_compile_options(quickjs PRIVATE -fno-exceptions -fno-rtti -fdata-sections -ffunction-sections)
   else ()
     ### remove dynamic_cast and exceptions
-    target_compile_options(webf PRIVATE -fno-exceptions -fno-rtti)
+    target_compile_options(mercury PRIVATE -fno-exceptions -fno-rtti)
   endif ()
 endif ()
 
-### webfStatic
-target_include_directories(webf_static PRIVATE
+### mercuryStatic
+target_include_directories(mercury_static PRIVATE
   ${BRIDGE_INCLUDE}
   ${CMAKE_CURRENT_SOURCE_DIR} PUBLIC ./include)
-target_link_libraries(webf_static ${BRIDGE_LINK_LIBS})
+target_link_libraries(mercury_static ${BRIDGE_LINK_LIBS})
 
 execute_process(
   COMMAND node get_app_ver.js
@@ -602,15 +602,15 @@ if (${ENABLE_TEST})
 endif ()
 
 if (DEFINED ENV{LIBRARY_OUTPUT_DIR})
-  set_target_properties(webf
+  set_target_properties(mercury
     PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "$ENV{LIBRARY_OUTPUT_DIR}"
     RUNTIME_OUTPUT_DIRECTORY "$ENV{LIBRARY_OUTPUT_DIR}"
   )
-  set_target_properties(webf_static
+  set_target_properties(mercury_static
     PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "$ENV{LIBRARY_OUTPUT_DIR}")
 
-  if ($ENV{WEBF_JS_ENGINE} MATCHES "quickjs")
+  if ($ENV{MERCURY_JS_ENGINE} MATCHES "quickjs")
     set_target_properties(quickjs
       PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "$ENV{LIBRARY_OUTPUT_DIR}"
@@ -629,14 +629,14 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "iOS")
   set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "NO")
   set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "")
 
-  set_target_properties(webf PROPERTIES
-    OUTPUT_NAME webf_bridge
+  set_target_properties(mercury PROPERTIES
+    OUTPUT_NAME mercury_bridge
     FRAMEWORK TRUE
     FRAMEWORK_VERSION C
-    MACOSX_FRAMEWORK_IDENTIFIER com.openwebf.webf-bridge
+    MACOSX_FRAMEWORK_IDENTIFIER com.openwebf.mercury-bridge
     MACOSX_FRAMEWORK_BUNDLE_VERSION 1.0
     MACOSX_FRAMEWORK_SHORT_VERSION_STRING 1.0
-    PUBLIC_HEADER ${WEBF_PUBLIC_HEADERS}
+    PUBLIC_HEADER ${MERCURY_PUBLIC_HEADERS}
     )
 
   # If quickjs is static, there will be no quickjs.framework any more.

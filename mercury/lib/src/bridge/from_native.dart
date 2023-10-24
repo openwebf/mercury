@@ -8,8 +8,8 @@ import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
-import 'package:webf/bridge.dart';
-import 'package:webf/launcher.dart';
+import 'package:mercury/bridge.dart';
+import 'package:mercury/launcher.dart';
 
 String uint16ToString(Pointer<Uint16> pointer, int length) {
   return String.fromCharCodes(pointer.asTypedList(length));
@@ -80,9 +80,9 @@ typedef NativeInvokeModule = Pointer<NativeValue> Function(
     Pointer<NativeValue> params,
     Pointer<NativeFunction<NativeAsyncModuleCallback>>);
 
-dynamic invokeModule(Pointer<Void> callbackContext, WebFController controller, String moduleName, String method, params,
+dynamic invokeModule(Pointer<Void> callbackContext, MercuryController controller, String moduleName, String method, params,
     DartAsyncModuleCallback callback) {
-  WebFViewController currentView = controller.view;
+  MercuryViewController currentView = controller.view;
   dynamic result;
 
   Stopwatch? stopwatch;
@@ -144,7 +144,7 @@ Pointer<NativeValue> _invokeModule(
     Pointer<NativeString> method,
     Pointer<NativeValue> params,
     Pointer<NativeFunction<NativeAsyncModuleCallback>> callback) {
-  WebFController controller = WebFController.getControllerOfJSContextId(contextId)!;
+  MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
   dynamic result = invokeModule(callbackContext, controller, nativeStringToString(module), nativeStringToString(method),
       fromNativeValue(controller.view, params), callback.asFunction());
   Pointer<NativeValue> returnValue = malloc.allocate(sizeOf<NativeValue>());
@@ -160,7 +160,7 @@ final Pointer<NativeFunction<NativeInvokeModule>> _nativeInvokeModule = Pointer.
 typedef NativeReloadApp = Void Function(Int32 contextId);
 
 void _reloadApp(int contextId) async {
-  WebFController controller = WebFController.getControllerOfJSContextId(contextId)!;
+  MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
 
   try {
     await controller.reload();
@@ -181,7 +181,7 @@ typedef DartRAFAsyncCallback = void Function(Pointer<Void>, int contextId, doubl
 typedef NativeRequestBatchUpdate = Void Function(Int32 contextId);
 
 void _requestBatchUpdate(int contextId) {
-  WebFController? controller = WebFController.getControllerOfJSContextId(contextId);
+  MercuryController? controller = MercuryController.getControllerOfJSContextId(contextId);
   return controller?.module.requestBatchUpdate();
 }
 
@@ -194,8 +194,8 @@ typedef NativeSetTimeout = Int32 Function(
 
 int _setTimeout(
     Pointer<Void> callbackContext, int contextId, Pointer<NativeFunction<NativeAsyncCallback>> callback, int timeout) {
-  WebFController controller = WebFController.getControllerOfJSContextId(contextId)!;
-  WebFViewController currentView = controller.view;
+  MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
+  MercuryViewController currentView = controller.view;
 
   return controller.module.setTimeout(timeout, () {
     DartAsyncCallback func = callback.asFunction();
@@ -211,7 +211,7 @@ int _setTimeout(
       }
     }
 
-    // Pause if webf page paused.
+    // Pause if mercury page paused.
     if (controller.paused) {
       controller.pushPendingCallbacks(_runCallback);
     } else {
@@ -230,8 +230,8 @@ typedef NativeSetInterval = Int32 Function(
 
 int _setInterval(
     Pointer<Void> callbackContext, int contextId, Pointer<NativeFunction<NativeAsyncCallback>> callback, int timeout) {
-  WebFController controller = WebFController.getControllerOfJSContextId(contextId)!;
-  WebFViewController currentView = controller.view;
+  MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
+  MercuryViewController currentView = controller.view;
   return controller.module.setInterval(timeout, () {
     void _runCallbacks() {
       if (controller.view != currentView || currentView.disposed) return;
@@ -246,7 +246,7 @@ int _setInterval(
       }
     }
 
-    // Pause if webf page paused.
+    // Pause if mercury page paused.
     if (controller.paused) {
       controller.pushPendingCallbacks(_runCallbacks);
     } else {
@@ -263,7 +263,7 @@ final Pointer<NativeFunction<NativeSetInterval>> _nativeSetInterval =
 typedef NativeClearTimeout = Void Function(Int32 contextId, Int32);
 
 void _clearTimeout(int contextId, int timerId) {
-  WebFController controller = WebFController.getControllerOfJSContextId(contextId)!;
+  MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
   return controller.module.clearTimeout(timerId);
 }
 
@@ -275,8 +275,8 @@ typedef NativeRequestAnimationFrame = Int32 Function(
 
 int _requestAnimationFrame(
     Pointer<Void> callbackContext, int contextId, Pointer<NativeFunction<NativeRAFAsyncCallback>> callback) {
-  WebFController controller = WebFController.getControllerOfJSContextId(contextId)!;
-  WebFViewController currentView = controller.view;
+  MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
+  MercuryViewController currentView = controller.view;
   return controller.module.requestAnimationFrame((double highResTimeStamp) {
     void _runCallback() {
       if (controller.view != currentView || currentView.disposed) return;
@@ -290,7 +290,7 @@ int _requestAnimationFrame(
       }
     }
 
-    // Pause if webf page paused.
+    // Pause if mercury page paused.
     if (controller.paused) {
       controller.pushPendingCallbacks(_runCallback);
     } else {
@@ -307,7 +307,7 @@ final Pointer<NativeFunction<NativeRequestAnimationFrame>> _nativeRequestAnimati
 typedef NativeCancelAnimationFrame = Void Function(Int32 contextId, Int32 id);
 
 void _cancelAnimationFrame(int contextId, int timerId) {
-  WebFController controller = WebFController.getControllerOfJSContextId(contextId)!;
+  MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
   controller.module.cancelAnimationFrame(timerId);
 }
 
@@ -324,7 +324,7 @@ typedef NativeToBlob = Void Function(
 void _toBlob(Pointer<Void> callbackContext, int contextId, Pointer<NativeFunction<NativeAsyncBlobCallback>> callback,
     Pointer<Void> elementPtr, double devicePixelRatio) {
   DartAsyncBlobCallback func = callback.asFunction();
-  WebFController controller = WebFController.getControllerOfJSContextId(contextId)!;
+  MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
   controller.view.toImage(devicePixelRatio, elementPtr).then((Uint8List bytes) {
     Pointer<Uint8> bytePtr = malloc.allocate<Uint8>(sizeOf<Uint8>() * bytes.length);
     Uint8List byteList = bytePtr.asTypedList(bytes.length);
@@ -371,7 +371,7 @@ final Pointer<NativeFunction<NativePerformanceGetEntries>> _nativeGetEntries =
 typedef NativeJSError = Void Function(Int32 contextId, Pointer<Utf8>);
 
 void _onJSError(int contextId, Pointer<Utf8> charStr) {
-  WebFController? controller = WebFController.getControllerOfJSContextId(contextId);
+  MercuryController? controller = MercuryController.getControllerOfJSContextId(contextId);
   JSErrorHandler? handler = controller?.onJSError;
   if (handler != null) {
     String msg = charStr.toDartString();
@@ -385,7 +385,7 @@ typedef NativeJSLog = Void Function(Int32 contextId, Int32 level, Pointer<Utf8>)
 
 void _onJSLog(int contextId, int level, Pointer<Utf8> charStr) {
   String msg = charStr.toDartString();
-  WebFController? controller = WebFController.getControllerOfJSContextId(contextId);
+  MercuryController? controller = MercuryController.getControllerOfJSContextId(contextId);
   if (controller != null) {
     JSLogHandler? jsLogHandler = controller.onJSLog;
     if (jsLogHandler != null) {

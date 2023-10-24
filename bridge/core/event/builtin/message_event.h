@@ -9,7 +9,7 @@
 #include "core/dom/events/event.h"
 #include "qjs_message_event_init.h"
 
-namespace webf {
+namespace mercury {
 
 struct NativeMessageEvent;
 
@@ -45,6 +45,6 @@ class MessageEvent : public Event {
   AtomicString source_;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_CORE_EVENTS_MESSAGE_EVENT_H_

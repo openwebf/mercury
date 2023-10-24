@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace webf {
+namespace mercury {
 
 class DOMTimer;
 class ExecutingContext;
@@ -38,6 +38,6 @@ class DOMTimerCoordinator {
   std::unordered_map<int, std::shared_ptr<DOMTimer>> terminated_timers;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_BINDINGS_QJS_BOM_DOM_TIMER_COORDINATOR_H_

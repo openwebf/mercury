@@ -8,11 +8,11 @@
 import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
-import 'package:webf/bridge.dart';
-import 'package:webf/dom.dart';
-import 'package:webf/geometry.dart';
-import 'package:webf/foundation.dart';
-import 'package:webf/launcher.dart';
+import 'package:mercury/bridge.dart';
+import 'package:mercury/dom.dart';
+import 'package:mercury/geometry.dart';
+import 'package:mercury/foundation.dart';
+import 'package:mercury/launcher.dart';
 
 // We have some integrated built-in behavior starting with string prefix reuse the callNativeMethod implements.
 enum BindingMethodCallOperations {
@@ -48,7 +48,7 @@ void _dispatchCaptureEventToNative(Event event) {
 void _dispatchEventToNative(Event event, bool isCapture) {
   Pointer<NativeBindingObject>? pointer = event.currentTarget?.pointer;
   int? contextId = event.target?.contextId;
-  WebFController controller = WebFController.getControllerOfJSContextId(contextId)!;
+  MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
   if (contextId != null && pointer != null && pointer.ref.invokeBindingMethodFromDart != nullptr) {
     BindingObject bindingObject = controller.view.getBindingObject(pointer);
     // Call methods implements at C++ side.
@@ -101,7 +101,7 @@ abstract class BindingBridge {
       _invokeBindingMethodFromNative;
 
   static void createBindingObject(int contextId, Pointer<NativeBindingObject> pointer, CreateBindingObjectType type, Pointer<NativeValue> args, int argc) {
-    WebFController controller = WebFController.getControllerOfJSContextId(contextId)!;
+    MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
     List<dynamic> arguments = List.generate(argc, (index) {
       return fromNativeValue(controller.view, args.elementAt(index));
     });
@@ -114,9 +114,9 @@ abstract class BindingBridge {
     }
   }
 
-  // For compatible requirement, we set the WebFViewController to nullable due to the historical reason.
+  // For compatible requirement, we set the MercuryViewController to nullable due to the historical reason.
   // exp: We can not break the types for WidgetElement which will break all the codes for Users.
-  static void _bindObject(WebFViewController? view, BindingObject object) {
+  static void _bindObject(MercuryViewController? view, BindingObject object) {
     Pointer<NativeBindingObject>? nativeBindingObject = object.pointer;
     if (nativeBindingObject != null) {
       if (view != null) {
@@ -129,9 +129,9 @@ abstract class BindingBridge {
     }
   }
 
-  // For compatible requirement, we set the WebFViewController to nullable due to the historical reason.
+  // For compatible requirement, we set the MercuryViewController to nullable due to the historical reason.
   // exp: We can not break the types for WidgetElement which will break all the codes for Users.
-  static void _unbindObject(WebFViewController? view, BindingObject object) {
+  static void _unbindObject(MercuryViewController? view, BindingObject object) {
     Pointer<NativeBindingObject>? nativeBindingObject = object.pointer;
     if (nativeBindingObject != null) {
       nativeBindingObject.ref.invokeBindingMethodFromNative = nullptr;

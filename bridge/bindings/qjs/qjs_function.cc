@@ -9,7 +9,7 @@
 #include "core/dom/events/event_target.h"
 #include "cppgc/gc_visitor.h"
 
-namespace webf {
+namespace mercury {
 
 struct QJSFunctionCallbackContext {
   QJSFunctionCallback qjs_function_callback;
@@ -74,4 +74,4 @@ void QJSFunction::Trace(GCVisitor* visitor) const {
   visitor->TraceValue(function_);
 }
 
-}  // namespace webf
+}  // namespace mercury

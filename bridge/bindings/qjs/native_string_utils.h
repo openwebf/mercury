@@ -14,7 +14,7 @@
 
 #include "foundation/native_string.h"
 
-namespace webf {
+namespace mercury {
 
 // Convert to string and return a full copy of NativeString from JSValue.
 std::unique_ptr<SharedNativeString> jsValueToNativeString(JSContext* ctx, JSValue value);
@@ -40,6 +40,6 @@ void fromUTF8(const std::string& source, std::basic_string<T, std::char_traits<T
   result = convertor.from_bytes(source);
 }
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_NATIVE_STRING_UTILS_H

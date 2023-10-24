@@ -10,7 +10,7 @@
 #include "cppgc/gc_visitor.h"
 #include "foundation/logging.h"
 
-namespace webf {
+namespace mercury {
 
 ScriptWrappable::ScriptWrappable(JSContext* ctx)
     : ctx_(ctx),
@@ -304,4 +304,4 @@ void ScriptWrappable::ReleaseAlive() {
   is_alive = false;
 }
 
-}  // namespace webf
+}  // namespace mercury

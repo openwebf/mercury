@@ -34,7 +34,7 @@ const getPolyFillHeader = (outputName) => `/*
 
 #include "core/executing_context.h"
 
-void initWebF${outputName}(webf::ExecutingContext *context);
+void initMercury${outputName}(mercury::ExecutingContext *context);
 
 #endif // ${outputName.toUpperCase()}_H
 `;
@@ -61,7 +61,7 @@ const getPolyFillSource = (source, outputName) => `/*
 
 ${getPolyFillJavaScriptSource(source)}
 
-void initWebF${outputName}(webf::ExecutingContext *context) {
+void initMercury${outputName}(mercury::ExecutingContext *context) {
   ${getPolyfillEvalCall()}
 }
   `;

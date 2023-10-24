@@ -4,18 +4,18 @@
  */
 import 'dart:io';
 
-import 'package:webf/webf.dart';
+import 'package:mercury/mercury.dart';
 
 // TODO: Don't use header to mark context.
 const String HttpHeaderContext = 'x-context';
 
-class WebFHttpOverrides extends HttpOverrides {
-  static WebFHttpOverrides? _instance;
+class MercuryHttpOverrides extends HttpOverrides {
+  static MercuryHttpOverrides? _instance;
 
-  WebFHttpOverrides._();
+  MercuryHttpOverrides._();
 
-  factory WebFHttpOverrides.instance() {
-    _instance ??= WebFHttpOverrides._();
+  factory MercuryHttpOverrides.instance() {
+    _instance ??= MercuryHttpOverrides._();
     return _instance!;
   }
 
@@ -34,11 +34,11 @@ class WebFHttpOverrides extends HttpOverrides {
   final HttpOverrides? parentHttpOverrides = HttpOverrides.current;
   final Map<int, HttpClientInterceptor> _contextIdToHttpClientInterceptorMap = <int, HttpClientInterceptor>{};
 
-  void registerWebFContext(int contextId, HttpClientInterceptor httpClientInterceptor) {
+  void registerMercuryContext(int contextId, HttpClientInterceptor httpClientInterceptor) {
     _contextIdToHttpClientInterceptorMap[contextId] = httpClientInterceptor;
   }
 
-  bool unregisterWebFContext(int contextId) {
+  bool unregisterMercuryContext(int contextId) {
     // Returns true if [value] was in the map, false otherwise.
     return _contextIdToHttpClientInterceptorMap.remove(contextId) != null;
   }
@@ -77,11 +77,11 @@ class WebFHttpOverrides extends HttpOverrides {
   }
 }
 
-WebFHttpOverrides setupHttpOverrides(HttpClientInterceptor? httpClientInterceptor, {required int contextId}) {
-  final WebFHttpOverrides httpOverrides = WebFHttpOverrides.instance();
+MercuryHttpOverrides setupHttpOverrides(HttpClientInterceptor? httpClientInterceptor, {required int contextId}) {
+  final MercuryHttpOverrides httpOverrides = MercuryHttpOverrides.instance();
 
   if (httpClientInterceptor != null) {
-    httpOverrides.registerWebFContext(contextId, httpClientInterceptor);
+    httpOverrides.registerMercuryContext(contextId, httpClientInterceptor);
   }
 
   HttpOverrides.global = httpOverrides;
@@ -99,7 +99,7 @@ String getOrigin(Uri uri) {
 
 // @TODO: Remove controller dependency.
 Uri getEntrypointUri(int? contextId) {
-  WebFController? controller = WebFController.getControllerOfJSContextId(contextId);
+  MercuryController? controller = MercuryController.getControllerOfJSContextId(contextId);
   String url = controller?.url ?? '';
-  return Uri.tryParse(url) ?? WebFController.fallbackBundleUri(contextId ?? 0);
+  return Uri.tryParse(url) ?? MercuryController.fallbackBundleUri(contextId ?? 0);
 }

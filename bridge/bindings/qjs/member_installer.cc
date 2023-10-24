@@ -8,7 +8,7 @@
 #include "core/executing_context.h"
 #include "qjs_engine_patch.h"
 
-namespace webf {
+namespace mercury {
 
 int combinePropFlags(JSPropFlag a, JSPropFlag b) {
   return a | b;
@@ -78,4 +78,4 @@ void MemberInstaller::InstallFunctions(ExecutingContext* context,
   }
 }
 
-}  // namespace webf
+}  // namespace mercury

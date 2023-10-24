@@ -6,7 +6,7 @@
 #include "built_in_string.h"
 #include "executing_context.h"
 
-namespace webf {
+namespace mercury {
 
 JSValue ExecutionContextData::constructorForType(const WrapperTypeInfo* type) {
   auto it = constructor_map_.find(type);
@@ -86,4 +86,4 @@ void ExecutionContextData::Dispose() {
   }
 }
 
-}  // namespace webf
+}  // namespace mercury

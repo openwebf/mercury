@@ -7,7 +7,7 @@
 #include "foundation/logging.h"
 #include "module_callback.h"
 
-namespace webf {
+namespace mercury {
 
 struct ModuleContext {
   ModuleContext(ExecutingContext* context, const std::shared_ptr<ModuleCallback>& callback)
@@ -28,7 +28,7 @@ NativeValue* handleInvokeModuleTransientCallback(void* ptr,
 
   if (moduleContext->callback == nullptr) {
     JSValue exception = JS_ThrowTypeError(moduleContext->context->ctx(),
-                                          "Failed to execute '__webf_invoke_module__': callback is null.");
+                                          "Failed to execute '__mercury_invoke_module__': callback is null.");
     context->HandleException(&exception);
     return nullptr;
   }
@@ -78,23 +78,23 @@ NativeValue* handleInvokeModuleUnexpectedCallback(void* callbackContext,
   return nullptr;
 }
 
-ScriptValue ModuleManager::__webf_invoke_module__(ExecutingContext* context,
+ScriptValue ModuleManager::__mercury_invoke_module__(ExecutingContext* context,
                                                   const AtomicString& module_name,
                                                   const AtomicString& method,
                                                   ExceptionState& exception) {
   ScriptValue empty = ScriptValue::Empty(context->ctx());
-  return __webf_invoke_module__(context, module_name, method, empty, nullptr, exception);
+  return __mercury_invoke_module__(context, module_name, method, empty, nullptr, exception);
 }
 
-ScriptValue ModuleManager::__webf_invoke_module__(ExecutingContext* context,
+ScriptValue ModuleManager::__mercury_invoke_module__(ExecutingContext* context,
                                                   const AtomicString& module_name,
                                                   const AtomicString& method,
                                                   ScriptValue& params_value,
                                                   ExceptionState& exception) {
-  return __webf_invoke_module__(context, module_name, method, params_value, nullptr, exception);
+  return __mercury_invoke_module__(context, module_name, method, params_value, nullptr, exception);
 }
 
-ScriptValue ModuleManager::__webf_invoke_module__(ExecutingContext* context,
+ScriptValue ModuleManager::__mercury_invoke_module__(ExecutingContext* context,
                                                   const AtomicString& module_name,
                                                   const AtomicString& method,
                                                   ScriptValue& params_value,
@@ -109,7 +109,7 @@ ScriptValue ModuleManager::__webf_invoke_module__(ExecutingContext* context,
   if (context->dartMethodPtr()->invokeModule == nullptr) {
     exception.ThrowException(
         context->ctx(), ErrorType::InternalError,
-        "Failed to execute '__webf_invoke_module__': dart method (invokeModule) is not registered.");
+        "Failed to execute '__mercury_invoke_module__': dart method (invokeModule) is not registered.");
     return ScriptValue::Empty(context->ctx());
   }
 
@@ -136,7 +136,7 @@ ScriptValue ModuleManager::__webf_invoke_module__(ExecutingContext* context,
   return return_value;
 }
 
-void ModuleManager::__webf_add_module_listener__(ExecutingContext* context,
+void ModuleManager::__mercury_add_module_listener__(ExecutingContext* context,
                                                  const AtomicString& module_name,
                                                  const std::shared_ptr<QJSFunction>& handler,
                                                  ExceptionState& exception) {
@@ -144,14 +144,14 @@ void ModuleManager::__webf_add_module_listener__(ExecutingContext* context,
   context->ModuleListeners()->AddModuleListener(module_name, listener);
 }
 
-void ModuleManager::__webf_remove_module_listener__(ExecutingContext* context,
+void ModuleManager::__mercury_remove_module_listener__(ExecutingContext* context,
                                                     const AtomicString& module_name,
                                                     ExceptionState& exception_state) {
   context->ModuleListeners()->RemoveModuleListener(module_name);
 }
 
-void ModuleManager::__webf_clear_module_listener__(ExecutingContext* context, ExceptionState& exception_state) {
+void ModuleManager::__mercury_clear_module_listener__(ExecutingContext* context, ExceptionState& exception_state) {
   context->ModuleListeners()->Clear();
 }
 
-}  // namespace webf
+}  // namespace mercury

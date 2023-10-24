@@ -1,8 +1,8 @@
-#import "WebFPlugin.h"
+#import "MercuryPlugin.h"
 
 static FlutterMethodChannel *methodChannel = nil;
 
-@implementation WebFPlugin
+@implementation MercuryPlugin
 
 + (FlutterMethodChannel *) getMethodChannel {
   return methodChannel;
@@ -11,11 +11,11 @@ static FlutterMethodChannel *methodChannel = nil;
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
   NSObject<FlutterBinaryMessenger>* messager = [registrar messenger];
   FlutterMethodChannel* channel = [FlutterMethodChannel
-      methodChannelWithName:@"webf"
+      methodChannelWithName:@"mercury"
             binaryMessenger:messager];
   methodChannel = channel;
 
-  WebFPlugin* instance = [[WebFPlugin alloc] initWithRegistrar: registrar];
+  MercuryPlugin* instance = [[MercuryPlugin alloc] initWithRegistrar: registrar];
   [registrar addMethodCallDelegate:instance channel:channel];
 }
 
@@ -35,7 +35,7 @@ static FlutterMethodChannel *methodChannel = nil;
 
 - (NSString*) getTemporaryDirectory {
   NSArray<NSString *>* paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-  return [paths.firstObject stringByAppendingString: @"/WebF"];
+  return [paths.firstObject stringByAppendingString: @"/Mercury"];
 }
 
 @end

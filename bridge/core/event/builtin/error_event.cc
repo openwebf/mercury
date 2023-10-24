@@ -5,7 +5,7 @@
 #include "error_event.h"
 #include "event_type_names.h"
 
-namespace webf {
+namespace mercury {
 
 ErrorEvent* ErrorEvent::Create(ExecutingContext* context, const std::string& message) {
   return MakeGarbageCollected<ErrorEvent>(context, message);
@@ -49,4 +49,4 @@ bool ErrorEvent::IsErrorEvent() const {
   return true;
 }
 
-}  // namespace webf
+}  // namespace mercury

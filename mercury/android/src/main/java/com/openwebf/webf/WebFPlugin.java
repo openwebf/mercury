@@ -1,4 +1,4 @@
-package com.openwebf.webf;
+package com.openwebf.mercury;
 
 import android.content.Context;
 
@@ -11,9 +11,9 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 /**
- * WebFPlugin
+ * MercuryPlugin
  */
-public class WebFPlugin implements FlutterPlugin, MethodCallHandler {
+public class MercuryPlugin implements FlutterPlugin, MethodCallHandler {
   /// The MethodChannel that will the communication between Flutter and native Android
   ///
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
@@ -21,7 +21,7 @@ public class WebFPlugin implements FlutterPlugin, MethodCallHandler {
   public MethodChannel channel;
   private FlutterEngine flutterEngine;
   private Context mContext;
-  private WebF mWebF;
+  private Mercury mMercury;
 
   // This static function is optional and equivalent to onAttachedToEngine. It supports the old
   // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
@@ -33,8 +33,8 @@ public class WebFPlugin implements FlutterPlugin, MethodCallHandler {
   // depending on the user's project. onAttachedToEngine or registerWith must both be defined
   // in the same class.
   public static void registerWith(Registrar registrar) {
-    final MethodChannel channel = new MethodChannel(registrar.messenger(), "webf");
-    WebFPlugin plugin = new WebFPlugin();
+    final MethodChannel channel = new MethodChannel(registrar.messenger(), "mercury");
+    MercuryPlugin plugin = new MercuryPlugin();
     plugin.mContext = registrar.context();
     channel.setMethodCallHandler(plugin);
   }
@@ -43,16 +43,16 @@ public class WebFPlugin implements FlutterPlugin, MethodCallHandler {
   public void onAttachedToEngine(FlutterPluginBinding flutterPluginBinding) {
     loadLibrary();
     mContext = flutterPluginBinding.getApplicationContext();
-    channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "webf");
+    channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "mercury");
     flutterEngine = flutterPluginBinding.getFlutterEngine();
     channel.setMethodCallHandler(this);
   }
 
-  WebF getWebF() {
-    if (mWebF == null) {
-      mWebF = WebF.get(flutterEngine);
+  Mercury getMercury() {
+    if (mMercury == null) {
+      mMercury = Mercury.get(flutterEngine);
     }
-    return mWebF;
+    return mMercury;
   }
 
   private static boolean isLibraryLoaded = false;
@@ -60,8 +60,8 @@ public class WebFPlugin implements FlutterPlugin, MethodCallHandler {
     if (isLibraryLoaded) {
       return;
     }
-    // Loads `libwebf.so`.
-    System.loadLibrary("webf");
+    // Loads `libmercury.so`.
+    System.loadLibrary("mercury");
     // Loads `libquickjs.so`.
     System.loadLibrary("quickjs");
     isLibraryLoaded = true;
@@ -71,8 +71,8 @@ public class WebFPlugin implements FlutterPlugin, MethodCallHandler {
   public void onMethodCall(MethodCall call, Result result) {
     switch (call.method) {
       case "getDynamicLibraryPath": {
-        WebF webf = getWebF();
-        result.success(webf == null ? "" : webf.getDynamicLibraryPath());
+        Mercury mercury = getMercury();
+        result.success(mercury == null ? "" : mercury.getDynamicLibraryPath());
         break;
       }
       case "getTemporaryDirectory":
@@ -86,13 +86,13 @@ public class WebFPlugin implements FlutterPlugin, MethodCallHandler {
   @Override
   public void onDetachedFromEngine(FlutterPluginBinding binding) {
     channel.setMethodCallHandler(null);
-    WebF webf = WebF.get(flutterEngine);
-    if (webf == null) return;
-    webf.destroy();
+    Mercury mercury = Mercury.get(flutterEngine);
+    if (mercury == null) return;
+    mercury.destroy();
     flutterEngine = null;
   }
 
   private String getTemporaryDirectory() {
-    return mContext.getCacheDir().getPath() + "/WebF";
+    return mContext.getCacheDir().getPath() + "/Mercury";
   }
 }

@@ -10,7 +10,7 @@
 #include "foundation/native_string.h"
 #include "qjs_engine_patch.h"
 
-namespace webf {
+namespace mercury {
 
 AtomicString AtomicString::Empty() {
   return built_in_string::kempty_string;
@@ -334,4 +334,4 @@ AtomicString AtomicString::RemoveCharacters(JSContext* ctx, CharacterMatchFuncti
   return RemoveCharactersInternal(ctx, *this, Character16(), length_, find_match);
 }
 
-}  // namespace webf
+}  // namespace mercury

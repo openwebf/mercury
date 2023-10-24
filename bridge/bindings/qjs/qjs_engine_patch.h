@@ -148,6 +148,6 @@ static inline uint32_t JS_AtomToUInt32(JSAtom atom) {
 }
 #endif
 
-webf::StringView JSAtomToStringView(JSRuntime* runtime, JSAtom atom);
+mercury::StringView JSAtomToStringView(JSRuntime* runtime, JSAtom atom);
 
 #endif  // BRIDGE_QJS_PATCH_H

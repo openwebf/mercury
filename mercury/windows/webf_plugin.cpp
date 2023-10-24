@@ -1,4 +1,4 @@
-#include "include/webf/webf_plugin.h"
+#include "include/mercury/mercury_plugin.h"
 
 // This must be included before many other Windows headers.
 #include <windows.h>
@@ -16,13 +16,13 @@
 
 namespace {
 
-class WebfPlugin : public flutter::Plugin {
+class MercuryPlugin : public flutter::Plugin {
  public:
   static void RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar);
 
-  WebfPlugin();
+  MercuryPlugin();
 
-  virtual ~WebfPlugin();
+  virtual ~MercuryPlugin();
 
  private:
   // Called when a method is called on this plugin's channel from Dart.
@@ -32,14 +32,14 @@ class WebfPlugin : public flutter::Plugin {
 };
 
 // static
-void WebfPlugin::RegisterWithRegistrar(
+void MercuryPlugin::RegisterWithRegistrar(
     flutter::PluginRegistrarWindows *registrar) {
   auto channel =
       std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
-          registrar->messenger(), "webf",
+          registrar->messenger(), "mercury",
           &flutter::StandardMethodCodec::GetInstance());
 
-  auto plugin = std::make_unique<WebfPlugin>();
+  auto plugin = std::make_unique<MercuryPlugin>();
 
   channel->SetMethodCallHandler(
       [plugin_pointer = plugin.get()](const auto &call, auto result) {
@@ -49,9 +49,9 @@ void WebfPlugin::RegisterWithRegistrar(
   registrar->AddPlugin(std::move(plugin));
 }
 
-WebfPlugin::WebfPlugin() {}
+MercuryPlugin::MercuryPlugin() {}
 
-WebfPlugin::~WebfPlugin() {}
+MercuryPlugin::~MercuryPlugin() {}
 
 std::string tcharVecToString(const std::vector<TCHAR>& tcharVec) {
 #if defined(UNICODE) || defined(_UNICODE)
@@ -65,13 +65,13 @@ std::string tcharVecToString(const std::vector<TCHAR>& tcharVec) {
     return result;
 }
 
-void WebfPlugin::HandleMethodCall(
+void MercuryPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue> &method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
   if (method_call.method_name().compare("getTemporaryDirectory") == 0) {
      // Get the required buffer size for the temporary directory path
     DWORD bufferSize = GetTempPath(0, nullptr);
-    
+
     // Allocate a buffer to store the temporary directory path
     std::vector<TCHAR> tempDirPath(bufferSize);
 
@@ -85,9 +85,9 @@ void WebfPlugin::HandleMethodCall(
 
 }  // namespace
 
-void WebfPluginRegisterWithRegistrar(
+void MercuryPluginRegisterWithRegistrar(
     FlutterDesktopPluginRegistrarRef registrar) {
-  WebfPlugin::RegisterWithRegistrar(
+  MercuryPlugin::RegisterWithRegistrar(
       flutter::PluginRegistrarManager::GetInstance()
           ->GetRegistrar<flutter::PluginRegistrarWindows>(registrar));
 }

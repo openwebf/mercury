@@ -4,7 +4,7 @@
  */
 
 import 'package:test/test.dart';
-import 'package:webf/foundation.dart';
+import 'package:mercury/foundation.dart';
 
 void main() {
   group('UriParser', () {

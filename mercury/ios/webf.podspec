@@ -2,11 +2,11 @@
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
 #
 Pod::Spec.new do |s|
-  s.name             = 'webf'
+  s.name             = 'mercury'
   s.version          = '0.14.0'
   s.summary          = 'Build flutter apps with HTML/CSS and JavaScript.'
   s.description      = <<-DESC
-  WebF (Web on Flutter) is a W3C standards-compliant web rendering engine based on Flutter, allowing web applications to run natively on Flutter.
+  Mercury is a W3C standards-compliant library with integrated JavaScript engine & extension utils based on Flutter, allowing JavaScript to run natively within Flutter.
                        DESC
   s.homepage         = 'https://openwebf.com'
   s.license          = { :file => '../LICENSE' }

@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace webf {
+namespace mercury {
 
 class ExecutingContext;
 
@@ -39,6 +39,6 @@ class RejectedPromises {
   std::vector<std::unique_ptr<Message>> report_handled_rejection_;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_BINDINGS_QJS_REJECTED_PROMISES_H_

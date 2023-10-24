@@ -12,7 +12,7 @@
 #include "foundation/native_string.h"
 #include "foundation/native_value_converter.h"
 
-namespace webf {
+namespace mercury {
 
 void NativeBindingObject::HandleCallFromDartSide(NativeBindingObject* binding_object,
                                                  NativeValue* return_value,
@@ -258,4 +258,4 @@ bool BindingObject::IsCanvasGradient() const {
   return false;
 }
 
-}  // namespace webf
+}  // namespace mercury

@@ -4,14 +4,14 @@
  */
 
 #include <gtest/gtest.h>
-#include "webf_test_env.h"
+#include "mercury_test_env.h"
 
-namespace webf {
+namespace mercury {
 
 TEST(ModuleManager, ShouldReturnCorrectValue) {
   bool static errorCalled = false;
   auto env = TEST_init([](int32_t contextId, const char* errmsg) { errorCalled = true; });
-  webf::WebFPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {};
+  mercury::MercuryPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {};
 
   auto context = env->page()->GetExecutingContext();
 
@@ -25,7 +25,7 @@ let object = {
         }
     }
 };
-let result = webf.methodChannel.invokeMethod('abc', 'fn', object);
+let result = mercury.methodChannel.invokeMethod('abc', 'fn', object);
 console.log(result);
 )");
   context->EvaluateJavaScript(code.c_str(), code.size(), "vm://", 0);
@@ -40,7 +40,7 @@ TEST(ModuleManager, shouldThrowErrorWhenBadJSON) {
     EXPECT_EQ(stdErrorMsg.find("TypeError: circular reference") != std::string::npos, true);
     errorCalled = true;
   });
-  webf::WebFPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {};
+  mercury::MercuryPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {};
 
   auto context = env->page()->GetExecutingContext();
 
@@ -55,7 +55,7 @@ let object = {
     }
 };
 object.other = object;
-webf.methodChannel.invokeMethod('abc', 'fn', object);
+mercury.methodChannel.invokeMethod('abc', 'fn', object);
 )");
   context->EvaluateJavaScript(code.c_str(), code.size(), "vm://", 0);
 
@@ -65,11 +65,11 @@ webf.methodChannel.invokeMethod('abc', 'fn', object);
 TEST(ModuleManager, invokeModuleError) {
   bool static logCalled = false;
   auto env = TEST_init([](int32_t contextId, const char* errmsg) {});
-  webf::WebFPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
+  mercury::MercuryPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
     logCalled = true;
     EXPECT_STREQ(
         message.c_str(),
-        "Error {columnNumber: 8, lineNumber: 9, message: 'webf://', stack: '    at __webf_invoke_module__ (native)\n"
+        "Error {columnNumber: 8, lineNumber: 9, message: 'mercury://', stack: '    at __mercury_invoke_module__ (native)\n"
         "    at f (vm://:9:8)\n"
         "    at <eval> (vm://:11:1)\n"
         "'}");
@@ -79,7 +79,7 @@ TEST(ModuleManager, invokeModuleError) {
 
   std::string code = std::string(R"(
 function f() {
-  webf.invokeModule('throwError', 'webf://', null, (e, error) => {
+  mercury.invokeModule('throwError', 'mercury://', null, (e, error) => {
     if (e) {
       console.log(e);
     } else {
@@ -94,4 +94,4 @@ f();
   EXPECT_EQ(logCalled, true);
 }
 
-}  // namespace webf
+}  // namespace mercury

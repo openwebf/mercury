@@ -5,7 +5,7 @@
 #include "script_promise.h"
 #include "qjs_engine_patch.h"
 
-namespace webf {
+namespace mercury {
 
 ScriptPromise::ScriptPromise(JSContext* ctx, JSValue promise) : ctx_(ctx) {
   if (JS_IsUndefined(promise) || JS_IsNull(promise))
@@ -40,4 +40,4 @@ ScriptValue ScriptPromise::ToValue() const {
 
 void ScriptPromise::Trace(GCVisitor* visitor) {}
 
-}  // namespace webf
+}  // namespace mercury

@@ -7,15 +7,15 @@ import 'dart:collection';
 import 'package:collection/collection.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
-import 'package:webf/bridge.dart';
-import 'package:webf/widget.dart';
-import 'package:webf/launcher.dart';
+import 'package:mercury/bridge.dart';
+import 'package:mercury/widget.dart';
+import 'package:mercury/launcher.dart';
 
-typedef BindingObjectOperation = void Function(WebFViewController? view, BindingObject bindingObject);
+typedef BindingObjectOperation = void Function(MercuryViewController? view, BindingObject bindingObject);
 
 class BindingContext {
   final int contextId;
-  final WebFViewController view;
+  final MercuryViewController view;
   final Pointer<NativeBindingObject> pointer;
 
   const BindingContext(this.view, this.contextId, this.pointer);
@@ -64,8 +64,8 @@ abstract class BindingObject<T> extends Iterable<T> {
   final BindingContext? _context;
 
   int? get contextId => _context?.contextId;
-  final WebFViewController? _ownerView;
-  WebFViewController get ownerView => _ownerView!;
+  final MercuryViewController? _ownerView;
+  MercuryViewController get ownerView => _ownerView!;
 
   Pointer<NativeBindingObject>? get pointer => _context?.pointer;
 
@@ -123,13 +123,13 @@ abstract class BindingObject<T> extends Iterable<T> {
   void initializeMethods(Map<String, BindingObjectMethod> methods);
 
   // Bind dart side object method to receive invoking from native side.
-  void _bind(WebFViewController? ownerView) {
+  void _bind(MercuryViewController? ownerView) {
     if (bind != null) {
       bind!(ownerView, this);
     }
   }
 
-  void _unbind(WebFViewController? ownerView) {
+  void _unbind(MercuryViewController? ownerView) {
     if (unbind != null) {
       unbind!(ownerView, this);
     }
@@ -280,7 +280,7 @@ dynamic invokeBindingMethodAsync(BindingObject bindingObject, List<dynamic> args
 // This function receive calling from binding side.
 void invokeBindingMethodFromNativeImpl(int contextId, Pointer<NativeBindingObject> nativeBindingObject,
     Pointer<NativeValue> returnValue, Pointer<NativeValue> nativeMethod, int argc, Pointer<NativeValue> argv) {
-  WebFController controller = WebFController.getControllerOfJSContextId(contextId)!;
+  MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
   dynamic method = fromNativeValue(controller.view, nativeMethod);
   List<dynamic> values = List.generate(argc, (i) {
     Pointer<NativeValue> nativeValue = argv.elementAt(i);

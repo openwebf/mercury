@@ -8,7 +8,7 @@
 
 #include "bindings/qjs/cppgc/garbage_collected.h"
 
-namespace webf {
+namespace mercury {
 
 class ExceptionState;
 
@@ -37,6 +37,6 @@ class DictionaryBase {
   virtual bool FillMembersWithQJSObject(JSContext* ctx, JSValue qjs_object, ExceptionState& exception_state) = 0;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_BINDINGS_QJS_DICTIONARY_BASE_H_

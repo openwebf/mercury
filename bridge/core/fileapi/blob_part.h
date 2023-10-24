@@ -11,7 +11,7 @@
 #include <utility>
 #include "bindings/qjs/exception_state.h"
 
-namespace webf {
+namespace mercury {
 
 class Blob;
 
@@ -50,6 +50,6 @@ class BlobPart {
   uint32_t byte_length_{0};
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_CORE_FILEAPI_BLOB_PART_H_

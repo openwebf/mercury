@@ -15,7 +15,7 @@
 #include "core/dom/node_list.h"
 #include "core/fileapi/blob_part.h"
 #include "core/fileapi/blob_property_bag.h"
-#include "core/frame/window.h"
+#include "core/frame/global.h"
 #include "core/html/html_body_element.h"
 #include "core/html/html_div_element.h"
 #include "core/html/html_element.h"
@@ -28,7 +28,7 @@
 #include "native_string_utils.h"
 #include "script_promise.h"
 
-namespace webf {
+namespace mercury {
 
 template <typename T>
 struct is_shared_ptr : std::false_type {};
@@ -571,6 +571,6 @@ struct Converter<IDLNullable<T, typename std::enable_if_t<std::is_base_of<Script
   }
 };
 
-};  // namespace webf
+};  // namespace mercury
 
 #endif  // BRIDGE_BINDINGS_QJS_CONVERTER_IMPL_H_

@@ -9,7 +9,7 @@
 #include "event_target.h"
 #include "foundation/native_value_converter.h"
 
-namespace webf {
+namespace mercury {
 
 Event::Event(ExecutingContext* context, const AtomicString& event_type)
     : Event(context,
@@ -107,7 +107,7 @@ void Event::SetCurrentTarget(EventTarget* target) {
   current_target_ = target;
 }
 
-void Event::NamedPropertyEnumerator(std::vector<AtomicString>& names, webf::ExceptionState&) {
+void Event::NamedPropertyEnumerator(std::vector<AtomicString>& names, mercury::ExceptionState&) {
   if (raw_event_ == nullptr)
     return;
 
@@ -173,7 +173,7 @@ void set_event_prop(JSContext* ctx,
 
 #define DEFAULT_EVENT_PROP_LEN 2
 
-bool Event::SetItem(const AtomicString& key, const ScriptValue& value, webf::ExceptionState& exception_state) {
+bool Event::SetItem(const AtomicString& key, const ScriptValue& value, mercury::ExceptionState& exception_state) {
   if (raw_event_ == nullptr)
     return false;
 
@@ -223,7 +223,7 @@ bool Event::SetItem(const AtomicString& key, const ScriptValue& value, webf::Exc
   return true;
 }
 
-bool Event::DeleteItem(const webf::AtomicString& key, webf::ExceptionState& exception_state) {
+bool Event::DeleteItem(const mercury::AtomicString& key, mercury::ExceptionState& exception_state) {
   if (raw_event_ == nullptr)
     return false;
 
@@ -357,4 +357,4 @@ void Event::Trace(GCVisitor* visitor) const {
   }
 }
 
-}  // namespace webf
+}  // namespace mercury

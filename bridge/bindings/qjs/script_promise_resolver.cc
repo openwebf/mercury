@@ -5,7 +5,7 @@
 #include "script_promise_resolver.h"
 #include "core/executing_context.h"
 
-namespace webf {
+namespace mercury {
 
 std::shared_ptr<ScriptPromiseResolver> ScriptPromiseResolver::Create(ExecutingContext* context) {
   return std::make_shared<ScriptPromiseResolver>(context);
@@ -57,4 +57,4 @@ void ScriptPromiseResolver::ResolveOrRejectImmediately(JSValue value) {
   context_->DrainPendingPromiseJobs();
 }
 
-}  // namespace webf
+}  // namespace mercury

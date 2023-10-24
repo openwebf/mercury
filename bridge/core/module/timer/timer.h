@@ -9,7 +9,7 @@
 #include "bindings/qjs/script_wrappable.h"
 #include "dom_timer_coordinator.h"
 
-namespace webf {
+namespace mercury {
 
 class DOMTimer {
  public:
@@ -45,6 +45,6 @@ class DOMTimer {
   std::shared_ptr<QJSFunction> callback_;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_DOM_TIMER_H

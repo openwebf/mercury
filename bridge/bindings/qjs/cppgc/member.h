@@ -13,7 +13,7 @@
 #include "foundation/casting.h"
 #include "mutation_scope.h"
 
-namespace webf {
+namespace mercury {
 
 class ScriptWrappable;
 
@@ -112,6 +112,6 @@ class Member {
   JSRuntime* runtime_{nullptr};
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_BINDINGS_QJS_CPPGC_MEMBER_H_

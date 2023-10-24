@@ -8,7 +8,7 @@ import { fetch, Request, Response, Headers } from './fetch';
 import { XMLHttpRequest } from './xhr';
 import { URLSearchParams } from './url-search-params';
 import { URL } from './url';
-import { webf } from './webf';
+import { mercury } from './mercury';
 import { WebSocket } from './websocket'
 
 defineGlobalProperty('console', console);
@@ -19,7 +19,7 @@ defineGlobalProperty('fetch', fetch);
 defineGlobalProperty('XMLHttpRequest', XMLHttpRequest);
 defineGlobalProperty('URLSearchParams', URLSearchParams);
 defineGlobalProperty('URL', URL);
-defineGlobalProperty('webf', webf);
+defineGlobalProperty('mercury', mercury);
 defineGlobalProperty('WebSocket', WebSocket);
 
 function defineGlobalProperty(key: string, value: any, isEnumerable: boolean = true) {

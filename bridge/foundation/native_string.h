@@ -13,7 +13,7 @@
 
 #include "foundation/macros.h"
 
-namespace webf {
+namespace mercury {
 
 // SharedNativeString is a container class that accepts allocated UTF-16 strings,
 // and users are responsible for freeing their strings
@@ -42,6 +42,6 @@ struct AutoFreeNativeString : public SharedNativeString {
   ~AutoFreeNativeString();
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_NATIVE_STRING_H

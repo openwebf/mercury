@@ -6,7 +6,7 @@
 #include "js_based_event_listener.h"
 #include "core/dom/events/event.h"
 
-namespace webf {
+namespace mercury {
 
 // Implements step 2. of "inner invoke".
 // https://dom.spec.whatwg.org/#concept-event-listener-inner-invoke
@@ -23,4 +23,4 @@ void JSBasedEventListener::Invoke(ExecutingContext* context, Event* event, Excep
 
 JSBasedEventListener::JSBasedEventListener() {}
 
-}  // namespace webf
+}  // namespace mercury

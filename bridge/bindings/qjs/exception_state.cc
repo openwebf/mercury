@@ -4,7 +4,7 @@
  */
 #include "exception_state.h"
 
-namespace webf {
+namespace mercury {
 
 void ExceptionState::ThrowException(JSContext* ctx, ErrorType type, const std::string& message) {
   switch (type) {
@@ -42,4 +42,4 @@ JSValue ExceptionState::ToQuickJS() {
   return exception_;
 }
 
-}  // namespace webf
+}  // namespace mercury

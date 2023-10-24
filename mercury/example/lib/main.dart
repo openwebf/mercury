@@ -4,8 +4,8 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:webf/webf.dart';
-import 'package:webf/devtools.dart';
+import 'package:mercury/mercury.dart';
+import 'package:mercury/devtools.dart';
 
 void main() {
   runApp(MyApp());
@@ -55,7 +55,7 @@ class _MyHomePageState extends State<MyBrowser> {
     final MediaQueryData queryData = MediaQuery.of(context);
     final TextEditingController textEditingController = TextEditingController();
 
-    WebF? _kraken;
+    Mercury? _kraken;
     AppBar appBar = AppBar(
       backgroundColor: Colors.black87,
       titleSpacing: 10.0,
@@ -65,7 +65,7 @@ class _MyHomePageState extends State<MyBrowser> {
           controller: textEditingController,
           onSubmitted: (value) {
             textEditingController.text = value;
-            _kraken?.load(WebFBundle.fromUrl(value));
+            _kraken?.load(MercuryBundle.fromUrl(value));
           },
           decoration: InputDecoration(
             hintText: 'Enter URL',
@@ -92,11 +92,11 @@ class _MyHomePageState extends State<MyBrowser> {
           // in the middle of the parent.
           child: Column(
             children: [
-              _kraken = WebF(
+              _kraken = Mercury(
                 devToolsService: ChromeDevToolsService(),
                 viewportWidth: viewportSize.width - queryData.padding.horizontal,
                 viewportHeight: viewportSize.height - appBar.preferredSize.height - queryData.padding.vertical,
-                bundle: WebFBundle.fromUrl('assets:assets/bundle.html'),
+                bundle: MercuryBundle.fromUrl('assets:assets/bundle.html'),
               ),
             ],
           ),

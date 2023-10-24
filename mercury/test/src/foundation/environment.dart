@@ -4,12 +4,12 @@
  */
 
 import 'package:test/test.dart';
-import 'package:webf/foundation.dart';
+import 'package:mercury/foundation.dart';
 
 void main() {
   group('environment', () {
-    test('getWebFTemporaryPath()', () async {
-      String tempPath = await getWebFTemporaryPath();
+    test('getMercuryTemporaryPath()', () async {
+      String tempPath = await getMercuryTemporaryPath();
       expect(tempPath, './temp');
     });
   });

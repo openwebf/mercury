@@ -8,7 +8,7 @@
 #include "event_listener.h"
 #include "foundation/macros.h"
 
-namespace webf {
+namespace mercury {
 
 class AddEventListenerOptions;
 class EventListenerOptions;
@@ -16,7 +16,7 @@ class EventListenerOptions;
 // RegisteredEventListener represents 'event listener' defined in the DOM
 // standard. https://dom.spec.whatwg.org/#concept-event-listener
 class RegisteredEventListener final {
-  WEBF_DISALLOW_NEW()
+  MERCURY_DISALLOW_NEW()
  public:
   RegisteredEventListener();
   RegisteredEventListener(const std::shared_ptr<EventListener>& listener,
@@ -58,6 +58,6 @@ class RegisteredEventListener final {
 
 bool operator==(const RegisteredEventListener&, const RegisteredEventListener&);
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_CORE_DOM_EVENTS_REGISTERED_EVENTLISTENER_H_

@@ -7,8 +7,8 @@ import 'package:archive/archive.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/foundation.dart';
 import 'package:quiver/collection.dart';
-import 'package:webf/bridge.dart';
-import 'package:webf/foundation.dart';
+import 'package:mercury/bridge.dart';
+import 'package:mercury/foundation.dart';
 
 enum ByteCodeCacheMode {
   /// Default cache usage mode: If the JavaScript source has a corresponding bytecode file,
@@ -69,7 +69,7 @@ class QuickJSByteCodeCacheObject {
               'read bytecode cache failed, reason: checksum failed');
         }
       } else {
-        // the cache files are created by older WebF versions, which doesn't contains the checksum files.
+        // the cache files are created by older Mercury versions, which doesn't contains the checksum files.
         // remove the cached file and rollback to init stage.
         await cacheFile.delete();
       }
@@ -122,7 +122,7 @@ class QuickJSByteCodeCache {
       return _cacheDirectory!;
     }
 
-    final String appTemporaryPath = await getWebFTemporaryPath();
+    final String appTemporaryPath = await getMercuryTemporaryPath();
     final Directory cacheDirectory =
         Directory(path.join(appTemporaryPath, 'ByteCodeCaches'));
     bool isThere = await cacheDirectory.exists();
@@ -133,10 +133,10 @@ class QuickJSByteCodeCache {
   }
 
   static String _getCacheHash(String code) {
-    WebFInfo webFInfo = getWebFInfo();
+    MercuryInfo mercuryInfo = getMercuryInfo();
     // Uri uriWithoutFragment = uri;
     // return uriWithoutFragment.toString();
-    return '%${code.hashCode}_${webFInfo.appRevision}%';
+    return '%${code.hashCode}_${mercuryInfo.appRevision}%';
   }
 
   // Get the CacheObject by uri, no validation needed here.

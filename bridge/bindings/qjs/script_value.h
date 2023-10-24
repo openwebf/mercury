@@ -15,7 +15,7 @@
 #include "foundation/native_value.h"
 #include "qjs_engine_patch.h"
 
-namespace webf {
+namespace mercury {
 
 class ExecutingContext;
 class WrapperTypeInfo;
@@ -26,7 +26,7 @@ class GCVisitor;
 // QuickJS running details.
 class ScriptValue final {
   // ScriptValue should only allocate at stack.
-  WEBF_DISALLOW_NEW();
+  MERCURY_DISALLOW_NEW();
 
  public:
   // Create an errorObject from string error message.
@@ -87,6 +87,6 @@ class ScriptValueConverter {
   using ImplType = T;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_SCRIPT_VALUE_H

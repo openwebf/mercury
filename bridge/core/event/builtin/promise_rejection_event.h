@@ -9,7 +9,7 @@
 #include "core/dom/events/event.h"
 #include "qjs_promise_rejection_event_init.h"
 
-namespace webf {
+namespace mercury {
 
 class PromiseRejectionEvent : public Event {
   DEFINE_WRAPPERTYPEINFO();
@@ -41,6 +41,6 @@ class PromiseRejectionEvent : public Event {
   ScriptValue reason_;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_CORE_EVENTS_PROMISE_REJECTION_EVENT_H_

@@ -12,7 +12,7 @@
 #include "foundation/macros.h"
 #include "wrapper_type_info.h"
 
-namespace webf {
+namespace mercury {
 
 class ScriptValue;
 class GCVisitor;
@@ -99,6 +99,6 @@ Local<T>::~Local<T>() {
   }
 }
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_SCRIPT_WRAPPABLE_H

@@ -9,7 +9,7 @@
 #include <vector>
 #include "converter.h"
 
-namespace webf {
+namespace mercury {
 
 struct IDLTypeBase {
   using ImplType = void;
@@ -78,6 +78,6 @@ struct IDLSequence final : public IDLTypeBase {
   using ImplType = typename std::vector<T>;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_BINDINGS_QJS_CONVERTER_TS_TYPE_H_

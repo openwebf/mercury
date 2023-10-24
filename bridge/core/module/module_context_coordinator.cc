@@ -4,10 +4,10 @@
  */
 #include "module_context_coordinator.h"
 
-namespace webf {
+namespace mercury {
 
 void ModuleContextCoordinator::AddModuleContext(std::shared_ptr<ModuleContext> module_context) {
   module_contexts_.push_front(std::move(module_context));
 }
 
-}  // namespace webf
+}  // namespace mercury

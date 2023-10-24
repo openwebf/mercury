@@ -20,32 +20,32 @@
 
 #define assert_m(exp, msg) assert(((void)msg, exp))
 
-#define WEBF_DISALLOW_COPY(TypeName) TypeName(const TypeName&) = delete
+#define MERCURY_DISALLOW_COPY(TypeName) TypeName(const TypeName&) = delete
 
-#define WEBF_DISALLOW_ASSIGN(TypeName) TypeName& operator=(const TypeName&) = delete
+#define MERCURY_DISALLOW_ASSIGN(TypeName) TypeName& operator=(const TypeName&) = delete
 
-#define WEBF_DISALLOW_MOVE(TypeName) \
+#define MERCURY_DISALLOW_MOVE(TypeName) \
   TypeName(TypeName&&) = delete;     \
   TypeName& operator=(TypeName&&) = delete
 
-#define WEBF_STATIC_ONLY(Type)           \
+#define MERCURY_STATIC_ONLY(Type)           \
   Type() = delete;                       \
   Type(const Type&) = delete;            \
   Type& operator=(const Type&) = delete; \
   void* operator new(size_t) = delete;   \
   void* operator new(size_t, void*) = delete
 
-#define WEBF_STACK_ALLOCATED()         \
+#define MERCURY_STACK_ALLOCATED()         \
  private:                              \
   void* operator new(size_t) = delete; \
   void* operator new(size_t, void*) = delete
 
-// WEBF_DISALLOW_NEW(): Cannot be allocated with new operators but can be a
+// MERCURY_DISALLOW_NEW(): Cannot be allocated with new operators but can be a
 // part of object, a value object in collections or stack allocated. If it has
 // Members you need a trace method and the containing object needs to call that
 // trace method.
 //
-#define WEBF_DISALLOW_NEW()                                       \
+#define MERCURY_DISALLOW_NEW()                                       \
  public:                                                          \
   using IsDisallowNewMarker = int;                                \
   void* operator new(size_t, void* location) { return location; } \
@@ -53,18 +53,18 @@
  private:                                                         \
   void* operator new(size_t) = delete;
 
-#define WEBF_DISALLOW_COPY_AND_ASSIGN(TypeName) \
+#define MERCURY_DISALLOW_COPY_AND_ASSIGN(TypeName) \
   TypeName(const TypeName&) = delete;           \
   TypeName& operator=(const TypeName&) = delete
 
-#define WEBF_DISALLOW_COPY_ASSIGN_AND_MOVE(TypeName) \
+#define MERCURY_DISALLOW_COPY_ASSIGN_AND_MOVE(TypeName) \
   TypeName(const TypeName&) = delete;                \
   TypeName(TypeName&&) = delete;                     \
   TypeName& operator=(const TypeName&) = delete;     \
   TypeName& operator=(TypeName&&) = delete
 
-#define WEBF_DISALLOW_IMPLICIT_CONSTRUCTORS(TypeName) \
+#define MERCURY_DISALLOW_IMPLICIT_CONSTRUCTORS(TypeName) \
   TypeName() = delete;                                \
-  WEBF_DISALLOW_COPY_ASSIGN_AND_MOVE(TypeName)
+  MERCURY_DISALLOW_COPY_ASSIGN_AND_MOVE(TypeName)
 
 #endif  // BRIDGE_MACROS_H

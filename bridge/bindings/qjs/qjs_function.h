@@ -7,7 +7,7 @@
 
 #include "script_value.h"
 
-namespace webf {
+namespace mercury {
 
 using QJSFunctionCallback = ScriptValue (*)(JSContext* ctx,
                                             const ScriptValue& this_val,
@@ -54,6 +54,6 @@ class QJSFunction {
   JSValue function_{JS_NULL};
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_QJS_FUNCTION_H
