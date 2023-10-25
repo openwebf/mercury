@@ -58,8 +58,10 @@ class Mercury extends InheritedWidget {
       this.uriParser,
       // Callback functions when loading Javascript scripts failed.
       this.onLoadError,
-      this.onJSError})
-      : super(key: key); // TODO
+      this.onJSError,
+      required Widget child
+      })
+    : super(child: Row(children: [child]));
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
