@@ -40,7 +40,7 @@ namespace kraken::debugger {
 
 void BridgeProtocolHandler::handlePageReload() {
   // FIXME: reload with devtolls are not full working yet (debugger not working).
-  // getDartMethod()->flushUICommand();
+  // getDartMethod()->flushMainCommand();
   // getDartMethod()->reloadApp(m_bridge->contextId);
 }
 

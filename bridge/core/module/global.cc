@@ -18,7 +18,7 @@
 namespace mercury {
 
 Window::Window(ExecutingContext* context) : EventTargetWithInlineData(context) {
-  context->uiCommandBuffer()->addCommand(UICommand::kCreateWindow, nullptr, (void*)bindingObject(), nullptr);
+  context->uiCommandBuffer()->addCommand(MainCommand::kCreateWindow, nullptr, (void*)bindingObject(), nullptr);
 }
 
 // https://infra.spec.whatwg.org/#ascii-whitespace
@@ -207,14 +207,14 @@ ComputedCssStyleDeclaration* Window::getComputedStyle(Element* element,
 }
 
 double Window::requestAnimationFrame(const std::shared_ptr<QJSFunction>& callback, ExceptionState& exceptionState) {
-  if (GetExecutingContext()->dartMethodPtr()->flushUICommand == nullptr) {
+  if (GetExecutingContext()->dartMethodPtr()->flushMainCommand == nullptr) {
     exceptionState.ThrowException(ctx(), ErrorType::InternalError,
-                                  "Failed to execute 'flushUICommand': dart method (flushUICommand) executed "
+                                  "Failed to execute 'flushMainCommand': dart method (flushMainCommand) executed "
                                   "with unexpected error.");
     return 0;
   }
 
-  GetExecutingContext()->FlushUICommand();
+  GetExecutingContext()->FlushMainCommand();
   auto frame_callback = FrameCallback::Create(GetExecutingContext(), callback);
   uint32_t request_id = GetExecutingContext()->document()->RequestAnimationFrame(frame_callback, exceptionState);
   // `-1` represents some error occurred.

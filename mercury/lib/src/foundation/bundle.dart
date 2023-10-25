@@ -188,8 +188,9 @@ class DataBundle extends MercuryBundle {
 // The bundle that source from http or https.
 class NetworkBundle extends MercuryBundle {
   // Do not access this field directly; use [_httpClient] instead.
-  static final HttpClient _sharedHttpClient = HttpClient()
-    ..userAgent = NavigatorModule.getUserAgent();
+  static final HttpClient _sharedHttpClient = HttpClient();
+  //  ..userAgent = NavigatorModule.getUserAgent();
+  // TODO: Add API for above
 
   NetworkBundle(String url, {this.additionalHttpHeaders}) : super(url);
 

@@ -8,17 +8,16 @@ import 'package:collection/collection.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mercury/bridge.dart';
-import 'package:mercury/widget.dart';
 import 'package:mercury/launcher.dart';
 
-typedef BindingObjectOperation = void Function(MercuryViewController? view, BindingObject bindingObject);
+typedef BindingObjectOperation = void Function(MercuryContextController? context, BindingObject bindingObject);
 
 class BindingContext {
   final int contextId;
-  final MercuryViewController view;
+  final MercuryContextController context;
   final Pointer<NativeBindingObject> pointer;
 
-  const BindingContext(this.view, this.contextId, this.pointer);
+  const BindingContext(this.context, this.contextId, this.pointer);
 }
 
 typedef BindingPropertyGetter = dynamic Function();
@@ -64,22 +63,15 @@ abstract class BindingObject<T> extends Iterable<T> {
   final BindingContext? _context;
 
   int? get contextId => _context?.contextId;
-  final MercuryViewController? _ownerView;
-  MercuryViewController get ownerView => _ownerView!;
+  final MercuryContextController? _ownerContext;
+  MercuryContextController get ownerContext => _ownerContext!;
 
   Pointer<NativeBindingObject>? get pointer => _context?.pointer;
 
-  BindingObject([BindingContext? context]) : _context = context, _ownerView = context?.view {
-    _bind(_ownerView);
+  BindingObject([BindingContext? context]) : _context = context, _ownerContext = context?.context {
+    _bind(_ownerContext);
     initializeProperties(_properties);
     initializeMethods(_methods);
-
-    if (this is WidgetElement && !_alreadySyncWidgetElements.containsKey(runtimeType)) {
-      bool success = _syncPropertiesAndMethodsToNativeSlow();
-      if (success) {
-        _alreadySyncWidgetElements[runtimeType] = true;
-      }
-    }
   }
 
   bool _syncPropertiesAndMethodsToNativeSlow() {
@@ -110,7 +102,7 @@ abstract class BindingObject<T> extends Iterable<T> {
     toNativeValue(method, 'syncPropertiesAndMethods');
     f(pointer!, returnValue, method, 3, arguments, {});
     malloc.free(arguments);
-    return fromNativeValue(ownerView, returnValue) == true;
+    return fromNativeValue(ownerContext, returnValue) == true;
   }
 
   final SplayTreeMap<String, BindingObjectProperty> _properties = SplayTreeMap();
@@ -123,15 +115,15 @@ abstract class BindingObject<T> extends Iterable<T> {
   void initializeMethods(Map<String, BindingObjectMethod> methods);
 
   // Bind dart side object method to receive invoking from native side.
-  void _bind(MercuryViewController? ownerView) {
+  void _bind(MercuryContextController? ownerContext) {
     if (bind != null) {
-      bind!(ownerView, this);
+      bind!(ownerContext, this);
     }
   }
 
-  void _unbind(MercuryViewController? ownerView) {
+  void _unbind(MercuryContextController? ownerContext) {
     if (unbind != null) {
-      unbind!(ownerView, this);
+      unbind!(ownerContext, this);
     }
   }
 
@@ -196,7 +188,7 @@ abstract class BindingObject<T> extends Iterable<T> {
 
   @mustCallSuper
   void dispose() async {
-    _unbind(_ownerView);
+    _unbind(_ownerContext);
     _properties.clear();
     _methods.clear();
   }
@@ -233,14 +225,6 @@ dynamic setterBindingCall(BindingObject bindingObject, List<dynamic> args) {
   BindingObjectProperty? property = bindingObject._properties[key];
   if (property != null && property.setter != null) {
     property.setter!(value);
-
-    if (bindingObject is WidgetElement) {
-      bool shouldElementRebuild = bindingObject.shouldElementRebuild(key, property.getter(), value);
-      if (shouldElementRebuild) {
-        bindingObject.setState(() {});
-      }
-      bindingObject.propertyDidUpdate(key, value);
-    }
   }
 
   return true;
@@ -281,13 +265,13 @@ dynamic invokeBindingMethodAsync(BindingObject bindingObject, List<dynamic> args
 void invokeBindingMethodFromNativeImpl(int contextId, Pointer<NativeBindingObject> nativeBindingObject,
     Pointer<NativeValue> returnValue, Pointer<NativeValue> nativeMethod, int argc, Pointer<NativeValue> argv) {
   MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
-  dynamic method = fromNativeValue(controller.view, nativeMethod);
+  dynamic method = fromNativeValue(controller.context, nativeMethod);
   List<dynamic> values = List.generate(argc, (i) {
     Pointer<NativeValue> nativeValue = argv.elementAt(i);
-    return fromNativeValue(controller.view, nativeValue);
+    return fromNativeValue(controller.context, nativeValue);
   });
 
-  BindingObject bindingObject = controller.view.getBindingObject(nativeBindingObject);
+  BindingObject bindingObject = controller.context.getBindingObject(nativeBindingObject);
 
   var result = null;
   try {
@@ -296,7 +280,7 @@ void invokeBindingMethodFromNativeImpl(int contextId, Pointer<NativeBindingObjec
       // Get and setter ops
       result = bindingCallMethodDispatchTable[method](bindingObject, values);
     } else {
-      BindingObject bindingObject = controller.view.getBindingObject(nativeBindingObject);
+      BindingObject bindingObject = controller.context.getBindingObject(nativeBindingObject);
       // invokeBindingMethod directly
       Stopwatch? stopwatch;
       if (isEnabledLog) {

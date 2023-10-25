@@ -10,7 +10,7 @@ import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/scheduler.dart';
+import 'package:mercury/src/global/event.dart';
 import 'package:mercury/mercury.dart';
 
 // Steps for using dart:ffi to call a C function from Dart:
@@ -86,7 +86,7 @@ dynamic invokeModuleEvent(int contextId, String moduleName, Event? event, extra)
   assert(_allocatedPages.containsKey(contextId));
   Pointer<NativeValue> dispatchResult = _invokeModuleEvent(
       _allocatedPages[contextId]!, nativeModuleName, event == null ? nullptr : event.type.toNativeUtf8(), rawEvent, extraData);
-  dynamic result = fromNativeValue(controller.view, dispatchResult);
+  dynamic result = fromNativeValue(controller.context, dispatchResult);
   malloc.free(dispatchResult);
   malloc.free(extraData);
   return result;
@@ -229,12 +229,12 @@ Pointer<Void> initDartIsolateContext(List<int> dartMethods) {
 typedef NativeDisposePage = Void Function(Pointer<Void>, Pointer<Void> page);
 typedef DartDisposePage = void Function(Pointer<Void>, Pointer<Void> page);
 
-final DartDisposePage _disposePage =
-    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeDisposePage>>('disposePage').asFunction();
+final DartDisposePage _disposeMain =
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeDisposePage>>('disposeMain').asFunction();
 
-void disposePage(int contextId) {
+void disposeMain(int contextId) {
   Pointer<Void> page = _allocatedPages[contextId]!;
-  _disposePage(dartContext.pointer, page);
+  _disposeMain(dartContext.pointer, page);
   _allocatedPages.remove(contextId);
 }
 
@@ -310,29 +310,14 @@ void dispatchUITask(int contextId, Pointer<Void> context, Pointer<Void> callback
   // _dispatchUITask(contextId, context, callback);
 }
 
-enum UICommandType {
-  createElement,
-  createTextNode,
-  createComment,
-  createDocument,
-  createWindow,
+enum MainCommandType {
+  createGlobal,
   disposeBindingObject,
   addEvent,
-  removeNode,
-  insertAdjacentNode,
-  setStyle,
-  clearStyle,
-  setAttribute,
-  removeAttribute,
-  cloneNode,
   removeEvent,
-  createDocumentFragment,
-  // perf optimize
-  createSVGElement,
-  createElementNS,
 }
 
-class UICommandItem extends Struct {
+class MainCommandItem extends Struct {
   @Int64()
   external int type;
 
@@ -347,37 +332,37 @@ class UICommandItem extends Struct {
   external Pointer nativePtr;
 }
 
-typedef NativeGetUICommandItems = Pointer<Uint64> Function(Pointer<Void>);
-typedef DartGetUICommandItems = Pointer<Uint64> Function(Pointer<Void>);
+typedef NativeGetMainCommandItems = Pointer<Uint64> Function(Pointer<Void>);
+typedef DartGetMainCommandItems = Pointer<Uint64> Function(Pointer<Void>);
 
-final DartGetUICommandItems _getUICommandItems =
-    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeGetUICommandItems>>('getUICommandItems').asFunction();
+final DartGetMainCommandItems _getMainCommandItems =
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeGetMainCommandItems>>('getMainCommandItems').asFunction();
 
-typedef NativeGetUICommandItemSize = Int64 Function(Pointer<Void>);
-typedef DartGetUICommandItemSize = int Function(Pointer<Void>);
+typedef NativeGetMainCommandItemSize = Int64 Function(Pointer<Void>);
+typedef DartGetMainCommandItemSize = int Function(Pointer<Void>);
 
-final DartGetUICommandItemSize _getUICommandItemSize =
-    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeGetUICommandItemSize>>('getUICommandItemSize').asFunction();
+final DartGetMainCommandItemSize _getMainCommandItemSize =
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeGetMainCommandItemSize>>('getMainCommandItemSize').asFunction();
 
-typedef NativeClearUICommandItems = Void Function(Pointer<Void>);
-typedef DartClearUICommandItems = void Function(Pointer<Void>);
+typedef NativeClearMainCommandItems = Void Function(Pointer<Void>);
+typedef DartClearMainCommandItems = void Function(Pointer<Void>);
 
-final DartClearUICommandItems _clearUICommandItems =
-    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeClearUICommandItems>>('clearUICommandItems').asFunction();
+final DartClearMainCommandItems _clearMainCommandItems =
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeClearMainCommandItems>>('clearMainCommandItems').asFunction();
 
-class UICommand {
-  late final UICommandType type;
+class MainCommand {
+  late final MainCommandType type;
   late final String args;
   late final Pointer nativePtr;
   late final Pointer nativePtr2;
 
   @override
   String toString() {
-    return 'UICommand(type: $type, args: $args, nativePtr: $nativePtr, nativePtr2: $nativePtr2)';
+    return 'MainCommand(type: $type, args: $args, nativePtr: $nativePtr, nativePtr2: $nativePtr2)';
   }
 }
 
-// struct UICommandItem {
+// struct MainCommandItem {
 //   int32_t type;             // offset: 0 ~ 0.5
 //   int32_t args_01_length;   // offset: 0.5 ~ 1
 //   const uint16_t *string_01;// offset: 1
@@ -395,12 +380,12 @@ final bool isEnabledLog = !kReleaseMode && Platform.environment['ENABLE_MERCURY_
 // We found there are performance bottleneck of reading native memory with Dart FFI API.
 // So we align all UI instructions to a whole block of memory, and then convert them into a dart array at one time,
 // To ensure the fastest subsequent random access.
-List<UICommand> readNativeUICommandToDart(Pointer<Uint64> nativeCommandItems, int commandLength, int contextId) {
+List<MainCommand> readNativeMainCommandToDart(Pointer<Uint64> nativeCommandItems, int commandLength, int contextId) {
   List<int> rawMemory =
       nativeCommandItems.cast<Int64>().asTypedList(commandLength * nativeCommandSize).toList(growable: false);
-  List<UICommand> results = List.generate(commandLength, (int _i) {
+  List<MainCommand> results = List.generate(commandLength, (int _i) {
     int i = _i * nativeCommandSize;
-    UICommand command = UICommand();
+    MainCommand command = MainCommand();
 
     int typeArgs01Combine = rawMemory[i + typeAndArgs01LenMemOffset];
 
@@ -411,7 +396,7 @@ List<UICommand> readNativeUICommandToDart(Pointer<Uint64> nativeCommandItems, in
     int args01Length = (typeArgs01Combine >> 32).toSigned(32);
     int type = (typeArgs01Combine ^ (args01Length << 32)).toSigned(32);
 
-    command.type = UICommandType.values[type];
+    command.type = MainCommandType.values[type];
 
     int args01StringMemory = rawMemory[i + args01StringMemOffset];
     if (args01StringMemory != 0) {
@@ -436,125 +421,55 @@ List<UICommand> readNativeUICommandToDart(Pointer<Uint64> nativeCommandItems, in
   }, growable: false);
 
   // Clear native command.
-  _clearUICommandItems(_allocatedPages[contextId]!);
+  _clearMainCommandItems(_allocatedPages[contextId]!);
 
   return results;
 }
 
-void clearUICommand(int contextId) {
+void clearMainCommand(int contextId) {
   assert(_allocatedPages.containsKey(contextId));
-  _clearUICommandItems(_allocatedPages[contextId]!);
+  _clearMainCommandItems(_allocatedPages[contextId]!);
 }
 
-void flushUICommandWithContextId(int contextId) {
+void flushMainCommandWithContextId(int contextId) {
   MercuryController? controller = MercuryController.getControllerOfJSContextId(contextId);
   if (controller != null) {
-    flushUICommand(controller.view);
+    flushMainCommand(controller.context);
   }
 }
 
-void flushUICommand(MercuryViewController view) {
-  assert(_allocatedPages.containsKey(view.contextId));
-  Pointer<Uint64> nativeCommandItems = _getUICommandItems(_allocatedPages[view.contextId]!);
-  int commandLength = _getUICommandItemSize(_allocatedPages[view.contextId]!);
+void flushMainCommand(MercuryContextController context) {
+  assert(_allocatedPages.containsKey(context.contextId));
+  Pointer<Uint64> nativeCommandItems = _getMainCommandItems(_allocatedPages[context.contextId]!);
+  int commandLength = _getMainCommandItemSize(_allocatedPages[context.contextId]!);
 
   if (commandLength == 0 || nativeCommandItems == nullptr) {
     return;
   }
 
-  List<UICommand> commands = readNativeUICommandToDart(nativeCommandItems, commandLength, view.contextId);
-
-  SchedulerBinding.instance.scheduleFrame();
-
-  Map<int, bool> pendingStylePropertiesTargets = {};
-  Set<int> pendingRecalculateTargets = {};
+  List<MainCommand> commands = readNativeMainCommandToDart(nativeCommandItems, commandLength, context.contextId);
 
   // For new ui commands, we needs to tell engine to update frames.
   for (int i = 0; i < commandLength; i++) {
-    UICommand command = commands[i];
-    UICommandType commandType = command.type;
+    MainCommand command = commands[i];
+    MainCommandType commandType = command.type;
     Pointer nativePtr = command.nativePtr;
 
     try {
       switch (commandType) {
-        case UICommandType.createElement:
-          view.createElement(nativePtr.cast<NativeBindingObject>(), command.args);
+        case MainCommandType.createGlobal:
+          context.initGlobal(context, nativePtr.cast<NativeBindingObject>());
           break;
-        case UICommandType.createDocument:
-          view.initDocument(view, nativePtr.cast<NativeBindingObject>());
+        case MainCommandType.disposeBindingObject:
+          context.disposeBindingObject(context, nativePtr.cast<NativeBindingObject>());
           break;
-        case UICommandType.createWindow:
-          view.initWindow(view, nativePtr.cast<NativeBindingObject>());
-          break;
-        case UICommandType.createTextNode:
-          view.createTextNode(nativePtr.cast<NativeBindingObject>(), command.args);
-          break;
-        case UICommandType.createComment:
-          view.createComment(nativePtr.cast<NativeBindingObject>());
-          break;
-        case UICommandType.disposeBindingObject:
-          view.disposeBindingObject(view, nativePtr.cast<NativeBindingObject>());
-          break;
-        case UICommandType.addEvent:
+        case MainCommandType.addEvent:
           Pointer<AddEventListenerOptions> eventListenerOptions = command.nativePtr2.cast<AddEventListenerOptions>();
-          view.addEvent(nativePtr.cast<NativeBindingObject>(), command.args, addEventListenerOptions: eventListenerOptions);
+          context.addEvent(nativePtr.cast<NativeBindingObject>(), command.args, addEventListenerOptions: eventListenerOptions);
           break;
-        case UICommandType.removeEvent:
+        case MainCommandType.removeEvent:
           bool isCapture = command.nativePtr2.address == 1;
-          view.removeEvent(nativePtr.cast<NativeBindingObject>(), command.args, isCapture: isCapture);
-          break;
-        case UICommandType.insertAdjacentNode:
-          view.insertAdjacentNode(
-            nativePtr.cast<NativeBindingObject>(),
-            command.args,
-            command.nativePtr2.cast<NativeBindingObject>()
-          );
-          break;
-        case UICommandType.removeNode:
-          view.removeNode(nativePtr.cast<NativeBindingObject>());
-          break;
-        case UICommandType.cloneNode:
-          view.cloneNode(nativePtr.cast<NativeBindingObject>(), command.nativePtr2.cast<NativeBindingObject>());
-          break;
-        case UICommandType.setStyle:
-          String value;
-          if (command.nativePtr2 != nullptr) {
-            Pointer<NativeString> nativeValue = command.nativePtr2.cast<NativeString>();
-            value = nativeStringToString(nativeValue);
-            freeNativeString(nativeValue);
-          } else {
-            value = '';
-          }
-          view.setInlineStyle(nativePtr, command.args, value);
-          pendingStylePropertiesTargets[nativePtr.address] = true;
-          break;
-        case UICommandType.clearStyle:
-          view.clearInlineStyle(nativePtr);
-          pendingStylePropertiesTargets[nativePtr.address] = true;
-          break;
-        case UICommandType.setAttribute:
-          Pointer<NativeString> nativeKey = command.nativePtr2.cast<NativeString>();
-          String key = nativeStringToString(nativeKey);
-          freeNativeString(nativeKey);
-          view.setAttribute(nativePtr.cast<NativeBindingObject>(), key, command.args);
-          pendingRecalculateTargets.add(nativePtr.address);
-          break;
-        case UICommandType.removeAttribute:
-          String key = command.args;
-          view.removeAttribute(nativePtr, key);
-          break;
-        case UICommandType.createDocumentFragment:
-          view.createDocumentFragment(nativePtr.cast<NativeBindingObject>());
-          break;
-        case UICommandType.createSVGElement:
-          view.createElementNS(nativePtr.cast<NativeBindingObject>(), SVG_ELEMENT_URI, command.args);
-          break;
-        case UICommandType.createElementNS:
-          Pointer<NativeString> nativeNameSpaceUri = command.nativePtr2.cast<NativeString>();
-          String namespaceUri = nativeStringToString(nativeNameSpaceUri);
-          freeNativeString(nativeNameSpaceUri);
-
-          view.createElementNS(nativePtr.cast<NativeBindingObject>(), namespaceUri, command.args);
+          context.removeEvent(nativePtr.cast<NativeBindingObject>(), command.args, isCapture: isCapture);
           break;
         default:
           break;
@@ -563,23 +478,4 @@ void flushUICommand(MercuryViewController view) {
       print('$e\n$stack');
     }
   }
-
-  // For pending style properties, we needs to flush to render style.
-  for (int address in pendingStylePropertiesTargets.keys) {
-    try {
-      view.flushPendingStyleProperties(address);
-    } catch (e, stack) {
-      print('$e\n$stack');
-    }
-  }
-  pendingStylePropertiesTargets.clear();
-
-  for (var address in pendingRecalculateTargets) {
-    try {
-      view.recalculateStyle(address);
-    } catch(e, stack) {
-      print('$e\n$stack');
-    }
-  }
-  pendingRecalculateTargets.clear();
 }

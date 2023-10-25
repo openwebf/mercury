@@ -18,7 +18,7 @@ class InspectNetworkModule extends UIInspectorModule implements HttpClientInterc
   }
 
   void _registerHttpClientInterceptor() {
-    setupHttpOverrides(this, contextId: devtoolsService.controller!.view.contextId);
+    setupHttpOverrides(this, contextId: devtoolsService.controller!.context.contextId);
   }
 
   HttpClientInterceptor? get _customHttpClientInterceptor => devtoolsService.controller?.httpClientInterceptor;
@@ -72,7 +72,7 @@ class InspectNetworkModule extends UIInspectorModule implements HttpClientInterc
 
     sendEventToFrontend(NetworkRequestWillBeSentEvent(
       requestId: _getRequestId(request),
-      loaderId: devtoolsService.controller!.view.contextId.toString(),
+      loaderId: devtoolsService.controller!.context.contextId.toString(),
       requestMethod: request.method,
       url: request.uri.toString(),
       headers: _getHttpHeaders(request.headers),
@@ -115,7 +115,7 @@ class InspectNetworkModule extends UIInspectorModule implements HttpClientInterc
     String requestId = _getRequestId(request);
     sendEventToFrontend(NetworkResponseReceivedEvent(
       requestId: requestId,
-      loaderId: devtoolsService.controller!.view.contextId.toString(),
+      loaderId: devtoolsService.controller!.context.contextId.toString(),
       url: request.uri.toString(),
       headers: _getHttpHeaders(response.headers),
       status: response.statusCode,

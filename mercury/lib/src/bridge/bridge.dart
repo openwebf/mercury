@@ -21,7 +21,7 @@ class DartContext {
 DartContext dartContext = DartContext();
 
 /// Init bridge
-int initBridge(MercuryViewController view) {
+int initBridge(MercuryContextController view) {
   // Setup binding bridge.
   BindingBridge.setup();
 

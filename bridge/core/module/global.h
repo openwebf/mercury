@@ -7,10 +7,7 @@
 
 #include "bindings/qjs/atomic_string.h"
 #include "bindings/qjs/wrapper_type_info.h"
-#include "core/css/computed_css_style_declaration.h"
-#include "core/dom/events/event_target.h"
-#include "qjs_scroll_to_options.h"
-#include "screen.h"
+#include "core/event/event_target.h"
 
 namespace mercury {
 

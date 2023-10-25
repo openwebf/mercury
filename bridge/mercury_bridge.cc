@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2019-2022 The Kraken authors. All rights reserved.
- * Copyright (C) 2022-present The Mercury authors. All rights reserved.
+ * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
 #include <atomic>
@@ -57,7 +57,7 @@ int64_t newPageId() {
   return unique_page_id++;
 }
 
-void disposePage(void* dart_isolate_context, void* page_) {
+void disposeMain(void* dart_isolate_context, void* page_) {
   auto* page = reinterpret_cast<mercury::MercuryPage*>(page_);
   assert(std::this_thread::get_id() == page->currentThread());
   ((mercury::DartIsolateContext*)dart_isolate_context)->RemovePage(page);
@@ -121,19 +121,19 @@ void dispatchUITask(void* page_, void* context, void* callback) {
   reinterpret_cast<void (*)(void*)>(callback)(context);
 }
 
-void* getUICommandItems(void* page_) {
+void* getMainCommandItems(void* page_) {
   auto page = reinterpret_cast<mercury::MercuryPage*>(page_);
   assert(std::this_thread::get_id() == page->currentThread());
   return page->GetExecutingContext()->uiCommandBuffer()->data();
 }
 
-int64_t getUICommandItemSize(void* page_) {
+int64_t getMainCommandItemSize(void* page_) {
   auto page = reinterpret_cast<mercury::MercuryPage*>(page_);
   assert(std::this_thread::get_id() == page->currentThread());
   return page->GetExecutingContext()->uiCommandBuffer()->size();
 }
 
-void clearUICommandItems(void* page_) {
+void clearMainCommandItems(void* page_) {
   auto page = reinterpret_cast<mercury::MercuryPage*>(page_);
   assert(std::this_thread::get_id() == page->currentThread());
   page->GetExecutingContext()->uiCommandBuffer()->clear();

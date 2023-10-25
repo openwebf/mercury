@@ -82,7 +82,7 @@ typedef NativeInvokeModule = Pointer<NativeValue> Function(
 
 dynamic invokeModule(Pointer<Void> callbackContext, MercuryController controller, String moduleName, String method, params,
     DartAsyncModuleCallback callback) {
-  MercuryViewController currentView = controller.view;
+  MercuryContextController currentView = controller.context;
   dynamic result;
 
   Stopwatch? stopwatch;
@@ -96,7 +96,7 @@ dynamic invokeModule(Pointer<Void> callbackContext, MercuryController controller
       // To make sure Promise then() and catch() executed before Promise callback called at JavaScript side.
       // We should make callback always async.
       Future.microtask(() {
-        if (controller.view != currentView || currentView.disposed) return;
+        if (controller.context != currentView || currentView.disposed) return;
         Pointer<NativeValue> callbackResult = nullptr;
         if (error != null) {
           Pointer<Utf8> errmsgPtr = error.toNativeUtf8();
@@ -146,7 +146,7 @@ Pointer<NativeValue> _invokeModule(
     Pointer<NativeFunction<NativeAsyncModuleCallback>> callback) {
   MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
   dynamic result = invokeModule(callbackContext, controller, nativeStringToString(module), nativeStringToString(method),
-      fromNativeValue(controller.view, params), callback.asFunction());
+      fromNativeValue(controller.context, params), callback.asFunction());
   Pointer<NativeValue> returnValue = malloc.allocate(sizeOf<NativeValue>());
   toNativeValue(returnValue, result);
   freeNativeString(module);
@@ -177,17 +177,6 @@ typedef NativeRAFAsyncCallback = Void Function(
     Pointer<Void> callbackContext, Int32 contextId, Double data, Pointer<Utf8> errmsg);
 typedef DartRAFAsyncCallback = void Function(Pointer<Void>, int contextId, double data, Pointer<Utf8> errmsg);
 
-// Register requestBatchUpdate
-typedef NativeRequestBatchUpdate = Void Function(Int32 contextId);
-
-void _requestBatchUpdate(int contextId) {
-  MercuryController? controller = MercuryController.getControllerOfJSContextId(contextId);
-  return controller?.module.requestBatchUpdate();
-}
-
-final Pointer<NativeFunction<NativeRequestBatchUpdate>> _nativeRequestBatchUpdate =
-    Pointer.fromFunction(_requestBatchUpdate);
-
 // Register setTimeout
 typedef NativeSetTimeout = Int32 Function(
     Pointer<Void> callbackContext, Int32 contextId, Pointer<NativeFunction<NativeAsyncCallback>>, Int32);
@@ -195,12 +184,12 @@ typedef NativeSetTimeout = Int32 Function(
 int _setTimeout(
     Pointer<Void> callbackContext, int contextId, Pointer<NativeFunction<NativeAsyncCallback>> callback, int timeout) {
   MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
-  MercuryViewController currentView = controller.view;
+  MercuryContextController currentView = controller.context;
 
   return controller.module.setTimeout(timeout, () {
     DartAsyncCallback func = callback.asFunction();
     void _runCallback() {
-      if (controller.view != currentView || currentView.disposed) return;
+      if (controller.context != currentView || currentView.disposed) return;
 
       try {
         func(callbackContext, contextId, nullptr);
@@ -231,10 +220,10 @@ typedef NativeSetInterval = Int32 Function(
 int _setInterval(
     Pointer<Void> callbackContext, int contextId, Pointer<NativeFunction<NativeAsyncCallback>> callback, int timeout) {
   MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
-  MercuryViewController currentView = controller.view;
+  MercuryContextController currentView = controller.context;
   return controller.module.setInterval(timeout, () {
     void _runCallbacks() {
-      if (controller.view != currentView || currentView.disposed) return;
+      if (controller.context != currentView || currentView.disposed) return;
 
       DartAsyncCallback func = callback.asFunction();
       try {
@@ -269,85 +258,14 @@ void _clearTimeout(int contextId, int timerId) {
 
 final Pointer<NativeFunction<NativeClearTimeout>> _nativeClearTimeout = Pointer.fromFunction(_clearTimeout);
 
-// Register requestAnimationFrame
-typedef NativeRequestAnimationFrame = Int32 Function(
-    Pointer<Void> callbackContext, Int32 contextId, Pointer<NativeFunction<NativeRAFAsyncCallback>>);
+typedef NativeFlushMainCommand = Void Function(Int32 contextId);
+typedef DartFlushMainCommand = void Function(int contextId);
 
-int _requestAnimationFrame(
-    Pointer<Void> callbackContext, int contextId, Pointer<NativeFunction<NativeRAFAsyncCallback>> callback) {
-  MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
-  MercuryViewController currentView = controller.view;
-  return controller.module.requestAnimationFrame((double highResTimeStamp) {
-    void _runCallback() {
-      if (controller.view != currentView || currentView.disposed) return;
-      DartRAFAsyncCallback func = callback.asFunction();
-      try {
-        func(callbackContext, contextId, highResTimeStamp, nullptr);
-      } catch (e, stack) {
-        Pointer<Utf8> nativeErrorMessage = ('Error: $e\n$stack').toNativeUtf8();
-        func(callbackContext, contextId, highResTimeStamp, nativeErrorMessage);
-        malloc.free(nativeErrorMessage);
-      }
-    }
-
-    // Pause if mercury page paused.
-    if (controller.paused) {
-      controller.pushPendingCallbacks(_runCallback);
-    } else {
-      _runCallback();
-    }
-  });
+void _flushMainCommand(int contextId) {
+  flushMainCommandWithContextId(contextId);
 }
 
-const int RAF_ERROR_CODE = -1;
-final Pointer<NativeFunction<NativeRequestAnimationFrame>> _nativeRequestAnimationFrame =
-    Pointer.fromFunction(_requestAnimationFrame, RAF_ERROR_CODE);
-
-// Register cancelAnimationFrame
-typedef NativeCancelAnimationFrame = Void Function(Int32 contextId, Int32 id);
-
-void _cancelAnimationFrame(int contextId, int timerId) {
-  MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
-  controller.module.cancelAnimationFrame(timerId);
-}
-
-final Pointer<NativeFunction<NativeCancelAnimationFrame>> _nativeCancelAnimationFrame =
-    Pointer.fromFunction(_cancelAnimationFrame);
-
-typedef NativeAsyncBlobCallback = Void Function(
-    Pointer<Void> callbackContext, Int32 contextId, Pointer<Utf8>, Pointer<Uint8>, Int32);
-typedef DartAsyncBlobCallback = void Function(
-    Pointer<Void> callbackContext, int contextId, Pointer<Utf8>, Pointer<Uint8>, int);
-typedef NativeToBlob = Void Function(
-    Pointer<Void> callbackContext, Int32 contextId, Pointer<NativeFunction<NativeAsyncBlobCallback>>, Pointer<Void>, Double);
-
-void _toBlob(Pointer<Void> callbackContext, int contextId, Pointer<NativeFunction<NativeAsyncBlobCallback>> callback,
-    Pointer<Void> elementPtr, double devicePixelRatio) {
-  DartAsyncBlobCallback func = callback.asFunction();
-  MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
-  controller.view.toImage(devicePixelRatio, elementPtr).then((Uint8List bytes) {
-    Pointer<Uint8> bytePtr = malloc.allocate<Uint8>(sizeOf<Uint8>() * bytes.length);
-    Uint8List byteList = bytePtr.asTypedList(bytes.length);
-    byteList.setAll(0, bytes);
-    func(callbackContext, contextId, nullptr, bytePtr, bytes.length);
-    malloc.free(bytePtr);
-  }).catchError((error, stack) {
-    Pointer<Utf8> nativeErrorMessage = ('$error\n$stack').toNativeUtf8();
-    func(callbackContext, contextId, nativeErrorMessage, nullptr, 0);
-    malloc.free(nativeErrorMessage);
-  });
-}
-
-final Pointer<NativeFunction<NativeToBlob>> _nativeToBlob = Pointer.fromFunction(_toBlob);
-
-typedef NativeFlushUICommand = Void Function(Int32 contextId);
-typedef DartFlushUICommand = void Function(int contextId);
-
-void _flushUICommand(int contextId) {
-  flushUICommandWithContextId(contextId);
-}
-
-final Pointer<NativeFunction<NativeFlushUICommand>> _nativeFlushUICommand = Pointer.fromFunction(_flushUICommand);
+final Pointer<NativeFunction<NativeFlushMainCommand>> _nativeFlushMainCommand = Pointer.fromFunction(_flushMainCommand);
 
 typedef NativePerformanceGetEntries = Pointer<NativePerformanceEntryList> Function(Int32 contextId);
 typedef DartPerformanceGetEntries = Pointer<NativePerformanceEntryList> Function(int contextId);
@@ -398,15 +316,11 @@ final Pointer<NativeFunction<NativeJSLog>> _nativeOnJsLog = Pointer.fromFunction
 
 final List<int> _dartNativeMethods = [
   _nativeInvokeModule.address,
-  _nativeRequestBatchUpdate.address,
   _nativeReloadApp.address,
   _nativeSetTimeout.address,
   _nativeSetInterval.address,
   _nativeClearTimeout.address,
-  _nativeRequestAnimationFrame.address,
-  _nativeCancelAnimationFrame.address,
-  _nativeToBlob.address,
-  _nativeFlushUICommand.address,
+  _nativeFlushMainCommand.address,
   _nativeCreateBindingObject.address,
   _nativeGetEntries.address,
   _nativeOnJsError.address,

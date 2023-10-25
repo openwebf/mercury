@@ -23,7 +23,7 @@ void spawnIsolateInspectorServer(DevToolsService devTool, MercuryController cont
         bundleURL = '<EmbedBundle>';
       }
       if (devTool is ChromeDevToolsService) {
-        devTool.isolateServerPort!.send(InspectorServerInit(controller.view.contextId, port, '0.0.0.0', bundleURL));
+        devTool.isolateServerPort!.send(InspectorServerInit(controller.context.contextId, port, '0.0.0.0', bundleURL));
       } else if (devTool is RemoteDevServerService) {
         devTool.isolateServerPort!.send(InspectorServerConnect(devTool.url));
       }

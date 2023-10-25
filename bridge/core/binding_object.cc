@@ -39,7 +39,7 @@ BindingObject::~BindingObject() {
   // When a JSObject got finalized by QuickJS GC, we can not guarantee the ExecutingContext are still alive and
   // accessible.
   if (isContextValid(contextId())) {
-    GetExecutingContext()->uiCommandBuffer()->addCommand(UICommand::kDisposeBindingObject, nullptr, bindingObject(),
+    GetExecutingContext()->uiCommandBuffer()->addCommand(MainCommand::kDisposeBindingObject, nullptr, bindingObject(),
                                                          nullptr, false);
   }
 }
@@ -69,7 +69,7 @@ NativeValue BindingObject::InvokeBindingMethod(const AtomicString& method,
                                                int32_t argc,
                                                const NativeValue* argv,
                                                ExceptionState& exception_state) const {
-  GetExecutingContext()->FlushUICommand();
+  GetExecutingContext()->FlushMainCommand();
   if (binding_object_->invoke_bindings_methods_from_native == nullptr) {
     exception_state.ThrowException(GetExecutingContext()->ctx(), ErrorType::InternalError,
                                    "Failed to call dart method: invoke_bindings_methods_from_native not initialized.");
@@ -88,7 +88,7 @@ NativeValue BindingObject::InvokeBindingMethod(BindingMethodCallOperations bindi
                                                size_t argc,
                                                const NativeValue* argv,
                                                ExceptionState& exception_state) const {
-  GetExecutingContext()->FlushUICommand();
+  GetExecutingContext()->FlushMainCommand();
   if (binding_object_->invoke_bindings_methods_from_native == nullptr) {
     exception_state.ThrowException(GetExecutingContext()->ctx(), ErrorType::InternalError,
                                    "Failed to call dart method: invoke_bindings_methods_from_native not initialized.");
@@ -109,7 +109,7 @@ NativeValue BindingObject::GetBindingProperty(const AtomicString& prop, Exceptio
         "Can not get binding property on BindingObject, dart binding object had been disposed");
     return Native_NewNull();
   }
-  GetExecutingContext()->FlushUICommand();
+  GetExecutingContext()->FlushMainCommand();
   const NativeValue argv[] = {Native_NewString(prop.ToNativeString(GetExecutingContext()->ctx()).release())};
   return InvokeBindingMethod(BindingMethodCallOperations::kGetProperty, 1, argv, exception_state);
 }
@@ -123,7 +123,7 @@ NativeValue BindingObject::SetBindingProperty(const AtomicString& prop,
         "Can not set binding property on BindingObject, dart binding object had been disposed");
     return Native_NewNull();
   }
-  GetExecutingContext()->FlushUICommand();
+  GetExecutingContext()->FlushMainCommand();
   const NativeValue argv[] = {Native_NewString(prop.ToNativeString(GetExecutingContext()->ctx()).release()), value};
   return InvokeBindingMethod(BindingMethodCallOperations::kSetProperty, 2, argv, exception_state);
 }
@@ -232,7 +232,7 @@ ScriptValue BindingObject::AnonymousAsyncFunctionCallback(JSContext* ctx,
 }
 
 NativeValue BindingObject::GetAllBindingPropertyNames(ExceptionState& exception_state) const {
-  GetExecutingContext()->FlushUICommand();
+  GetExecutingContext()->FlushMainCommand();
   return InvokeBindingMethod(BindingMethodCallOperations::kGetAllPropertyNames, 0, nullptr, exception_state);
 }
 

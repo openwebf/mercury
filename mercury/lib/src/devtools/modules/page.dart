@@ -3,29 +3,11 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
-import 'dart:convert';
-import 'dart:typed_data';
-
-import 'package:meta/meta.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:mercury/dom.dart';
 import 'package:mercury/launcher.dart';
 import 'package:mercury/devtools.dart';
 
 String enumKey(String key) {
   return key.split('.').last;
-}
-
-class PageScreenCastFrameEvent extends InspectorEvent {
-  @override
-  String get method => 'Page.screencastFrame';
-
-  @override
-  JSONEncodable get params => _screenCastFrame;
-
-  final ScreenCastFrame _screenCastFrame;
-
-  PageScreenCastFrameEvent(this._screenCastFrame);
 }
 
 // Information about the Frame on the page.
@@ -176,7 +158,7 @@ enum ResourceType {
 }
 
 class InspectPageModule extends UIInspectorModule {
-  Document get document => devtoolsService.controller!.view.document;
+  MercuryContextController get context => devtoolsService.controller!.context;
 
   InspectPageModule(DevToolsService devtoolsService) : super(devtoolsService);
 
@@ -186,18 +168,6 @@ class InspectPageModule extends UIInspectorModule {
   @override
   void receiveFromFrontend(int? id, String method, Map<String, dynamic>? params) async {
     switch (method) {
-      case 'startScreencast':
-        sendToFrontend(id, null);
-        startScreenCast();
-        break;
-      case 'stopScreencast':
-        sendToFrontend(id, null);
-        stopScreenCast();
-        break;
-      case 'screencastFrameAck':
-        sendToFrontend(id, null);
-        handleScreencastFrameAck(params!);
-        break;
       case 'getResourceContent':
         String? url = params!['url'];
         sendToFrontend(id,
@@ -214,99 +184,9 @@ class InspectPageModule extends UIInspectorModule {
 
   void handleReloadPage() async {
     try {
-      await document.controller.reload();
+      // await context.reload(); // TODO: Implement
     } catch (e, stack) {
       print('Dart Error: $e\n$stack');
     }
-  }
-
-  int? _lastSentSessionID;
-  bool _isFramingScreenCast = false;
-
-  void _frameScreenCast(Duration timeStamp) {
-    Element root = document.documentElement!;
-    root.toBlob().then((Uint8List screenShot) {
-      String encodedImage = base64Encode(screenShot);
-      _lastSentSessionID = timeStamp.inMilliseconds;
-      InspectorEvent event = PageScreenCastFrameEvent(ScreenCastFrame(
-          encodedImage,
-          ScreencastFrameMetadata(
-            0,
-            1,
-            document.viewport!.viewportSize.width,
-            document.viewport!.viewportSize.height,
-            root.offsetLeft,
-            root.offsetTop,
-            timestamp: timeStamp.inMilliseconds,
-          ),
-          _lastSentSessionID!));
-
-      sendEventToFrontend(event);
-    });
-  }
-
-  void startScreenCast() {
-    _isFramingScreenCast = true;
-    SchedulerBinding.instance.addPostFrameCallback(_frameScreenCast);
-    SchedulerBinding.instance.scheduleFrame();
-  }
-
-  void stopScreenCast() {
-    _isFramingScreenCast = false;
-  }
-
-  /// Avoiding frame blocking, confirm frontend has ack last frame,
-  /// and then send next frame.
-  void handleScreencastFrameAck(Map<String, dynamic> params) {
-    int? ackSessionID = params['sessionId'];
-    if (ackSessionID == _lastSentSessionID && _isFramingScreenCast) {
-      SchedulerBinding.instance.addPostFrameCallback(_frameScreenCast);
-    }
-  }
-}
-
-@immutable
-class ScreenCastFrame implements JSONEncodable {
-  final String data;
-  final ScreencastFrameMetadata metadata;
-  final int sessionId;
-
-  ScreenCastFrame(this.data, this.metadata, this.sessionId);
-
-  @override
-  Map toJson() {
-    return {
-      'data': data,
-      'metadata': metadata.toJson(),
-      'sessionId': sessionId,
-    };
-  }
-}
-
-@immutable
-class ScreencastFrameMetadata implements JSONEncodable {
-  final num offsetTop;
-  final num pageScaleFactor;
-  final num deviceWidth;
-  final num deviceHeight;
-  final num scrollOffsetX;
-  final num scrollOffsetY;
-  final num? timestamp;
-
-  ScreencastFrameMetadata(
-      this.offsetTop, this.pageScaleFactor, this.deviceWidth, this.deviceHeight, this.scrollOffsetX, this.scrollOffsetY,
-      {this.timestamp});
-
-  @override
-  Map toJson() {
-    return {
-      'offsetTop': offsetTop,
-      'pageScaleFactor': pageScaleFactor,
-      'deviceWidth': deviceWidth,
-      'deviceHeight': deviceHeight,
-      'scrollOffsetX': scrollOffsetX,
-      'scrollOffsetY': scrollOffsetY,
-      'timestamp': timestamp
-    };
   }
 }

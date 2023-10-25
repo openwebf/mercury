@@ -25,7 +25,7 @@ class FetchModule extends BaseModule {
     _disposed = true;
   }
 
-  static final HttpClient _sharedHttpClient = HttpClient()..userAgent = NavigatorModule.getUserAgent();
+  static final HttpClient _sharedHttpClient = HttpClient(); //..userAgent = NavigatorModule.getUserAgent(); // TODO: Implement
   HttpClient get httpClient => _sharedHttpClient;
 
   Uri _resolveUri(String input) {
@@ -44,12 +44,14 @@ class FetchModule extends BaseModule {
   static String? _defaultUserAgent;
   static String _getDefaultUserAgent() {
     if (_defaultUserAgent == null) {
-      try {
-        _defaultUserAgent = NavigatorModule.getUserAgent();
-      } catch (error) {
-        // Ignore if dynamic library is missing.
-        return fallbackUserAgent;
-      }
+      // TODO: Implement
+      // try {
+      //   _defaultUserAgent = NavigatorModule.getUserAgent();
+      // } catch (error) {
+      //   // Ignore if dynamic library is missing.
+      //   return fallbackUserAgent;
+      // }
+      return fallbackUserAgent;
     }
     return _defaultUserAgent!;
   }

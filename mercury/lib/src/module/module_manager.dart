@@ -4,8 +4,7 @@
  */
 import 'package:mercury/bridge.dart' as bridge;
 import 'package:mercury/mercury.dart';
-import 'local_storage.dart';
-import 'session_storage.dart';
+import 'package:mercury/src/global/event.dart';
 import 'websocket.dart';
 
 abstract class BaseModule {
@@ -32,16 +31,8 @@ bool _isDefined = false;
 void _defineModuleCreator() {
   if (_isDefined) return;
   _isDefined = true;
-  _defineModule((ModuleManager? moduleManager) => AsyncStorageModule(moduleManager));
-  _defineModule((ModuleManager? moduleManager) => ClipBoardModule(moduleManager));
   _defineModule((ModuleManager? moduleManager) => FetchModule(moduleManager));
   _defineModule((ModuleManager? moduleManager) => MethodChannelModule(moduleManager));
-  _defineModule((ModuleManager? moduleManager) => NavigationModule(moduleManager));
-  _defineModule((ModuleManager? moduleManager) => NavigatorModule(moduleManager));
-  _defineModule((ModuleManager? moduleManager) => HistoryModule(moduleManager));
-  _defineModule((ModuleManager? moduleManager) => LocationModule(moduleManager));
-  _defineModule((ModuleManager? moduleManager) => LocalStorageModule(moduleManager));
-  _defineModule((ModuleManager? moduleManager) => SessionStorageModule(moduleManager));
   _defineModule((ModuleManager? moduleManager) => WebSocketModule(moduleManager));
 }
 

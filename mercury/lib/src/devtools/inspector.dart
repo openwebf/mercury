@@ -64,10 +64,8 @@ class UIInspector {
   final Map<String, UIInspectorModule> moduleRegistrar = {};
 
   UIInspector(this.devtoolsService) {
-    registerModule(InspectDOMModule(devtoolsService));
     registerModule(InspectOverlayModule(devtoolsService));
     registerModule(InspectPageModule(devtoolsService));
-    registerModule(InspectCSSModule(devtoolsService));
     registerModule(InspectNetworkModule(devtoolsService));
     registerModule(InspectLogModule(devtoolsService));
   }

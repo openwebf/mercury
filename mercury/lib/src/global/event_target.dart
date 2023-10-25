@@ -3,8 +3,7 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 import 'package:flutter/foundation.dart';
-import 'package:mercury/html.dart';
-import 'package:mercury/dom.dart';
+import 'package:mercury/src/global/event.dart';
 import 'package:mercury/foundation.dart';
 
 typedef EventHandler = void Function(Event event);
@@ -65,11 +64,7 @@ abstract class EventTarget extends BindingObject {
   @mustCallSuper
   void dispatchEvent(Event event) {
     if (_disposed) return;
-    if (this is PseudoElement) {
-      event.target = (this as PseudoElement).parent;
-    } else {
-      event.target = this;
-    }
+    event.target = this;
 
     _handlerCaptureEvent(event);
     _dispatchEventInDOM(event);

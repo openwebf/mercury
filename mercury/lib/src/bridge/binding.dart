@@ -9,8 +9,8 @@ import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
 import 'package:mercury/bridge.dart';
-import 'package:mercury/dom.dart';
-import 'package:mercury/geometry.dart';
+import 'package:mercury/src/global/event.dart';
+import 'package:mercury/src/global/event_target.dart';
 import 'package:mercury/foundation.dart';
 import 'package:mercury/launcher.dart';
 
@@ -50,7 +50,7 @@ void _dispatchEventToNative(Event event, bool isCapture) {
   int? contextId = event.target?.contextId;
   MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
   if (contextId != null && pointer != null && pointer.ref.invokeBindingMethodFromDart != nullptr) {
-    BindingObject bindingObject = controller.view.getBindingObject(pointer);
+    BindingObject bindingObject = controller.context.getBindingObject(pointer);
     // Call methods implements at C++ side.
     DartInvokeBindingMethodsFromDart f = pointer.ref.invokeBindingMethodFromDart.asFunction();
 
@@ -68,7 +68,7 @@ void _dispatchEventToNative(Event event, bool isCapture) {
 
     Pointer<NativeValue> returnValue = malloc.allocate(sizeOf<NativeValue>());
     f(pointer, returnValue, method, dispatchEventArguments.length, allocatedNativeArguments, event);
-    Pointer<EventDispatchResult> dispatchResult = fromNativeValue(controller.view, returnValue).cast<EventDispatchResult>();
+    Pointer<EventDispatchResult> dispatchResult = fromNativeValue(controller.context, returnValue).cast<EventDispatchResult>();
     event.cancelable = dispatchResult.ref.canceled;
     event.propagationStopped = dispatchResult.ref.propagationStopped;
 
@@ -103,24 +103,24 @@ abstract class BindingBridge {
   static void createBindingObject(int contextId, Pointer<NativeBindingObject> pointer, CreateBindingObjectType type, Pointer<NativeValue> args, int argc) {
     MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
     List<dynamic> arguments = List.generate(argc, (index) {
-      return fromNativeValue(controller.view, args.elementAt(index));
+      return fromNativeValue(controller.context, args.elementAt(index));
     });
-    switch(type) {
+    switch(type) {// TODO: Please help, Andy
       case CreateBindingObjectType.createDOMMatrix: {
-        DOMMatrix domMatrix = DOMMatrix(BindingContext(controller.view, contextId, pointer), arguments);
-        controller.view.setBindingObject(pointer, domMatrix);
+        DOMMatrix domMatrix = DOMMatrix(BindingContext(controller.context, contextId, pointer), arguments);
+        controller.context.setBindingObject(pointer, domMatrix);
         return;
       }
     }
   }
 
-  // For compatible requirement, we set the MercuryViewController to nullable due to the historical reason.
+  // For compatible requirement, we set the MercuryContextController to nullable due to the historical reason.
   // exp: We can not break the types for WidgetElement which will break all the codes for Users.
-  static void _bindObject(MercuryViewController? view, BindingObject object) {
+  static void _bindObject(MercuryContextController? context, BindingObject object) {
     Pointer<NativeBindingObject>? nativeBindingObject = object.pointer;
     if (nativeBindingObject != null) {
-      if (view != null) {
-        view.setBindingObject(nativeBindingObject, object);
+      if (context != null) {
+        context.setBindingObject(nativeBindingObject, object);
       }
 
       if (!nativeBindingObject.ref.disposed) {
@@ -129,9 +129,9 @@ abstract class BindingBridge {
     }
   }
 
-  // For compatible requirement, we set the MercuryViewController to nullable due to the historical reason.
+  // For compatible requirement, we set the MercuryContextController to nullable due to the historical reason.
   // exp: We can not break the types for WidgetElement which will break all the codes for Users.
-  static void _unbindObject(MercuryViewController? view, BindingObject object) {
+  static void _unbindObject(MercuryContextController? context, BindingObject object) {
     Pointer<NativeBindingObject>? nativeBindingObject = object.pointer;
     if (nativeBindingObject != null) {
       nativeBindingObject.ref.invokeBindingMethodFromNative = nullptr;

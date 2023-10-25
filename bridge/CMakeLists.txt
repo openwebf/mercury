@@ -249,130 +249,34 @@ if ($ENV{MERCURY_JS_ENGINE} MATCHES "quickjs")
     # Core sources
     core/executing_context.cc
     core/script_state.cc
-    core/page.cc
+    core/main.cc
     core/dart_methods.cc
     core/dart_isolate_context.cc
     core/dart_context_data.cc
     core/executing_context_data.cc
-    core/fileapi/blob.cc
-    core/fileapi/blob_part.cc
-    core/fileapi/blob_property_bag.cc
-    core/frame/console.cc
-    core/frame/dom_timer.cc
-    core/frame/dom_timer_coordinator.cc
-    core/frame/global_or_worker_global_scope.cc
-    core/frame/module_listener.cc
-    core/frame/module_listener_container.cc
-    core/frame/module_manager.cc
-    core/frame/module_callback.cc
-    core/frame/module_context_coordinator.cc
-    core/frame/global.cc
-    core/frame/screen.cc
-    core/frame/legacy/location.cc
-    core/timing/performance.cc
-    core/timing/performance_mark.cc
-    core/timing/performance_entry.cc
-    core/timing/performance_measure.cc
-    core/css/css_style_declaration.cc
-    core/css/inline_css_style_declaration.cc
-    core/css/computed_css_style_declaration.cc
-    core/dom/frame_request_callback_collection.cc
-    core/dom/events/registered_eventListener.cc
-    core/dom/events/event_listener_map.cc
-    core/dom/events/event.cc
-    core/dom/events/custom_event.cc
-    core/dom/events/event_target.cc
-    core/dom/events/event_listener_map.cc
-    core/dom/events/event_target_impl.cc
+    core/module/console.cc
+    core/module/dom_timer.cc
+    core/module/dom_timer_coordinator.cc
+    core/module/global_or_worker_global_scope.cc
+    core/module/module_listener.cc
+    core/module/module_listener_container.cc
+    core/module/module_manager.cc
+    core/module/module_callback.cc
+    core/module/module_context_coordinator.cc
+    core/module/global.cc
+    core/event/registered_eventListener.cc
+    core/event/event_listener_map.cc
+    core/event/event.cc
+    core/event/custom_event.cc
+    core/event/event_target.cc
+    core/event/event_listener_map.cc
+    core/event/event_target_impl.cc
     core/binding_object.cc
-    core/dom/node.cc
-    core/dom/node_list.cc
-    core/dom/node_traversal.cc
-    core/dom/live_node_list_base.cc
-    core/dom/character_data.cc
-    core/dom/comment.cc
-    core/dom/text.cc
-    core/dom/tree_scope.cc
-    core/dom/element.cc
-    core/dom/parent_node.cc
-    core/dom/element_data.cc
-    core/dom/document.cc
-    core/dom/dom_token_list.cc
-    core/dom/dom_string_map.cc
-    core/dom/space_split_string.cc
-    core/dom/scripted_animation_controller.cc
-    core/dom/node_data.cc
-    core/dom/document_fragment.cc
-    core/dom/child_node_list.cc
-    core/dom/empty_node_list.cc
-    core/dom/container_node.cc
-    core/html/custom/widget_element.cc
-    core/events/error_event.cc
-    core/events/message_event.cc
-    core/events/animation_event.cc
-    core/events/close_event.cc
-    core/events/ui_event.cc
-    core/events/focus_event.cc
-    core/events/gesture_event.cc
-    core/events/input_event.cc
-    core/events/touch_event.cc
-    core/events/mouse_event.cc
-    core/events/pop_state_event.cc
-    core/events/pointer_event.cc
-    core/events/transition_event.cc
-    core/events/intersection_change_event.cc
-    core/events/keyboard_event.cc
-    core/events/promise_rejection_event.cc
-    core/html/parser/html_parser.cc
-    core/html/html_element.cc
-    core/html/html_div_element.cc
-    core/html/html_head_element.cc
-    core/html/html_body_element.cc
-    core/html/html_html_element.cc
-    core/html/html_template_element.cc
-    core/html/html_all_collection.cc
-    core/html/html_anchor_element.cc
-    core/html/html_image_element.cc
-    core/html/html_script_element.cc
-    core/html/html_iframe_element.cc
-    core/html/html_link_element.cc
-    core/html/html_unknown_element.cc
-    core/html/image.cc
-    core/html/html_collection.cc
-    core/html/canvas/html_canvas_element.cc
-    core/html/canvas/canvas_rendering_context.cc
-    core/html/canvas/canvas_rendering_context_2d.cc
-    core/html/canvas/canvas_gradient.cc
-    core/html/canvas/canvas_pattern.cc
-    core/geometry/dom_matrix.cc
-    core/geometry/dom_matrix_readonly.cc
-    core/html/forms/html_button_element.cc
-    core/html/forms/html_input_element.cc
-    core/html/forms/html_form_element.cc
-    core/html/forms/html_textarea_element.cc
-
-    # SVG files
-    core/svg/svg_element.cc
-    core/svg/svg_graphics_element.cc
-    core/svg/svg_geometry_element.cc
-    core/svg/svg_text_content_element.cc
-    core/svg/svg_text_positioning_element.cc
-
-    core/svg/svg_svg_element.cc
-    core/svg/svg_path_element.cc
-    core/svg/svg_rect_element.cc
-    core/svg/svg_text_element.cc
-    core/svg/svg_g_element.cc
-    core/svg/svg_circle_element.cc
-    core/svg/svg_ellipse_element.cc
-    core/svg/svg_style_element.cc
-    core/svg/svg_line_element.cc
-
-    # Legacy implements, should remove them in the future.
-    core/dom/legacy/element_attributes.cc
-    core/dom/legacy/bounding_client_rect.cc
-    core/input/touch.cc
-    core/input/touch_list.cc
+    core/event/builtin/error_event.cc
+    core/event/builtin/message_event.cc
+    core/event/builtin/close_event.cc
+    core/event/builtin/keyboard_event.cc
+    core/event/builtin/promise_rejection_event.cc
     )
 
   # Gen sources.
@@ -380,10 +284,8 @@ if ($ENV{MERCURY_JS_ENGINE} MATCHES "quickjs")
     out/names_installer.cc
     out/qjs_console.cc
     out/qjs_module_manager.cc
-    out/qjs_global_or_worker_global_scope.cc
+    out/qjs_global_or_worker_scope.cc
     out/qjs_global.cc
-    out/qjs_location.cc
-    out/qjs_blob.cc
     out/qjs_event.cc
     out/qjs_add_event_listener_options.cc
     out/qjs_event_listener_options.cc
@@ -392,131 +294,19 @@ if ($ENV{MERCURY_JS_ENGINE} MATCHES "quickjs")
     out/qjs_message_event_init.cc
     out/qjs_close_event.cc
     out/qjs_close_event_init.cc
-    out/qjs_focus_event.cc
-    out/qjs_focus_event_init.cc
-    out/qjs_input_event.cc
-    out/qjs_input_event_init.cc
-    out/qjs_pop_state_event.cc
-    out/qjs_pop_state_event_init.cc
-    out/qjs_ui_event.cc
-    out/qjs_ui_event_init.cc
-    out/qjs_gesture_event.cc
-    out/qjs_gesture_event_init.cc
-    out/qjs_intersection_change_event.cc
-    out/qjs_intersection_change_event_init.cc
-    out/qjs_touch.cc
-    out/qjs_touch_init.cc
-    out/qjs_touch_list.cc
-    out/qjs_touch_event.cc
-    out/qjs_touch_event_init.cc
-    out/qjs_pointer_event.cc
-    out/qjs_pointer_event_init.cc
-    out/qjs_mouse_event.cc
-    out/qjs_mouse_event_init.cc
-    out/qjs_transition_event.cc
-    out/qjs_transition_event_init.cc
     out/event_factory.cc
     out/qjs_custom_event.cc
     out/qjs_custom_event_init.cc
-    out/qjs_keyboard_event.cc
-    out/qjs_keyboard_event_init.cc
-    out/qjs_animation_event.cc
-    out/qjs_animation_event_init.cc
     out/qjs_error_event_init.cc
     out/qjs_event_init.cc
     out/qjs_event_target.cc
-    out/qjs_node.cc
-    out/qjs_union_dom_stringnode.cc
-    out/qjs_document.cc
-    out/qjs_element.cc
-    out/qjs_dom_token_list.cc
-    out/qjs_dom_string_map.cc
-    out/qjs_element_attributes.cc
-    out/qjs_character_data.cc
-    out/qjs_comment.cc
-    out/qjs_document_fragment.cc
-    out/qjs_bounding_client_rect.cc
-    out/qjs_css_style_declaration.cc
-    out/qjs_inline_css_style_declaration.cc
-    out/qjs_computed_css_style_declaration.cc
-    out/qjs_text.cc
-    out/qjs_screen.cc
-    out/qjs_node_list.cc
     out/event_type_names.cc
     out/built_in_string.cc
     out/binding_call_methods.cc
-    out/qjs_scroll_options.cc
-    out/qjs_scroll_to_options.cc
-    out/qjs_html_element.cc
-    out/qjs_html_all_collection.cc
-    out/qjs_html_collection.cc
-    out/qjs_html_anchor_element.cc
-    out/qjs_html_div_element.cc
-    out/qjs_html_head_element.cc
-    out/qjs_html_body_element.cc
-    out/qjs_html_html_element.cc
-    out/qjs_html_image_element.cc
-    out/qjs_html_iframe_element.cc
-    out/qjs_html_canvas_element.cc
-    out/qjs_html_link_element.cc
-    out/qjs_image.cc
-    out/qjs_widget_element.cc
-    out/qjs_canvas_rendering_context_2d.cc
-    out/qjs_canvas_rendering_context.cc
-    out/qjs_canvas_gradient.cc
-    out/qjs_canvas_pattern.cc
-    out/qjs_dom_matrix.cc
-    out/qjs_dom_matrix_readonly.cc
-    out/qjs_union_dom_string_sequencedouble.cc
-    out/qjs_unionhtml_image_elementhtml_canvas_element.cc
-    out/qjs_union_dom_stringcanvas_gradient.cc
-    out/canvas_types.cc
-    out/qjs_html_button_element.cc
-    out/qjs_html_input_element.cc
-    out/qjs_html_form_element.cc
-    out/qjs_html_textarea_element.cc
-    out/qjs_html_script_element.cc
     out/qjs_promise_rejection_event.cc
     out/qjs_promise_rejection_event_init.cc
-    out/qjs_unionevent_listener_options_boolean.cc
-    out/qjs_unionadd_event_listener_options_boolean.cc
-    out/qjs_html_template_element.cc
-    out/qjs_html_unknown_element.cc
-    out/qjs_performance.cc
-    out/qjs_performance_entry.cc
-    out/qjs_performance_mark.cc
-    out/qjs_performance_measure.cc
-    out/performance_entry_names.cc
-    out/qjs_performance_measure_options.cc
-    out/qjs_performance_mark_options.cc
-    out/performance_mark_constants.cc
-    out/html_element_factory.cc
-    out/html_names.cc
     out/script_type_names.cc
     out/defined_properties.cc
-    out/element_attribute_names.cc
-    out/element_namespace_uris.cc
-
-    # SVG generated
-    out/svg_names.cc
-    out/svg_element_factory.cc
-
-    # SVG files
-    out/qjs_svg_element.cc
-    out/qjs_svg_graphics_element.cc
-    out/qjs_svg_geometry_element.cc
-    out/qjs_svg_text_content_element.cc
-    out/qjs_svg_text_positioning_element.cc
-
-    out/qjs_svg_svg_element.cc
-    out/qjs_svg_path_element.cc
-    out/qjs_svg_rect_element.cc
-    out/qjs_svg_text_element.cc
-    out/qjs_svg_g_element.cc
-    out/qjs_svg_circle_element.cc
-    out/qjs_svg_ellipse_element.cc
-    out/qjs_svg_style_element.cc
-    out/qjs_svg_line_element.cc
     )
 
 

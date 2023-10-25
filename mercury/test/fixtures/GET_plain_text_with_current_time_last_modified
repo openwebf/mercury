@@ -1,6 +1,0 @@
-HTTP/1.1 200 OK
-Content-Type: text/plain
-Last-Modified: CURRENT_TIME
-Content-Length: 10
-
-CachedData

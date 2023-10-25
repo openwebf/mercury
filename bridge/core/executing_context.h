@@ -20,7 +20,7 @@
 #include "bindings/qjs/rejected_promises.h"
 #include "bindings/qjs/script_value.h"
 #include "foundation/macros.h"
-#include "foundation/ui_command_buffer.h"
+#include "foundation/main_command_buffer.h"
 
 #include "dart_isolate_context.h"
 #include "dart_methods.h"
@@ -120,7 +120,7 @@ class ExecutingContext {
   FORCE_INLINE Window* global() const { return global_; }
   FORCE_INLINE DartIsolateContext* dartIsolateContext() const { return dart_isolate_context_; };
   FORCE_INLINE Performance* performance() const { return performance_; }
-  FORCE_INLINE UICommandBuffer* uiCommandBuffer() { return &ui_command_buffer_; };
+  FORCE_INLINE MainCommandBuffer* uiCommandBuffer() { return &ui_command_buffer_; };
   FORCE_INLINE const std::unique_ptr<DartMethodPointer>& dartMethodPtr() {
     assert(dart_isolate_context_->valid());
     return dart_isolate_context_->dartMethodPtr();
@@ -128,7 +128,7 @@ class ExecutingContext {
   FORCE_INLINE std::chrono::time_point<std::chrono::system_clock> timeOrigin() const { return time_origin_; }
 
   // Force dart side to execute the pending ui commands.
-  void FlushUICommand();
+  void FlushMainCommand();
 
   void DispatchErrorEvent(ErrorEvent* error_event);
   void DispatchErrorEventInterval(ErrorEvent* error_event);
@@ -160,13 +160,13 @@ class ExecutingContext {
   // Warning: Don't change the orders of members in ExecutingContext if you really know what are you doing.
   // From C++ standard, https://isocpp.org/wiki/faq/dtors#order-dtors-for-members
   // Members first initialized and destructed at the last.
-  // Keep uiCommandBuffer below dartMethod ptr to make sure we can flush all disposeEventTarget when UICommandBuffer
+  // Keep uiCommandBuffer below dartMethod ptr to make sure we can flush all disposeEventTarget when MainCommandBuffer
   // release.
-  UICommandBuffer ui_command_buffer_{this};
+  MainCommandBuffer ui_command_buffer_{this};
   DartIsolateContext* dart_isolate_context_{nullptr};
   // Keep uiCommandBuffer above ScriptState to make sure we can collect all disposedEventTarget command when free
-  // JSContext. When call JSFreeContext(ctx) inside ScriptState, all eventTargets will be finalized and UICommandBuffer
-  // will be fill up to UICommand::disposeEventTarget commands.
+  // JSContext. When call JSFreeContext(ctx) inside ScriptState, all eventTargets will be finalized and MainCommandBuffer
+  // will be fill up to MainCommand::disposeEventTarget commands.
   // ----------------------------------------------------------------------
   // All members above ScriptState will be freed after ScriptState freed
   // ----------------------------------------------------------------------

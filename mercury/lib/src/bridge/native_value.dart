@@ -44,7 +44,7 @@ enum JSPointerType {
 typedef AnonymousNativeFunction = dynamic Function(List<dynamic> args);
 typedef AsyncAnonymousNativeFunction = Future<dynamic> Function(List<dynamic> args);
 
-dynamic fromNativeValue(MercuryViewController view, Pointer<NativeValue> nativeValue) {
+dynamic fromNativeValue(MercuryContextController view, Pointer<NativeValue> nativeValue) {
   if (nativeValue == nullptr) return null;
 
   JSValueType type = JSValueType.values[nativeValue.ref.tag];

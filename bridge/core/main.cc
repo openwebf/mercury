@@ -8,14 +8,11 @@
 #include "bindings/qjs/atomic_string.h"
 #include "bindings/qjs/binding_initializer.h"
 #include "core/dart_methods.h"
-#include "core/dom/document.h"
-#include "core/frame/global.h"
-#include "core/html/html_html_element.h"
-#include "core/html/parser/html_parser.h"
+#include "core/module/global.h"
 #include "event_factory.h"
 #include "foundation/logging.h"
 #include "foundation/native_value_converter.h"
-#include "page.h"
+#include "main.h"
 #include "polyfill.h"
 
 namespace mercury {

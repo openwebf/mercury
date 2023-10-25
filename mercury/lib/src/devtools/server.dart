@@ -146,7 +146,7 @@ class IsolateInspectorServer extends IsolateInspector {
   final String bundleURL;
   int port;
 
-  VoidCallback? onStarted;
+  void Function()? onStarted;
   late HttpServer _httpServer;
 
   /// InspectServer has connected frontend.
@@ -234,9 +234,9 @@ class IsolateInspectorServer extends IsolateInspector {
   void onRequestVersion(HttpRequest request) {
     request.response.headers.clear();
     _writeJSONObject(request, {
-      'Browser': '${NavigatorModule.getAppName()}/${NavigatorModule.getAppVersion()}',
+      'Browser': 'Flutter/Mercury', // TODO: Implement API
       'Protocol-Version': '1.3',
-      'User-Agent': NavigatorModule.getUserAgent(),
+      //'User-Agent': NavigatorModule.getUserAgent(), // TODO: Implement API
     });
   }
 
@@ -296,7 +296,7 @@ class IsolateInspectorClient extends IsolateInspector {
   @override
   bool get connected => _ws?.readyState == WebSocket.open;
 
-  VoidCallback? onStarted;
+  void Function()? onStarted;
 
   void start() async {
     _ws = await WebSocket.connect(url, protocols: ['echo-protocol']);

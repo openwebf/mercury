@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:mercury/dom.dart';
+import 'package:mercury/src/global/event.dart';
 import 'package:mercury/module.dart';
 import 'package:web_socket_channel/io.dart';
 
