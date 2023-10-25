@@ -10,7 +10,7 @@
 #include "core/event/event.h"
 #include "qjs_close_event_init.h"
 
-namespace webf {
+namespace mercury {
 
 struct NativeCloseEvent;
 
@@ -58,6 +58,6 @@ class CloseEvent : public Event {
   bool was_clean_;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_CLOSE_EVENT_H

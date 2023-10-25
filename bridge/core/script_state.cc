@@ -4,7 +4,6 @@
  */
 #include "script_state.h"
 #include "event_factory.h"
-#include "html_element_factory.h"
 #include "names_installer.h"
 
 namespace mercury {

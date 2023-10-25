@@ -346,7 +346,7 @@ function generateDartImplCallCode(blob: IDLBlob, declare: FunctionDeclaration, a
   }
 
   return `
-auto* self = toScriptWrappable<${getClassName(blob)}>(JS_IsUndefined(this_val) ? context->Global() : this_val);
+auto* self = toScriptWrappable<${getClassName(blob)}>(JS_IsUndefined(this_val) ? context->GlobalObject() : this_val);
 ${nativeArguments.length > 0 ? `NativeValue arguments[] = {
   ${nativeArguments.join(',\n')}
 }` : 'NativeValue* arguments = nullptr;'};
@@ -364,7 +364,7 @@ function generateOptionalInitBody(blob: IDLBlob, declare: FunctionDeclaration, a
   if (declare.returnTypeMode?.dartImpl) {
     call = generateDartImplCallCode(blob, declare, declare.args.slice(0, argsIndex + 1));
   } else if (options.isInstanceMethod) {
-    call = `auto* self = toScriptWrappable<${getClassName(blob)}>(JS_IsUndefined(this_val) ? context->Global() : this_val);
+    call = `auto* self = toScriptWrappable<${getClassName(blob)}>(JS_IsUndefined(this_val) ? context->GlobalObject() : this_val);
 ${returnValueAssignment} self->${generateCallMethodName(declare.name)}(${[...previousArguments, `args_${argument.name}`, 'exception_state'].join(',')});`;
   } else {
     call = `${returnValueAssignment} ${getClassName(blob)}::${generateCallMethodName(declare.name)}(context, ${[...previousArguments, `args_${argument.name}`].join(',')}, exception_state);`;
@@ -422,7 +422,7 @@ function generateFunctionCallBody(blob: IDLBlob, declaration: FunctionDeclaratio
   if (declaration.returnTypeMode?.dartImpl) {
     call = generateDartImplCallCode(blob, declaration, declaration.args.slice(0, minimalRequiredArgc));
   } else if (options.isInstanceMethod) {
-    call = `auto* self = toScriptWrappable<${getClassName(blob)}>(JS_IsUndefined(this_val) ? context->Global() : this_val);
+    call = `auto* self = toScriptWrappable<${getClassName(blob)}>(JS_IsUndefined(this_val) ? context->GlobalObject() : this_val);
 ${returnValueAssignment} self->${generateCallMethodName(declaration.name)}(${minimalRequiredArgc > 0 ? `${requiredArguments.join(',')}` : 'exception_state'});`;
   } else {
     call = `${returnValueAssignment} ${getClassName(blob)}::${generateCallMethodName(declaration.name)}(context, ${requiredArguments.join(',')});`;

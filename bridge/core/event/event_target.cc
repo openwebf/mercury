@@ -278,9 +278,6 @@ bool EventTarget::AddEventListenerInternal(const AtomicString& event_type,
     if (options->hasPassive()) {
       listener_options->passive = options->passive();
     }
-
-    GetExecutingContext()->mainCommandBuffer()->addCommand(
-        MainCommand::kAddEvent, std::move(event_type.ToNativeString(ctx())), bindingObject(), listener_options);
   }
 
   return added;
@@ -326,10 +323,6 @@ bool EventTarget::RemoveEventListenerInternal(const AtomicString& event_type,
 
   if (listener_count == 0) {
     bool has_capture = options->hasCapture() && options->capture();
-
-    GetExecutingContext()->mainCommandBuffer()->addCommand(MainCommand::kRemoveEvent,
-                                                         std::move(event_type.ToNativeString(ctx())), bindingObject(),
-                                                         has_capture ? (void*)0x01 : nullptr);
   }
 
   return true;

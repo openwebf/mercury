@@ -218,22 +218,6 @@ class EventTargetWithInlineData : public EventTarget {
     SetGlobalAttributeEventListener(event_type_names::symbol_name, listener, exception_state);              \
   }
 
-#define DEFINE_STATIC_GLOBAL_ATTRIBUTE_EVENT_LISTENER(lower_name, symbol_name)                                       \
-  static std::shared_ptr<EventListener> on##lower_name(EventTarget& eventTarget) {                                   \
-    if (Node* node = eventTarget.ToNode()) {                                                                         \
-      return node->GetDocument().GetGlobalAttributeEventListener(event_type_names::symbol_name);                     \
-    }                                                                                                                \
-    return eventTarget.GetAttributeEventListener(event_type_names::symbol_name);                                     \
-  }                                                                                                                  \
-  static void setOn##lower_name(EventTarget& eventTarget, const std::shared_ptr<EventListener>& listener,            \
-                                ExceptionState& exception_state) {                                                   \
-    if (Node* node = eventTarget.ToNode()) {                                                                         \
-      node->GetDocument().SetGlobalAttributeEventListener(event_type_names::symbol_name, listener, exception_state); \
-    } else {                                                                                                         \
-      eventTarget.SetAttributeEventListener(event_type_names::symbol_name, listener, exception_state);               \
-    }                                                                                                                \
-  }
-
 }  // namespace mercury
 
 #endif  // BRIDGE_EVENT_TARGET_H

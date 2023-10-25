@@ -99,24 +99,8 @@ list(APPEND BRIDGE_SOURCE
   foundation/string_view.cc
   foundation/native_value.cc
   foundation/native_type.cc
-  foundation/main_command_buffer.cc
   polyfill/dist/polyfill.cc
   ${CMAKE_CURRENT_LIST_DIR}/third_party/dart/include/dart_api_dl.c
-  )
-
-list(APPEND GUMBO_PARSER
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gumbo-parser/src/attribute.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gumbo-parser/src/char_ref.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gumbo-parser/src/error.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gumbo-parser/src/parser.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gumbo-parser/src/string_buffer.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gumbo-parser/src/string_piece.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gumbo-parser/src/tag.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gumbo-parser/src/string_piece.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gumbo-parser/src/tokenizer.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gumbo-parser/src/utf8.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gumbo-parser/src/util.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/gumbo-parser/src/vector.c
   )
 
 list(APPEND BRIDGE_INCLUDE
@@ -248,7 +232,7 @@ if ($ENV{MERCURY_JS_ENGINE} MATCHES "quickjs")
     # Core sources
     core/executing_context.cc
     core/script_state.cc
-    core/main.cc
+    core/mercury_isolate.cc
     core/dart_methods.cc
     core/dart_isolate_context.cc
     core/dart_context_data.cc
@@ -304,6 +288,8 @@ if ($ENV{MERCURY_JS_ENGINE} MATCHES "quickjs")
     out/qjs_promise_rejection_event.cc
     out/qjs_promise_rejection_event_init.cc
     out/defined_properties.cc
+    out/qjs_unionevent_listener_options_boolean.cc
+    out/qjs_unionadd_event_listener_options_boolean.cc
     )
 
 
@@ -328,9 +314,6 @@ if(MSVC)
 endif()
 
 target_compile_definitions(mercury PUBLIC -DFLUTTER_BACKEND=1)
-
-add_library(gumbo_parse_static STATIC ${GUMBO_PARSER})
-list(APPEND BRIDGE_LINK_LIBS gumbo_parse_static)
 
 if (${IS_ANDROID})
   find_library(log-lib log)

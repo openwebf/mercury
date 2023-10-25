@@ -2,10 +2,10 @@
  * Copyright (C) 2019-2022 The Kraken authors. All rights reserved.
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
-#include "dom_timer_coordinator.h"
+#include "timer_coordinator.h"
 #include "core/dart_methods.h"
 #include "core/executing_context.h"
-#include "dom_timer.h"
+#include "timer.h"
 
 #if UNIT_TEST
 #include "mercury_test_env.h"

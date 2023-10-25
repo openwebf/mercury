@@ -6,6 +6,7 @@
 #define BRIDGE_CORE_DOM_EVENTS_EVENT_LISTENER_H_
 
 #include "core/executing_context.h"
+#include "bindings/qjs/qjs_function.h"
 
 namespace mercury {
 

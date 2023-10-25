@@ -8,10 +8,9 @@
 #include "bindings/qjs/atomic_string.h"
 #include "bindings/qjs/wrapper_type_info.h"
 #include "core/event/event_target.h"
+#include "global_event_handlers.h"
 
 namespace mercury {
-
-class Element;
 
 class Global : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();

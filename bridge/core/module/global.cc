@@ -15,7 +15,6 @@
 namespace mercury {
 
 Global::Global(ExecutingContext* context) : EventTargetWithInlineData(context) {
-  context->mainCommandBuffer()->addCommand(MainCommand::kCreateGlobal, nullptr, (void*)bindingObject(), nullptr);
 }
 
 // https://infra.spec.whatwg.org/#ascii-whitespace
@@ -110,67 +109,6 @@ Global* Global::open(const AtomicString& url, ExceptionState& exception_state) {
   return this;
 }
 
-Screen* Global::screen() {
-  if (screen_ == nullptr) {
-    NativeValue value = GetBindingProperty(binding_call_methods::kscreen, ASSERT_NO_EXCEPTION());
-    screen_ = MakeGarbageCollected<Screen>(
-        this, NativeValueConverter<NativeTypePointer<NativeBindingObject>>::FromNativeValue(value));
-  }
-  return screen_;
-}
-
-void Global::scroll(ExceptionState& exception_state) {
-  return scroll(0, 0, exception_state);
-}
-
-void Global::scroll(double x, double y, ExceptionState& exception_state) {
-  const NativeValue args[] = {
-      NativeValueConverter<NativeTypeDouble>::ToNativeValue(x),
-      NativeValueConverter<NativeTypeDouble>::ToNativeValue(y),
-  };
-  InvokeBindingMethod(binding_call_methods::kscroll, 2, args, exception_state);
-}
-
-void Global::scroll(const std::shared_ptr<ScrollToOptions>& options, ExceptionState& exception_state) {
-  const NativeValue args[] = {
-      NativeValueConverter<NativeTypeDouble>::ToNativeValue(options->hasLeft() ? options->left() : 0.0),
-      NativeValueConverter<NativeTypeDouble>::ToNativeValue(options->hasTop() ? options->top() : 0.0),
-  };
-  InvokeBindingMethod(binding_call_methods::kscroll, 2, args, exception_state);
-}
-
-void Global::scrollBy(ExceptionState& exception_state) {
-  return scrollBy(0, 0, exception_state);
-}
-
-void Global::scrollBy(double x, double y, ExceptionState& exception_state) {
-  const NativeValue args[] = {
-      NativeValueConverter<NativeTypeDouble>::ToNativeValue(x),
-      NativeValueConverter<NativeTypeDouble>::ToNativeValue(y),
-  };
-  InvokeBindingMethod(binding_call_methods::kscrollBy, 2, args, exception_state);
-}
-
-void Global::scrollBy(const std::shared_ptr<ScrollToOptions>& options, ExceptionState& exception_state) {
-  const NativeValue args[] = {
-      NativeValueConverter<NativeTypeDouble>::ToNativeValue(options->hasLeft() ? options->left() : 0.0),
-      NativeValueConverter<NativeTypeDouble>::ToNativeValue(options->hasTop() ? options->top() : 0.0),
-  };
-  InvokeBindingMethod(binding_call_methods::kscrollBy, 2, args, exception_state);
-}
-
-void Global::scrollTo(ExceptionState& exception_state) {
-  return scroll(exception_state);
-}
-
-void Global::scrollTo(double x, double y, ExceptionState& exception_state) {
-  return scroll(x, y, exception_state);
-}
-
-void Global::scrollTo(const std::shared_ptr<ScrollToOptions>& options, ExceptionState& exception_state) {
-  return scroll(options, exception_state);
-}
-
 void Global::postMessage(const ScriptValue& message, ExceptionState& exception_state) {
   auto event_init = MessageEventInit::Create();
   event_init->setData(message);
@@ -190,51 +128,11 @@ void Global::postMessage(const ScriptValue& message,
   dispatchEvent(message_event, exception_state);
 }
 
-ComputedCssStyleDeclaration* Global::getComputedStyle(Element* element, ExceptionState& exception_state) {
-  NativeValue arguments[] = {NativeValueConverter<NativeTypePointer<Element>>::ToNativeValue(element)};
-  NativeValue result = InvokeBindingMethod(binding_call_methods::kgetComputedStyle, 1, arguments, exception_state);
-  return MakeGarbageCollected<ComputedCssStyleDeclaration>(
-      GetExecutingContext(), NativeValueConverter<NativeTypePointer<NativeBindingObject>>::FromNativeValue(result));
-}
-
-ComputedCssStyleDeclaration* Global::getComputedStyle(Element* element,
-                                                      const AtomicString& pseudo_elt,
-                                                      ExceptionState& exception_state) {
-  return getComputedStyle(element, exception_state);
-}
-
-double Global::requestAnimationFrame(const std::shared_ptr<QJSFunction>& callback, ExceptionState& exceptionState) {
-  if (GetExecutingContext()->dartMethodPtr()->flushMainCommand == nullptr) {
-    exceptionState.ThrowException(ctx(), ErrorType::InternalError,
-                                  "Failed to execute 'flushMainCommand': dart method (flushMainCommand) executed "
-                                  "with unexpected error.");
-    return 0;
-  }
-
-  GetExecutingContext()->FlushMainCommand();
-  auto frame_callback = FrameCallback::Create(GetExecutingContext(), callback);
-  uint32_t request_id = GetExecutingContext()->document()->RequestAnimationFrame(frame_callback, exceptionState);
-  // `-1` represents some error occurred.
-  if (request_id == -1) {
-    exceptionState.ThrowException(
-        ctx(), ErrorType::InternalError,
-        "Failed to execute 'requestAnimationFrame': dart method (requestAnimationFrame) executed "
-        "with unexpected error.");
-    return 0;
-  }
-  return request_id;
-}
-
-void Global::cancelAnimationFrame(double request_id, ExceptionState& exception_state) {
-  GetExecutingContext()->document()->CancelAnimationFrame(static_cast<uint32_t>(request_id), exception_state);
-}
-
 bool Global::IsGlobalOrWorkerScope() const {
   return true;
 }
 
 void Global::Trace(GCVisitor* visitor) const {
-  visitor->TraceMember(screen_);
   EventTargetWithInlineData::Trace(visitor);
 }
 

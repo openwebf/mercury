@@ -22,9 +22,7 @@ typedef struct NativeValue NativeValue;
 typedef struct NativeScreen NativeScreen;
 typedef struct NativeByteCode NativeByteCode;
 
-struct WebFInfo;
-
-struct WebFInfo {
+struct MercuryInfo {
   const char* app_name{nullptr};
   const char* app_version{nullptr};
   const char* app_revision{nullptr};
@@ -35,42 +33,30 @@ typedef void (*Task)(void*);
 WEBF_EXPORT_C
 void* initDartIsolateContext(uint64_t* dart_methods, int32_t dart_methods_len);
 WEBF_EXPORT_C
-void* allocateNewMain(void* dart_isolate_context, int32_t targetMainId);
+void* allocateNewMercuryIsolate(void* dart_isolate_context, int32_t target_mercury_isolate_id);
 
 WEBF_EXPORT_C
-int64_t newMainId();
+int64_t newMercuryIsolateId();
 
 WEBF_EXPORT_C
-void disposeMain(void* dart_isolate_context, void* main);
+void disposeMercuryIsolate(void* dart_isolate_context, void* ptr);
 WEBF_EXPORT_C
-int8_t evaluateScripts(void* main,
+int8_t evaluateScripts(void* ptr,
                        SharedNativeString* code,
                        uint8_t** parsed_bytecodes,
                        uint64_t* bytecode_len,
                        const char* bundleFilename,
                        int32_t startLine);
 WEBF_EXPORT_C
-int8_t evaluateQuickjsByteCode(void* page, uint8_t* bytes, int32_t byteLen);
+int8_t evaluateQuickjsByteCode(void* ptr, uint8_t* bytes, int32_t byteLen);
 WEBF_EXPORT_C
-void parseHTML(void* page, const char* code, int32_t length);
-WEBF_EXPORT_C
-NativeValue* invokeModuleEvent(void* page,
+NativeValue* invokeModuleEvent(void* ptr,
                                SharedNativeString* module,
                                const char* eventType,
                                void* event,
                                NativeValue* extra);
 WEBF_EXPORT_C
-WebFInfo* getWebFInfo();
-WEBF_EXPORT_C
-void* getMainCommandItems(void* page);
-WEBF_EXPORT_C
-int64_t getMainCommandItemSize(void* page);
-WEBF_EXPORT_C
-void clearMainCommandItems(void* page);
-WEBF_EXPORT_C
-void registerPluginByteCode(uint8_t* bytes, int32_t length, const char* pluginName);
-WEBF_EXPORT_C
-void registerPluginCode(const char* code, int32_t length, const char* pluginName);
+MercuryInfo* getMercuryInfo();
 WEBF_EXPORT_C
 int32_t profileModeEnabled();
 

@@ -9,7 +9,7 @@ JSValue QJS<%= className %>::ConstructorCallback(JSContext* ctx, JSValue func_ob
     auto* self = toScriptWrappable<<%= className %>>(obj);
     ExceptionState exception_state;
     ExecutingContext* context = ExecutingContext::From(ctx);
-    auto* wrapper_type_info = DOMTokenList::GetStaticWrapperTypeInfo();
+    auto* wrapper_type_info = <%= className %>::GetStaticWrapperTypeInfo();
     MemberMutationScope scope{context};
     JSValue prototype = context->contextData()->prototypeForType(wrapper_type_info);
     if (JS_HasProperty(ctx, prototype, key)) return true;

@@ -17,10 +17,10 @@
 
 namespace mercury {
 
-class MercuryMain;
+class MercuryIsolate;
 class DartContext;
 
-using JSBridgeDisposeCallback = void (*)(MercuryMain* bridge);
+using JSBridgeDisposeCallback = void (*)(MercuryIsolate* bridge);
 using ConsoleMessageHandler = std::function<void(void* ctx, const std::string& message, int logLevel)>;
 
 /// MercuryMain is class which manage all js objects create by <Mercury> flutter widget.
@@ -28,12 +28,12 @@ using ConsoleMessageHandler = std::function<void(void* ctx, const std::string& m
 /// and there is no data sharing between objects between different MercuryMains.
 /// It's safe to allocate many MercuryMains at the same times on one thread, but not safe for multi-threads, only one
 /// thread can enter to MercuryMain at the same time.
-class MercuryMain final {
+class MercuryIsolate final {
  public:
   static ConsoleMessageHandler consoleMessageHandler;
-  MercuryMain() = delete;
-  MercuryMain(DartIsolateContext* dart_isolate_context, int32_t jsContext, const JSExceptionHandler& handler);
-  ~MercuryMain();
+  MercuryIsolate() = delete;
+  MercuryIsolate(DartIsolateContext* dart_isolate_context, int32_t jsContext, const JSExceptionHandler& handler);
+  ~MercuryIsolate();
 
   // Bytecodes which registered by mercury plugins.
   static std::unordered_map<std::string, NativeByteCode> pluginByteCode;
@@ -50,7 +50,6 @@ class MercuryMain final {
                       uint64_t* bytecode_len,
                       const char* url,
                       int startLine);
-  bool parseHTML(const char* code, size_t length);
   void evaluateScript(const char* script, size_t length, const char* url, int startLine);
   uint8_t* dumpByteCode(const char* script, size_t length, const char* url, size_t* byteLength);
   bool evaluateByteCode(uint8_t* bytes, size_t byteLength);

@@ -16,20 +16,18 @@
 #include <mutex>
 #include <set>
 #include <unordered_map>
-#include "bindings/qjs/binding_initializer.h"
 #include "bindings/qjs/rejected_promises.h"
 #include "bindings/qjs/script_value.h"
-#include "foundation/macros.h"
-#include "foundation/main_command_buffer.h"
-
 #include "dart_isolate_context.h"
 #include "dart_methods.h"
 #include "executing_context_data.h"
-#include "module/global.h"
+#include "foundation/macros.h"
 #include "module/timer/timer_coordinator.h"
-#include "module/module_context_coordinator.h"
+#include "module/module_callback.h"
 #include "module/module_listener_container.h"
+#include "module/module_context_coordinator.h"
 #include "script_state.h"
+#include "defined_properties.h"
 
 namespace mercury {
 
@@ -39,9 +37,7 @@ struct NativeByteCode {
 };
 
 class ExecutingContext;
-class Document;
 class Global;
-class Performance;
 class MemberMutationScope;
 class ErrorEvent;
 class DartContext;
@@ -76,7 +72,7 @@ class ExecutingContext {
   bool EvaluateByteCode(uint8_t* bytes, size_t byteLength);
   bool IsContextValid() const;
   bool IsCtxValid() const;
-  JSValue Global();
+  JSValue GlobalObject();
   JSContext* ctx();
   FORCE_INLINE int32_t contextId() const { return context_id_; };
   FORCE_INLINE int32_t uniqueId() const { return unique_id_; }
@@ -112,17 +108,18 @@ class ExecutingContext {
   // Get current script state.
   ScriptState* GetScriptState() { return &script_state_; }
 
+  void SetMutationScope(MemberMutationScope& mutation_scope);
+  bool HasMutationScope() const { return active_mutation_scope != nullptr; }
+  MemberMutationScope* mutationScope() const { return active_mutation_scope; }
+  void ClearMutationScope();
+
   FORCE_INLINE Global* global() const { return global_; }
   FORCE_INLINE DartIsolateContext* dartIsolateContext() const { return dart_isolate_context_; };
-  FORCE_INLINE MainCommandBuffer* mainCommandBuffer() { return &main_command_buffer_; };
   FORCE_INLINE const std::unique_ptr<DartMethodPointer>& dartMethodPtr() {
     assert(dart_isolate_context_->valid());
     return dart_isolate_context_->dartMethodPtr();
   }
   FORCE_INLINE std::chrono::time_point<std::chrono::system_clock> timeOrigin() const { return time_origin_; }
-
-  // Force dart side to execute the pending main commands.
-  void FlushMainCommand();
 
   void DispatchErrorEvent(ErrorEvent* error_event);
   void DispatchErrorEventInterval(ErrorEvent* error_event);
@@ -143,20 +140,11 @@ class ExecutingContext {
   std::chrono::time_point<std::chrono::system_clock> time_origin_;
   int32_t unique_id_;
 
-  void InstallDocument();
-  void InstallPerformance();
-
   static void promiseRejectTracker(JSContext* ctx,
                                    JSValueConst promise,
                                    JSValueConst reason,
                                    JS_BOOL is_handled,
                                    void* opaque);
-  // Warning: Don't change the orders of members in ExecutingContext if you really know what are you doing.
-  // From C++ standard, https://isocpp.org/wiki/faq/dtors#order-dtors-for-members
-  // Members first initialized and destructed at the last.
-  // Keep mainCommandBuffer below dartMethod ptr to make sure we can flush all disposeEventTarget when MainCommandBuffer
-  // release.
-  MainCommandBuffer main_command_buffer_{this};
   DartIsolateContext* dart_isolate_context_{nullptr};
   // Keep mainCommandBuffer above ScriptState to make sure we can collect all disposedEventTarget command when free
   // JSContext. When call JSFreeContext(ctx) inside ScriptState, all eventTargets will be finalized and MainCommandBuffer
@@ -180,6 +168,7 @@ class ExecutingContext {
   ExecutionContextData context_data_{this};
   bool in_dispatch_error_event_{false};
   RejectedPromises rejected_promises_;
+  MemberMutationScope* active_mutation_scope{nullptr};
   std::set<ScriptWrappable*> active_wrappers_;
 };
 

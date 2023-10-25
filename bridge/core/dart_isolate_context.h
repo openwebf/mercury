@@ -12,7 +12,7 @@
 
 namespace mercury {
 
-class MercuryMain;
+class MercuryIsolate;
 class DartIsolateContext;
 
 struct DartWireContext {
@@ -39,14 +39,14 @@ class DartIsolateContext {
 
   const std::unique_ptr<DartContextData>& EnsureData() const;
 
-  void AddNewPage(std::unique_ptr<MercuryMain>&& new_page);
-  void RemovePage(const MercuryMain* page);
+  void AddNewIsolate(std::unique_ptr<MercuryIsolate>&& new_isolate);
+  void RemoveIsolate(const MercuryIsolate* isolate);
 
   ~DartIsolateContext();
 
  private:
   int is_valid_{false};
-  std::set<std::unique_ptr<MercuryMain>> pages_;
+  std::set<std::unique_ptr<MercuryIsolate>> mercury_isolates_;
   std::thread::id running_thread_;
   mutable std::unique_ptr<DartContextData> data_;
   static thread_local JSRuntime* runtime_;

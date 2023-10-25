@@ -7,7 +7,7 @@
 
 #include "bindings/qjs/qjs_function.h"
 #include "bindings/qjs/script_wrappable.h"
-#include "dom_timer_coordinator.h"
+#include "timer_coordinator.h"
 
 namespace mercury {
 

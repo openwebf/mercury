@@ -4,12 +4,9 @@
 
 #include "dart_isolate_context.h"
 #include <set>
-#include "defined_properties_initializer.h"
 #include "event_factory.h"
-#include "html_element_factory.h"
+#include "mercury_isolate.h"
 #include "names_installer.h"
-#include "page.h"
-#include "svg_element_factory.h"
 
 namespace mercury {
 
@@ -73,14 +70,12 @@ DartIsolateContext::DartIsolateContext(const uint64_t* dart_methods, int32_t dar
 
 DartIsolateContext::~DartIsolateContext() {
   is_valid_ = false;
-  pages_.clear();
+  mercury_isolates_.clear();
   running_isolates_--;
 
   if (running_isolates_ == 0) {
     // Prebuilt strings stored in JSRuntime. Only needs to dispose when runtime disposed.
     names_installer::Dispose();
-    HTMLElementFactory::Dispose();
-    SVGElementFactory::Dispose();
     EventFactory::Dispose();
     ClearUpWires();
     data_.reset();
@@ -90,14 +85,14 @@ DartIsolateContext::~DartIsolateContext() {
   }
 }
 
-void DartIsolateContext::AddNewPage(std::unique_ptr<WebFPage>&& new_page) {
-  pages_.insert(std::move(new_page));
+void DartIsolateContext::AddNewIsolate(std::unique_ptr<MercuryIsolate>&& new_isolate) {
+  mercury_isolates_.insert(std::move(new_isolate));
 }
 
-void DartIsolateContext::RemovePage(const mercury::WebFPage* page) {
-  for (auto it = pages_.begin(); it != pages_.end(); ++it) {
-    if (it->get() == page) {
-      pages_.erase(it);
+void DartIsolateContext::RemoveIsolate(const MercuryIsolate* isolate) {
+  for (auto it = mercury_isolates_.begin(); it != mercury_isolates_.end(); ++it) {
+    if (it->get() == isolate) {
+      mercury_isolates_.erase(it);
       break;
     }
   }

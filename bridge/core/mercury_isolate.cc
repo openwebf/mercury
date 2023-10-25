@@ -12,14 +12,14 @@
 #include "event_factory.h"
 #include "foundation/logging.h"
 #include "foundation/native_value_converter.h"
-#include "main.h"
+#include "mercury_isolate.h"
 #include "polyfill.h"
 
 namespace mercury {
 
-ConsoleMessageHandler MercuryMain::consoleMessageHandler{nullptr};
+ConsoleMessageHandler MercuryIsolate::consoleMessageHandler{nullptr};
 
-MercuryMain::MercuryMain(DartIsolateContext* dart_isolate_context, int32_t contextId, const JSExceptionHandler& handler)
+MercuryIsolate::MercuryIsolate(DartIsolateContext* dart_isolate_context, int32_t contextId, const JSExceptionHandler& handler)
     : contextId(contextId), ownerThreadId(std::this_thread::get_id()) {
   context_ = new ExecutingContext(
       dart_isolate_context, contextId,
@@ -32,23 +32,7 @@ MercuryMain::MercuryMain(DartIsolateContext* dart_isolate_context, int32_t conte
       this);
 }
 
-bool MercuryMain::parseHTML(const char* code, size_t length) {
-  if (!context_->IsContextValid())
-    return false;
-
-  MemberMutationScope scope{context_};
-
-  auto document_element = context_->document()->documentElement();
-  if (!document_element) {
-    return false;
-  }
-
-  HTMLParser::parseHTML(code, length, context_->document()->documentElement());
-
-  return true;
-}
-
-NativeValue* MercuryMain::invokeModuleEvent(SharedNativeString* native_module_name,
+NativeValue* MercuryIsolate::invokeModuleEvent(SharedNativeString* native_module_name,
                                          const char* eventType,
                                          void* ptr,
                                          NativeValue* extra) {
@@ -94,7 +78,7 @@ NativeValue* MercuryMain::invokeModuleEvent(SharedNativeString* native_module_na
   return return_value;
 }
 
-bool MercuryMain::evaluateScript(const SharedNativeString* script,
+bool MercuryIsolate::evaluateScript(const SharedNativeString* script,
                               uint8_t** parsed_bytecodes,
                               uint64_t* bytecode_len,
                               const char* url,
@@ -105,7 +89,7 @@ bool MercuryMain::evaluateScript(const SharedNativeString* script,
                                       startLine);
 }
 
-bool MercuryMain::evaluateScript(const uint16_t* script,
+bool MercuryIsolate::evaluateScript(const uint16_t* script,
                               size_t length,
                               uint8_t** parsed_bytecodes,
                               uint64_t* bytecode_len,
@@ -116,29 +100,29 @@ bool MercuryMain::evaluateScript(const uint16_t* script,
   return context_->EvaluateJavaScript(script, length, parsed_bytecodes, bytecode_len, url, startLine);
 }
 
-void MercuryMain::evaluateScript(const char* script, size_t length, const char* url, int startLine) {
+void MercuryIsolate::evaluateScript(const char* script, size_t length, const char* url, int startLine) {
   if (!context_->IsContextValid())
     return;
   context_->EvaluateJavaScript(script, length, url, startLine);
 }
 
-uint8_t* MercuryMain::dumpByteCode(const char* script, size_t length, const char* url, size_t* byteLength) {
+uint8_t* MercuryIsolate::dumpByteCode(const char* script, size_t length, const char* url, size_t* byteLength) {
   if (!context_->IsContextValid())
     return nullptr;
   return context_->DumpByteCode(script, length, url, byteLength);
 }
 
-bool MercuryMain::evaluateByteCode(uint8_t* bytes, size_t byteLength) {
+bool MercuryIsolate::evaluateByteCode(uint8_t* bytes, size_t byteLength) {
   if (!context_->IsContextValid())
     return false;
   return context_->EvaluateByteCode(bytes, byteLength);
 }
 
-std::thread::id MercuryMain::currentThread() const {
+std::thread::id MercuryIsolate::currentThread() const {
   return ownerThreadId;
 }
 
-MercuryMain::~MercuryMain() {
+MercuryIsolate::~MercuryIsolate() {
 #if IS_TEST
   if (disposeCallback != nullptr) {
     disposeCallback(this);
@@ -147,7 +131,7 @@ MercuryMain::~MercuryMain() {
   delete context_;
 }
 
-void MercuryMain::reportError(const char* errmsg) {
+void MercuryIsolate::reportError(const char* errmsg) {
   handler_(context_, errmsg);
 }
 

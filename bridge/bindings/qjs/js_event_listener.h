@@ -8,6 +8,7 @@
 
 #include "foundation/casting.h"
 #include "js_based_event_listener.h"
+#include "bindings/qjs/qjs_function.h"
 
 namespace mercury {
 

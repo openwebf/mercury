@@ -5,7 +5,7 @@
 #include "close_event.h"
 #include "qjs_close_event.h"
 
-namespace webf {
+namespace mercury {
 
 CloseEvent* CloseEvent::Create(ExecutingContext* context,
                                const AtomicString& type,
@@ -78,4 +78,4 @@ bool CloseEvent::wasClean() const {
   return was_clean_;
 }
 
-}  // namespace webf
+}  // namespace mercury

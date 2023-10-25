@@ -9,9 +9,8 @@
 
 #include "bindings/qjs/native_string_utils.h"
 #include "core/dart_isolate_context.h"
-#include "core/main.h"
+#include "core/mercury_isolate.h"
 #include "foundation/logging.h"
-#include "foundation/main_command_buffer.h"
 #include "include/mercury_bridge.h"
 
 #if defined(_WIN32)
@@ -44,59 +43,54 @@ void* initDartIsolateContext(uint64_t* dart_methods, int32_t dart_methods_len) {
   return ptr;
 }
 
-void* allocateNewPage(void* dart_isolate_context, int32_t targetContextId) {
+void* allocateNewMercuryIsolate(void* dart_isolate_context, int32_t target_mercury_isolate_id) {
   assert(dart_isolate_context != nullptr);
-  auto page =
-      std::make_unique<mercury::MercuryMain>((mercury::DartIsolateContext*)dart_isolate_context, targetContextId, nullptr);
-  void* ptr = page.get();
-  ((mercury::DartIsolateContext*)dart_isolate_context)->AddNewPage(std::move(page));
+  auto mercury_isolate =
+      std::make_unique<mercury::MercuryIsolate>((mercury::DartIsolateContext*)dart_isolate_context,
+                                                        target_mercury_isolate_id, nullptr);
+  void* ptr = mercury_isolate.get();
+  ((mercury::DartIsolateContext*)dart_isolate_context)->AddNewIsolate(std::move(mercury_isolate));
   return ptr;
 }
 
-int64_t newPageId() {
+int64_t newMercuryIsolateId() {
   return unique_page_id++;
 }
 
-void disposeMain(void* dart_isolate_context, void* page_) {
-  auto* page = reinterpret_cast<mercury::MercuryMain*>(page_);
-  assert(std::this_thread::get_id() == page->currentThread());
-  ((mercury::DartIsolateContext*)dart_isolate_context)->RemovePage(page);
+void disposeMercuryIsolate(void* dart_isolate_context, void* ptr) {
+  auto* mercury_isolate = reinterpret_cast<mercury::MercuryIsolate*>(ptr);
+  assert(std::this_thread::get_id() == mercury_isolate->currentThread());
+  ((mercury::DartIsolateContext*)dart_isolate_context)->RemoveIsolate(mercury_isolate);
 }
 
-int8_t evaluateScripts(void* page_,
+int8_t evaluateScripts(void* ptr,
                        SharedNativeString* code,
                        uint8_t** parsed_bytecodes,
                        uint64_t* bytecode_len,
                        const char* bundleFilename,
                        int32_t startLine) {
-  auto page = reinterpret_cast<mercury::MercuryMain*>(page_);
-  assert(std::this_thread::get_id() == page->currentThread());
-  return page->evaluateScript(reinterpret_cast<mercury::SharedNativeString*>(code), parsed_bytecodes, bytecode_len,
+  auto mercury_isolate = reinterpret_cast<mercury::MercuryIsolate*>(ptr);
+  assert(std::this_thread::get_id() == mercury_isolate->currentThread());
+  return mercury_isolate->evaluateScript(reinterpret_cast<mercury::SharedNativeString*>(code), parsed_bytecodes, bytecode_len,
                               bundleFilename, startLine)
              ? 1
              : 0;
 }
 
-int8_t evaluateQuickjsByteCode(void* page_, uint8_t* bytes, int32_t byteLen) {
-  auto page = reinterpret_cast<mercury::MercuryMain*>(page_);
-  assert(std::this_thread::get_id() == page->currentThread());
-  return page->evaluateByteCode(bytes, byteLen) ? 1 : 0;
+int8_t evaluateQuickjsByteCode(void* ptr, uint8_t* bytes, int32_t byteLen) {
+  auto mercury_isolate = reinterpret_cast<mercury::MercuryIsolate*>(ptr);
+  assert(std::this_thread::get_id() == mercury_isolate->currentThread());
+  return mercury_isolate->evaluateByteCode(bytes, byteLen) ? 1 : 0;
 }
 
-void parseHTML(void* page_, const char* code, int32_t length) {
-  auto page = reinterpret_cast<mercury::MercuryMain*>(page_);
-  assert(std::this_thread::get_id() == page->currentThread());
-  page->parseHTML(code, length);
-}
-
-NativeValue* invokeModuleEvent(void* page_,
+NativeValue* invokeModuleEvent(void* ptr,
                                SharedNativeString* module_name,
                                const char* eventType,
                                void* event,
                                NativeValue* extra) {
-  auto page = reinterpret_cast<mercury::MercuryMain*>(page_);
-  assert(std::this_thread::get_id() == page->currentThread());
-  auto* result = page->invokeModuleEvent(reinterpret_cast<mercury::SharedNativeString*>(module_name), eventType, event,
+  auto mercury_isolate = reinterpret_cast<mercury::MercuryIsolate*>(ptr);
+  assert(std::this_thread::get_id() == mercury_isolate->currentThread());
+  auto* result = mercury_isolate->invokeModuleEvent(reinterpret_cast<mercury::SharedNativeString*>(module_name), eventType, event,
                                          reinterpret_cast<mercury::NativeValue*>(extra));
   return reinterpret_cast<NativeValue*>(result);
 }
@@ -113,38 +107,6 @@ MercuryInfo* getMercuryInfo() {
   }
 
   return mercuryInfo;
-}
-
-void dispatchUITask(void* page_, void* context, void* callback) {
-  auto page = reinterpret_cast<mercury::MercuryMain*>(page_);
-  assert(std::this_thread::get_id() == page->currentThread());
-  reinterpret_cast<void (*)(void*)>(callback)(context);
-}
-
-void* getMainCommandItems(void* page_) {
-  auto page = reinterpret_cast<mercury::MercuryMain*>(page_);
-  assert(std::this_thread::get_id() == page->currentThread());
-  return page->GetExecutingContext()->mainCommandBuffer()->data();
-}
-
-int64_t getMainCommandItemSize(void* page_) {
-  auto page = reinterpret_cast<mercury::MercuryMain*>(page_);
-  assert(std::this_thread::get_id() == page->currentThread());
-  return page->GetExecutingContext()->mainCommandBuffer()->size();
-}
-
-void clearMainCommandItems(void* page_) {
-  auto page = reinterpret_cast<mercury::MercuryMain*>(page_);
-  assert(std::this_thread::get_id() == page->currentThread());
-  page->GetExecutingContext()->mainCommandBuffer()->clear();
-}
-
-void registerPluginByteCode(uint8_t* bytes, int32_t length, const char* pluginName) {
-  mercury::ExecutingContext::plugin_byte_code[pluginName] = mercury::NativeByteCode{bytes, length};
-}
-
-void registerPluginCode(const char* code, int32_t length, const char* pluginName) {
-  mercury::ExecutingContext::plugin_string_code[pluginName] = std::string(code, length);
 }
 
 int32_t profileModeEnabled() {

@@ -5,13 +5,13 @@
 #include "executing_context.h"
 
 #include <utility>
+#include "bindings/qjs/binding_initializer.h"
 #include "bindings/qjs/converter_impl.h"
 #include "bindings/qjs/cppgc/garbage_collected.h"
 #include "built_in_string.h"
 #include "core/event/builtin/error_event.h"
 #include "core/event/builtin/promise_rejection_event.h"
 #include "event_type_names.h"
-#include "foundation/logging.h"
 #include "polyfill.h"
 #include "qjs_global.h"
 
@@ -33,15 +33,6 @@ ExecutingContext::ExecutingContext(DartIsolateContext* dart_isolate_context,
       owner_(owner),
       unique_id_(context_unique_id++),
       is_context_valid_(true) {
-  //  #if ENABLE_PROFILE
-  //    auto jsContextStartTime =
-  //        std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch())
-  //            .count();
-  //    auto nativePerformance = Performance::instance(context_)->m_nativePerformance;
-  //    nativePerformance.mark(PERF_JS_CONTEXT_INIT_START, jsContextStartTime);
-  //    nativePerformance.mark(PERF_JS_CONTEXT_INIT_END);
-  //    nativePerformance.mark(PERF_JS_NATIVE_METHOD_INIT_START);
-  //  #endif
 
   // @FIXME: maybe contextId will larger than MAX_JS_CONTEXT
   assert_m(valid_contexts[contextId] != true, "Conflict context found!");
@@ -60,19 +51,8 @@ ExecutingContext::ExecutingContext(DartIsolateContext* dart_isolate_context,
   // Register all built-in native bindings.
   InstallBindings(this);
 
-  // Install document.
-  InstallDocument();
-
   // Binding global object and global.
   InstallGlobal();
-
-  // Install performance
-  InstallPerformance();
-
-  //#if ENABLE_PROFILE
-  //  nativePerformance.mark(PERF_JS_NATIVE_METHOD_INIT_END);
-  //  nativePerformance.mark(PERF_JS_POLYFILL_INIT_START);
-  //#endif
 
   initMercuryPolyFill(this);
 
@@ -83,10 +63,6 @@ ExecutingContext::ExecutingContext(DartIsolateContext* dart_isolate_context,
   for (auto& p : plugin_string_code) {
     EvaluateJavaScript(p.second.c_str(), p.second.size(), p.first.c_str(), 0);
   }
-
-  //#if ENABLE_PROFILE
-  //  nativePerformance.mark(PERF_JS_POLYFILL_INIT_END);
-  //#endif
 }
 
 ExecutingContext::~ExecutingContext() {
@@ -212,7 +188,7 @@ bool ExecutingContext::HandleException(ExceptionState& exception_state) {
   return true;
 }
 
-JSValue ExecutingContext::Global() {
+JSValue ExecutingContext::GlobalObject() {
   return global_object_;
 }
 
@@ -325,12 +301,6 @@ static void DispatchPromiseRejectionEvent(const AtomicString& event_type,
   }
 }
 
-void ExecutingContext::FlushMainCommand() {
-  if (!mainCommandBuffer()->empty()) {
-    dartMethodPtr()->flushMainCommand(context_id_);
-  }
-}
-
 void ExecutingContext::DispatchErrorEvent(ErrorEvent* error_event) {
   if (in_dispatch_error_event_) {
     return;
@@ -402,11 +372,24 @@ ModuleContextCoordinator* ExecutingContext::ModuleContexts() {
   return &module_contexts_;
 }
 
+void ExecutingContext::SetMutationScope(MemberMutationScope& mutation_scope) {
+  // MemberMutationScope may be called by other MemberMutationScope in the call stack.
+  // Should save the tree corresponding to the call stack.
+  if (active_mutation_scope != nullptr) {
+    mutation_scope.SetParent(active_mutation_scope);
+  }
+  active_mutation_scope = &mutation_scope;
+}
+
+void ExecutingContext::ClearMutationScope() {
+  active_mutation_scope = active_mutation_scope->Parent();
+}
+
 void ExecutingContext::InstallGlobal() {
   MemberMutationScope mutation_scope{this};
   global_ = MakeGarbageCollected<Global>(this);
-  JS_SetPrototype(ctx(), Global(), global_->ToQuickJSUnsafe());
-  JS_SetOpaque(Global(), global_);
+  JS_SetPrototype(ctx(), GlobalObject(), global_->ToQuickJSUnsafe());
+  JS_SetOpaque(GlobalObject(), global_);
 }
 
 void ExecutingContext::RegisterActiveScriptWrappers(ScriptWrappable* script_wrappable) {

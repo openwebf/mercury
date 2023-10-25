@@ -36,7 +36,7 @@ void QJS<%= className %>::InstallGlobalFunctions(ExecutingContext* context) {
   std::initializer_list<MemberInstaller::FunctionConfig> functionConfig {
     <%= globalFunctionInstallList.join(',\n') %>
   };
-  MemberInstaller::InstallFunctions(context, context->Global(), functionConfig);
+  MemberInstaller::InstallFunctions(context, context->GlobalObject(), functionConfig);
 }
 <% } %>
 
@@ -72,7 +72,7 @@ void QJS<%= className %>::InstallConstructor(ExecutingContext* context) {
   std::initializer_list<MemberInstaller::AttributeConfig> attributeConfig {
     <%= constructorInstallList.join(',\n') %>
   };
-  MemberInstaller::InstallAttributes(context, context->Global(), attributeConfig);
+  MemberInstaller::InstallAttributes(context, context->GlobalObject(), attributeConfig);
 }
 <% } %>
 

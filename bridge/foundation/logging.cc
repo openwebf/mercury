@@ -7,7 +7,7 @@
 #include <algorithm>
 #include "colors.h"
 
-#include "core/main.h"
+#include "core/mercury_isolate.h"
 
 #if defined(IS_ANDROID)
 #include <android/log.h>
@@ -122,8 +122,8 @@ void printLog(ExecutingContext* context, std::stringstream& stream, std::string 
       MERCURY_LOG(VERBOSE) << stream.str();
   }
 
-  if (mercury::MercuryMain::consoleMessageHandler != nullptr) {
-    mercury::MercuryMain::consoleMessageHandler(ctx, stream.str(), static_cast<int>(_log_level));
+  if (mercury::MercuryIsolate::consoleMessageHandler != nullptr) {
+    mercury::MercuryIsolate::consoleMessageHandler(ctx, stream.str(), static_cast<int>(_log_level));
   }
 
   if (context->dartMethodPtr()->onJsLog != nullptr) {
