@@ -1,4 +1,3 @@
-[submodule "bridge/third_party/quickjs/vendor/mimalloc"]
+[submodule "mimalloc"]
 	path = bridge/third_party/quickjs/vendor/mimalloc
 	url = https://github.com/microsoft/mimalloc
-	branch = v1.7.9
