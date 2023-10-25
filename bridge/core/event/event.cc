@@ -246,38 +246,6 @@ bool Event::DeleteItem(const mercury::AtomicString& key, mercury::ExceptionState
   return false;
 }
 
-bool Event::IsUiEvent() const {
-  return false;
-}
-
-bool Event::IsMouseEvent() const {
-  return false;
-}
-
-bool Event::IsFocusEvent() const {
-  return false;
-}
-
-bool Event::IsKeyboardEvent() const {
-  return false;
-}
-
-bool Event::IsTouchEvent() const {
-  return false;
-}
-
-bool Event::IsGestureEvent() const {
-  return false;
-}
-
-bool Event::IsPointerEvent() const {
-  return false;
-}
-
-bool Event::IsInputEvent() const {
-  return false;
-}
-
 bool Event::IsCloseEvent() const {
   return false;
 }
@@ -286,31 +254,7 @@ bool Event::IsCustomEvent() const {
   return false;
 }
 
-bool Event::IsTransitionEvent() const {
-  return false;
-}
-
-bool Event::IsAnimationEvent() const {
-  return false;
-}
-
 bool Event::IsMessageEvent() const {
-  return false;
-}
-
-bool Event::IsPopstateEvent() const {
-  return false;
-}
-
-bool Event::IsIntersectionchangeEvent() const {
-  return false;
-}
-
-bool Event::IsDragEvent() const {
-  return false;
-}
-
-bool Event::IsBeforeUnloadEvent() const {
   return false;
 }
 

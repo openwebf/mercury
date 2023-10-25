@@ -2,12 +2,12 @@
  * Copyright (C) 2019-2022 The Kraken authors. All rights reserved.
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
-#include "global_or_worker_global_scope.h"
-#include "core/frame/dom_timer.h"
+#include "global_or_worker_scope.h"
+#include "core/module/timer/timer.h"
 
 namespace mercury {
 
-static void handleTimerCallback(DOMTimer* timer, const char* errmsg) {
+static void handleTimerCallback(Timer* timer, const char* errmsg) {
   auto* context = timer->context();
 
   if (errmsg != nullptr) {
@@ -28,19 +28,19 @@ static void handleTransientCallback(void* ptr, int32_t contextId, const char* er
   if (!isContextValid(contextId))
     return;
 
-  auto* timer = static_cast<DOMTimer*>(ptr);
+  auto* timer = static_cast<Timer*>(ptr);
   auto* context = timer->context();
 
   if (!context->IsContextValid())
     return;
 
-  if (timer->status() == DOMTimer::TimerStatus::kCanceled || timer->status() == DOMTimer::TimerStatus::kTerminated) {
+  if (timer->status() == Timer::TimerStatus::kCanceled || timer->status() == Timer::TimerStatus::kTerminated) {
     return;
   }
 
-  timer->SetStatus(DOMTimer::TimerStatus::kExecuting);
+  timer->SetStatus(Timer::TimerStatus::kExecuting);
   handleTimerCallback(timer, errmsg);
-  timer->SetStatus(DOMTimer::TimerStatus::kFinished);
+  timer->SetStatus(Timer::TimerStatus::kFinished);
 
   context->Timers()->removeTimeoutById(timer->timerId());
 }
@@ -49,30 +49,30 @@ static void handlePersistentCallback(void* ptr, int32_t contextId, const char* e
   if (!isContextValid(contextId))
     return;
 
-  auto* timer = static_cast<DOMTimer*>(ptr);
+  auto* timer = static_cast<Timer*>(ptr);
   auto* context = timer->context();
 
   if (!context->IsContextValid())
     return;
 
-  if (timer->status() == DOMTimer::TimerStatus::kTerminated) {
+  if (timer->status() == Timer::TimerStatus::kTerminated) {
     return;
   }
 
-  if (timer->status() == DOMTimer::TimerStatus::kCanceled) {
+  if (timer->status() == Timer::TimerStatus::kCanceled) {
     context->Timers()->removeTimeoutById(timer->timerId());
     return;
   }
 
-  timer->SetStatus(DOMTimer::TimerStatus::kExecuting);
+  timer->SetStatus(Timer::TimerStatus::kExecuting);
   handleTimerCallback(timer, errmsg);
 
-  if (timer->status() == DOMTimer::TimerStatus::kCanceled) {
+  if (timer->status() == Timer::TimerStatus::kCanceled) {
     context->Timers()->removeTimeoutById(timer->timerId());
     return;
   }
 
-  timer->SetStatus(DOMTimer::TimerStatus::kFinished);
+  timer->SetStatus(Timer::TimerStatus::kFinished);
 }
 
 int GlobalOrWorkerScope::setTimeout(ExecutingContext* context,
@@ -94,7 +94,7 @@ int GlobalOrWorkerScope::setTimeout(ExecutingContext* context,
 #endif
 
   // Create a timer object to keep track timer callback.
-  auto timer = DOMTimer::create(context, handler, DOMTimer::TimerKind::kOnce);
+  auto timer = Timer::create(context, handler, Timer::TimerKind::kOnce);
   auto timerId =
       context->dartMethodPtr()->setTimeout(timer.get(), context->contextId(), handleTransientCallback, timeout);
 
@@ -123,7 +123,7 @@ int GlobalOrWorkerScope::setInterval(ExecutingContext* context,
   }
 
   // Create a timer object to keep track timer callback.
-  auto timer = DOMTimer::create(context, handler, DOMTimer::TimerKind::kMultiple);
+  auto timer = Timer::create(context, handler, Timer::TimerKind::kMultiple);
 
   int32_t timerId =
       context->dartMethodPtr()->setInterval(timer.get(), context->contextId(), handlePersistentCallback, timeout);

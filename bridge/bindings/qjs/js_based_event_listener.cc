@@ -4,7 +4,7 @@
  */
 
 #include "js_based_event_listener.h"
-#include "core/dom/events/event.h"
+#include "core/event/event.h"
 
 namespace mercury {
 

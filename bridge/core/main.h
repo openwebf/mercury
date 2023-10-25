@@ -17,23 +17,23 @@
 
 namespace mercury {
 
-class MercuryPage;
+class MercuryMain;
 class DartContext;
 
-using JSBridgeDisposeCallback = void (*)(MercuryPage* bridge);
+using JSBridgeDisposeCallback = void (*)(MercuryMain* bridge);
 using ConsoleMessageHandler = std::function<void(void* ctx, const std::string& message, int logLevel)>;
 
-/// MercuryPage is class which manage all js objects create by <Mercury> flutter widget.
-/// Every <Mercury> flutter widgets have a corresponding MercuryPage, and all objects created by JavaScript are stored here,
-/// and there is no data sharing between objects between different MercuryPages.
-/// It's safe to allocate many MercuryPages at the same times on one thread, but not safe for multi-threads, only one
-/// thread can enter to MercuryPage at the same time.
-class MercuryPage final {
+/// MercuryMain is class which manage all js objects create by <Mercury> flutter widget.
+/// Every <Mercury> flutter widgets have a corresponding MercuryMain, and all objects created by JavaScript are stored here,
+/// and there is no data sharing between objects between different MercuryMains.
+/// It's safe to allocate many MercuryMains at the same times on one thread, but not safe for multi-threads, only one
+/// thread can enter to MercuryMain at the same time.
+class MercuryMain final {
  public:
   static ConsoleMessageHandler consoleMessageHandler;
-  MercuryPage() = delete;
-  MercuryPage(DartIsolateContext* dart_isolate_context, int32_t jsContext, const JSExceptionHandler& handler);
-  ~MercuryPage();
+  MercuryMain() = delete;
+  MercuryMain(DartIsolateContext* dart_isolate_context, int32_t jsContext, const JSExceptionHandler& handler);
+  ~MercuryMain();
 
   // Bytecodes which registered by mercury plugins.
   static std::unordered_map<std::string, NativeByteCode> pluginByteCode;

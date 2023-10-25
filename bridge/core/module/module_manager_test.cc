@@ -11,7 +11,7 @@ namespace mercury {
 TEST(ModuleManager, ShouldReturnCorrectValue) {
   bool static errorCalled = false;
   auto env = TEST_init([](int32_t contextId, const char* errmsg) { errorCalled = true; });
-  mercury::MercuryPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {};
+  mercury::MercuryMain::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {};
 
   auto context = env->page()->GetExecutingContext();
 
@@ -40,7 +40,7 @@ TEST(ModuleManager, shouldThrowErrorWhenBadJSON) {
     EXPECT_EQ(stdErrorMsg.find("TypeError: circular reference") != std::string::npos, true);
     errorCalled = true;
   });
-  mercury::MercuryPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {};
+  mercury::MercuryMain::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {};
 
   auto context = env->page()->GetExecutingContext();
 
@@ -65,7 +65,7 @@ mercury.methodChannel.invokeMethod('abc', 'fn', object);
 TEST(ModuleManager, invokeModuleError) {
   bool static logCalled = false;
   auto env = TEST_init([](int32_t contextId, const char* errmsg) {});
-  mercury::MercuryPage::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
+  mercury::MercuryMain::consoleMessageHandler = [](void* ctx, const std::string& message, int logLevel) {
     logCalled = true;
     EXPECT_STREQ(
         message.c_str(),

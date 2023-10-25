@@ -7,7 +7,7 @@
 #include "binding_call_methods.h"
 #include "bindings/qjs/exception_state.h"
 #include "bindings/qjs/script_promise_resolver.h"
-#include "core/dom/events/event_target.h"
+#include "core/event/event_target.h"
 #include "core/executing_context.h"
 #include "foundation/native_string.h"
 #include "foundation/native_value_converter.h"
@@ -39,7 +39,7 @@ BindingObject::~BindingObject() {
   // When a JSObject got finalized by QuickJS GC, we can not guarantee the ExecutingContext are still alive and
   // accessible.
   if (isContextValid(contextId())) {
-    GetExecutingContext()->uiCommandBuffer()->addCommand(MainCommand::kDisposeBindingObject, nullptr, bindingObject(),
+    GetExecutingContext()->mainCommandBuffer()->addCommand(MainCommand::kDisposeBindingObject, nullptr, bindingObject(),
                                                          nullptr, false);
   }
 }

@@ -100,20 +100,6 @@ abstract class BindingBridge {
   static Pointer<NativeFunction<InvokeBindingsMethodsFromNative>> get nativeInvokeBindingMethod =>
       _invokeBindingMethodFromNative;
 
-  static void createBindingObject(int contextId, Pointer<NativeBindingObject> pointer, CreateBindingObjectType type, Pointer<NativeValue> args, int argc) {
-    MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
-    List<dynamic> arguments = List.generate(argc, (index) {
-      return fromNativeValue(controller.context, args.elementAt(index));
-    });
-    switch(type) {// TODO: Please help, Andy
-      case CreateBindingObjectType.createDOMMatrix: {
-        DOMMatrix domMatrix = DOMMatrix(BindingContext(controller.context, contextId, pointer), arguments);
-        controller.context.setBindingObject(pointer, domMatrix);
-        return;
-      }
-    }
-  }
-
   // For compatible requirement, we set the MercuryContextController to nullable due to the historical reason.
   // exp: We can not break the types for WidgetElement which will break all the codes for Users.
   static void _bindObject(MercuryContextController? context, BindingObject object) {

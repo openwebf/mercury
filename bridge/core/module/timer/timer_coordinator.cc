@@ -13,13 +13,13 @@
 
 namespace mercury {
 
-void DOMTimerCoordinator::installNewTimer(ExecutingContext* context,
+void TimerCoordinator::installNewTimer(ExecutingContext* context,
                                           int32_t timer_id,
-                                          std::shared_ptr<DOMTimer> timer) {
+                                          std::shared_ptr<Timer> timer) {
   active_timers_[timer_id] = timer;
 }
 
-void DOMTimerCoordinator::removeTimeoutById(int32_t timer_id) {
+void TimerCoordinator::removeTimeoutById(int32_t timer_id) {
   if (active_timers_.count(timer_id) == 0)
     return;
   auto timer = active_timers_[timer_id];
@@ -28,21 +28,21 @@ void DOMTimerCoordinator::removeTimeoutById(int32_t timer_id) {
   active_timers_.erase(timer_id);
 }
 
-void DOMTimerCoordinator::forceStopTimeoutById(int32_t timer_id) {
+void TimerCoordinator::forceStopTimeoutById(int32_t timer_id) {
   if (active_timers_.count(timer_id) == 0) {
     return;
   }
   auto timer = active_timers_[timer_id];
 
-  if (timer->status() == DOMTimer::TimerStatus::kExecuting) {
-    timer->SetStatus(DOMTimer::TimerStatus::kCanceled);
-  } else if (timer->status() == DOMTimer::TimerStatus::kPending ||
-             (timer->kind() == DOMTimer::TimerKind::kMultiple && timer->status() == DOMTimer::TimerStatus::kFinished)) {
+  if (timer->status() == Timer::TimerStatus::kExecuting) {
+    timer->SetStatus(Timer::TimerStatus::kCanceled);
+  } else if (timer->status() == Timer::TimerStatus::kPending ||
+             (timer->kind() == Timer::TimerKind::kMultiple && timer->status() == Timer::TimerStatus::kFinished)) {
     removeTimeoutById(timer->timerId());
   }
 }
 
-std::shared_ptr<DOMTimer> DOMTimerCoordinator::getTimerById(int32_t timer_id) {
+std::shared_ptr<Timer> TimerCoordinator::getTimerById(int32_t timer_id) {
   if (active_timers_.count(timer_id) == 0)
     return nullptr;
   return active_timers_[timer_id];

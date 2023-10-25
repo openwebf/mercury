@@ -10,16 +10,16 @@
 #include "bindings/qjs/native_string_utils.h"
 #include "native_value.h"
 
-namespace webf {
+namespace mercury {
 
 class ExecutingContext;
 
-enum class UICommand {
+enum class MainCommand {
   kCreateElement,
   kCreateTextNode,
   kCreateComment,
   kCreateDocument,
-  kCreateWindow,
+  kCreateGlobal,
   kDisposeBindingObject,
   kAddEvent,
   kRemoveNode,
@@ -37,9 +37,9 @@ enum class UICommand {
 
 #define MAXIMUM_UI_COMMAND_SIZE 2048
 
-struct UICommandItem {
-  UICommandItem() = default;
-  explicit UICommandItem(int32_t type, SharedNativeString* args_01, void* nativePtr, void* nativePtr2)
+struct MainCommandItem {
+  MainCommandItem() = default;
+  explicit MainCommandItem(int32_t type, SharedNativeString* args_01, void* nativePtr, void* nativePtr2)
       : type(type),
         string_01(reinterpret_cast<int64_t>(args_01 != nullptr ? args_01->string() : nullptr)),
         args_01_length(args_01 != nullptr ? args_01->length() : 0),
@@ -52,31 +52,31 @@ struct UICommandItem {
   int64_t nativePtr2{0};
 };
 
-class UICommandBuffer {
+class MainCommandBuffer {
  public:
-  UICommandBuffer() = delete;
-  explicit UICommandBuffer(ExecutingContext* context);
-  ~UICommandBuffer();
-  void addCommand(UICommand type,
+  MainCommandBuffer() = delete;
+  explicit MainCommandBuffer(ExecutingContext* context);
+  ~MainCommandBuffer();
+  void addCommand(MainCommand type,
                   std::unique_ptr<SharedNativeString>&& args_01,
                   void* nativePtr,
                   void* nativePtr2,
                   bool request_ui_update = true);
-  UICommandItem* data();
+  MainCommandItem* data();
   int64_t size();
   bool empty();
   void clear();
 
  private:
-  void addCommand(const UICommandItem& item, bool request_ui_update = true);
+  void addCommand(const MainCommandItem& item, bool request_ui_update = true);
 
   ExecutingContext* context_{nullptr};
-  UICommandItem* buffer_{nullptr};
+  MainCommandItem* buffer_{nullptr};
   bool update_batched_{false};
   int64_t size_{0};
   int64_t max_size_{MAXIMUM_UI_COMMAND_SIZE};
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_FOUNDATION_UI_COMMAND_BUFFER_H_

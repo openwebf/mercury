@@ -1,4 +1,4 @@
-import {Event} from "../dom/events/event";
+import {Event} from "../event";
 import {PromiseRejectionEventInit} from "./promise_rejection_event_init";
 
 interface PromiseRejectionEvent extends Event {

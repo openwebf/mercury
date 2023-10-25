@@ -17,9 +17,9 @@
 
 namespace mercury {
 
-ConsoleMessageHandler MercuryPage::consoleMessageHandler{nullptr};
+ConsoleMessageHandler MercuryMain::consoleMessageHandler{nullptr};
 
-MercuryPage::MercuryPage(DartIsolateContext* dart_isolate_context, int32_t contextId, const JSExceptionHandler& handler)
+MercuryMain::MercuryMain(DartIsolateContext* dart_isolate_context, int32_t contextId, const JSExceptionHandler& handler)
     : contextId(contextId), ownerThreadId(std::this_thread::get_id()) {
   context_ = new ExecutingContext(
       dart_isolate_context, contextId,
@@ -32,7 +32,7 @@ MercuryPage::MercuryPage(DartIsolateContext* dart_isolate_context, int32_t conte
       this);
 }
 
-bool MercuryPage::parseHTML(const char* code, size_t length) {
+bool MercuryMain::parseHTML(const char* code, size_t length) {
   if (!context_->IsContextValid())
     return false;
 
@@ -48,7 +48,7 @@ bool MercuryPage::parseHTML(const char* code, size_t length) {
   return true;
 }
 
-NativeValue* MercuryPage::invokeModuleEvent(SharedNativeString* native_module_name,
+NativeValue* MercuryMain::invokeModuleEvent(SharedNativeString* native_module_name,
                                          const char* eventType,
                                          void* ptr,
                                          NativeValue* extra) {
@@ -94,7 +94,7 @@ NativeValue* MercuryPage::invokeModuleEvent(SharedNativeString* native_module_na
   return return_value;
 }
 
-bool MercuryPage::evaluateScript(const SharedNativeString* script,
+bool MercuryMain::evaluateScript(const SharedNativeString* script,
                               uint8_t** parsed_bytecodes,
                               uint64_t* bytecode_len,
                               const char* url,
@@ -105,7 +105,7 @@ bool MercuryPage::evaluateScript(const SharedNativeString* script,
                                       startLine);
 }
 
-bool MercuryPage::evaluateScript(const uint16_t* script,
+bool MercuryMain::evaluateScript(const uint16_t* script,
                               size_t length,
                               uint8_t** parsed_bytecodes,
                               uint64_t* bytecode_len,
@@ -116,29 +116,29 @@ bool MercuryPage::evaluateScript(const uint16_t* script,
   return context_->EvaluateJavaScript(script, length, parsed_bytecodes, bytecode_len, url, startLine);
 }
 
-void MercuryPage::evaluateScript(const char* script, size_t length, const char* url, int startLine) {
+void MercuryMain::evaluateScript(const char* script, size_t length, const char* url, int startLine) {
   if (!context_->IsContextValid())
     return;
   context_->EvaluateJavaScript(script, length, url, startLine);
 }
 
-uint8_t* MercuryPage::dumpByteCode(const char* script, size_t length, const char* url, size_t* byteLength) {
+uint8_t* MercuryMain::dumpByteCode(const char* script, size_t length, const char* url, size_t* byteLength) {
   if (!context_->IsContextValid())
     return nullptr;
   return context_->DumpByteCode(script, length, url, byteLength);
 }
 
-bool MercuryPage::evaluateByteCode(uint8_t* bytes, size_t byteLength) {
+bool MercuryMain::evaluateByteCode(uint8_t* bytes, size_t byteLength) {
   if (!context_->IsContextValid())
     return false;
   return context_->EvaluateByteCode(bytes, byteLength);
 }
 
-std::thread::id MercuryPage::currentThread() const {
+std::thread::id MercuryMain::currentThread() const {
   return ownerThreadId;
 }
 
-MercuryPage::~MercuryPage() {
+MercuryMain::~MercuryMain() {
 #if IS_TEST
   if (disposeCallback != nullptr) {
     disposeCallback(this);
@@ -147,7 +147,7 @@ MercuryPage::~MercuryPage() {
   delete context_;
 }
 
-void MercuryPage::reportError(const char* errmsg) {
+void MercuryMain::reportError(const char* errmsg) {
   handler_(context_, errmsg);
 }
 

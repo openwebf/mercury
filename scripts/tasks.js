@@ -40,10 +40,8 @@ const paths = {
   polyfill: resolveMercury('bridge/polyfill'),
   codeGen: resolveMercury('bridge/scripts/code_generator'),
   thirdParty: resolveMercury('third_party'),
-  tests: resolveMercury('integration_tests'),
   sdk: resolveMercury('sdk'),
-  templates: resolveMercury('scripts/templates'),
-  performanceTests: resolveMercury('performance_tests')
+  templates: resolveMercury('scripts/templates')
 };
 
 const NPM = platform == 'win32' ? 'npm.cmd' : 'npm';
@@ -106,7 +104,7 @@ task('build-darwin-mercury-lib', done => {
     externCmakeArgs.push('-DSTATIC_QUICKJS=true');
   }
 
-  execSync(`cmake -DCMAKE_BUILD_TYPE=${buildType} -DENABLE_TEST=true ${externCmakeArgs.join(' ')} \
+  execSync(`cmake -DCMAKE_BUILD_TYPE=${buildType} ${externCmakeArgs.join(' ')} \
     -G "Unix Makefiles" -B ${paths.bridge}/cmake-build-macos-x86_64 -S ${paths.bridge}`, {
     cwd: paths.bridge,
     stdio: 'inherit',
@@ -118,12 +116,6 @@ task('build-darwin-mercury-lib', done => {
   });
 
   let mercuryTargets = ['mercury'];
-  if (targetJSEngine === 'quickjs') {
-    mercuryTargets.push('mercury_unit_test');
-  }
-  if (buildMode === 'Debug') {
-    mercuryTargets.push('mercury_test');
-  }
 
   let cpus = os.cpus();
   execSync(`cmake --build ${paths.bridge}/cmake-build-macos-x86_64 --target ${mercuryTargets.join(' ')} -- -j ${cpus.length}`, {
@@ -138,17 +130,6 @@ task('build-darwin-mercury-lib', done => {
   }
 
   done();
-});
-
-task('run-bridge-unit-test', done => {
-  if (platform === 'darwin') {
-    execSync(`${path.join(paths.bridge, 'build/macos/lib/x86_64/mercury_unit_test')}`, {stdio: 'inherit'});
-  } else if (platform === 'linux') {
-    execSync(`${path.join(paths.bridge, 'build/linux/lib/mercury_unit_test')}`, {stdio: 'inherit'});
-  } else if (platform == 'win32') {
-    execSync(`${path.join(paths.bridge, 'build/windows/lib/mercury_unit_test.exe')}`, {stdio: 'inherit'});
-  }
-   done();
 });
 
 task('compile-polyfill', (done) => {
@@ -179,142 +160,6 @@ task('compile-polyfill', (done) => {
 function matchError(errmsg) {
   return errmsg.match(/(Failed assertion|\sexception\s|Dart\nError)/i);
 }
-
-task('integration-test', (done) => {
-  const childProcess = spawn('npm', ['run', 'test'], {
-    stdio: 'pipe',
-    cwd: paths.tests
-  });
-
-  let stdout = '';
-
-  childProcess.stderr.pipe(process.stderr);
-  childProcess.stdout.pipe(process.stdout);
-
-  childProcess.stderr.on('data', (data) => {
-    stdout += data + '';
-  });
-
-  childProcess.stdout.on('data', (data) => {
-    stdout += data + '';
-  });
-
-  childProcess.on('error', (error) => {
-    done(error);
-  });
-
-  childProcess.on('close', (code) => {
-    let dartErrorMatch = matchError(stdout);
-    if (dartErrorMatch) {
-      let error = new Error('UnExpected Flutter Assert Failed.');
-      done(error);
-      return;
-    }
-
-    if (code === 0) {
-      done();
-    } else {
-      // TODO: collect error message from stdout.
-      const err = new Error('Some error occurred, please check log.');
-      done(err);
-    }
-  });
-});
-
-task('plugin-test', (done) => {
-  const childProcess = spawn('npm', ['run', 'plugin_test'], {
-    stdio: 'pipe',
-    cwd: paths.tests
-  });
-
-  let stdout = '';
-
-  childProcess.stderr.pipe(process.stderr);
-  childProcess.stdout.pipe(process.stdout);
-
-  childProcess.stderr.on('data', (data) => {
-    stdout += data + '';
-  });
-
-  childProcess.stdout.on('data', (data) => {
-    stdout += data + '';
-  });
-
-  childProcess.on('error', (error) => {
-    done(error);
-  });
-
-  childProcess.on('close', (code) => {
-    let dartErrorMatch = matchError(stdout);
-    if (dartErrorMatch) {
-      let error = new Error('UnExpected Flutter Assert Failed.');
-      done(error);
-      return;
-    }
-
-    if (code === 0) {
-      done();
-    } else {
-      // TODO: collect error message from stdout.
-      const err = new Error('Some error occurred, please check log.');
-      done(err);
-    }
-  });
-});
-
-task('unit-test', (done) => {
-  const childProcess = spawn('flutter', ['test', '--coverage'], {
-    stdio: 'pipe',
-    cwd: paths.mercury
-  });
-
-  let stdout = '';
-
-  childProcess.stderr.pipe(process.stderr);
-  childProcess.stdout.pipe(process.stdout);
-
-  childProcess.stderr.on('data', (data) => {
-    stdout += data + '';
-  });
-
-  childProcess.stdout.on('data', (data) => {
-    stdout += data + '';
-  });
-
-  childProcess.on('error', (error) => {
-    done(error);
-  });
-
-  childProcess.on('close', (code) => {
-    let dartErrorMatch = matchError(stdout);
-    if (dartErrorMatch) {
-      let error = new Error('UnExpected Flutter Assert Failed.');
-      done(error);
-      return;
-    }
-
-    if (code === 0) {
-      done();
-    } else {
-      done(new Error('Some error occurred, please check log.'));
-    }
-  });
-});
-
-task('unit-test-coverage-reporter', (done) => {
-  const childProcess = spawn('npm', ['run', 'test:unit:report'], {
-    stdio: 'inherit',
-    cwd: MERCURY_ROOT,
-  });
-  childProcess.on('exit', () => {
-    done();
-  });
-});
-
-task('sdk-clean', (done) => {
-  execSync(`rm -rf ${paths.sdk}/build`, { stdio: 'inherit' });
-  done();
-});
 
 function insertStringSlice(code, position, slice) {
   let leftHalf = code.substring(0, position);
@@ -490,7 +335,6 @@ task('build-linux-mercury-lib', (done) => {
   execSync(`cmake -DCMAKE_BUILD_TYPE=${buildType} \
   ${externCmakeArgs.join(' ')} \
   ${isProfile ? '-DENABLE_PROFILE=TRUE \\' : '\\'}
-  ${'-DENABLE_TEST=true \\'}
   -G "${cmakeGeneratorTemplate}" \
   -B ${paths.bridge}/cmake-build-linux -S ${paths.bridge}`,
     {
@@ -504,17 +348,13 @@ task('build-linux-mercury-lib', (done) => {
     });
 
   // build
-  execSync(`cmake --build ${bridgeCmakeDir} --target mercury ${buildMode != 'Release' ? 'mercury_test' : ''} mercury_unit_test -- -j 12`, {
+  execSync(`cmake --build ${bridgeCmakeDir} --target mercury -- -j 12`, {
     stdio: 'inherit'
   });
 
   const libs = [
     'libmercury.so'
   ];
-
-  if (buildMode != 'Release') {
-    libs.push('libmercury_test.so');
-  }
 
   libs.forEach(lib => {
     const libkrakenPath = path.join(paths.bridge, `build/linux/lib/${lib}`);
@@ -724,95 +564,3 @@ task('android-so-clean', (done) => {
   execSync(`rm -rf ${paths.bridge}/build/android`, { stdio: 'inherit', shell: winShell });
   done();
 });
-
-task('build-benchmark-app', async (done) => {
-  execSync('npm install', { cwd: path.join(paths.performanceTests, '/benchmark') });
-  const result = spawnSync('npm', ['run', 'build'], {
-    cwd: path.join(paths.performanceTests, '/benchmark')
-  });
-
-  if (result.status !== 0) {
-    return done(result.status);
-  }
-
-  done();
-})
-
-task('run-benchmark', async (done) => {
-  const serverPort = '8892';
-
-  const childProcess = spawn('http-server', ['./', `-p ${serverPort}`], {
-    stdio: 'pipe',
-    cwd: path.join(paths.performanceTests, '/benchmark/build')
-  })
-
-  let serverIpAddress;
-  let interfaces = os.networkInterfaces();
-  for (let devName in interfaces) {
-    interfaces[devName].forEach((item) => {
-      if (item.family === 'IPv4' && !item.internal && item.address !== '127.0.0.1') {
-        serverIpAddress = item.address;
-      }
-    })
-  }
-
-  if (!serverIpAddress) {
-    const err = new Error('The IP address was not found.');
-    done(err);
-  }
-
-  let androidDevices = getDevicesInfo();
-
-  let performanceInfos = execSync(
-    `flutter run -d ${androidDevices[0].id} --profile --dart-define="SERVER=${serverIpAddress}:${serverPort}" | grep Performance`,
-    {
-      cwd: paths.performanceTests
-    }
-  ).toString().split(/\n/);
-
-  const KrakenPerformancePath = 'kraken-performance';
-  for (let item in performanceInfos) {
-    let info = performanceInfos[item];
-    const match = /\[(\s?\d,?)+\]/.exec(info);
-    if (match) {
-      const viewType = item == 0 ? 'kraken' : 'web';
-      try {
-        let performanceDatas = JSON.parse(match[0]);
-        // Remove the top and the bottom five from the final numbers to eliminate fluctuations, and calculate the average.
-        performanceDatas = performanceDatas.sort().slice(5, performanceDatas.length - 5);
-
-        // Save performance list to file and upload to OSS.
-        const listFile = path.join(__dirname, `${viewType}-load-time-list.js`);
-        fs.writeFileSync(listFile, `performanceCallback('${viewType}LoadtimeList', [${performanceDatas.toString()}]);`);
-
-        let WebviewPerformanceOSSPath = `${KrakenPerformancePath}/${viewType}-loadtimeList.js`;
-        await uploader(WebviewPerformanceOSSPath, listFile).then(() => {
-          console.log(`Performance Upload Success: https://kraken.oss-cn-hangzhou.aliyuncs.com/${WebviewPerformanceOSSPath}`);
-        }).catch(err => done(err));
-        // Save performance data of Webview with kraken version.
-        let WebviewPerformanceWithVersionOSSPath = `${KrakenPerformancePath}/${viewType}-${pkgVersion}-loadtimeList.js`;
-        await uploader(WebviewPerformanceWithVersionOSSPath, listFile).then(() => {
-          console.log(`Performance Upload Success: https://kraken.oss-cn-hangzhou.aliyuncs.com/${WebviewPerformanceWithVersionOSSPath}`);
-        }).catch(err => done(err));
-      } catch {
-        const err = new Error('The performance info parse exception.');
-        done(err);
-      }
-    }
-  }
-
-  execSync('adb uninstall com.example.performance_tests');
-
-  done();
-});
-
-function getDevicesInfo() {
-  let output = JSON.parse(execSync('flutter devices --machine', {stdio: 'pipe', encoding: 'utf-8'}));
-  let androidDevices = output.filter(device => {
-    return device.sdk.indexOf('Android') >= 0;
-  });
-  if (androidDevices.length == 0) {
-    throw new Error('Can not find android benchmark devices.');
-  }
-  return androidDevices;
-}

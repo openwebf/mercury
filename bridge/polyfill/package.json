@@ -3,10 +3,9 @@
   "description": "JavaScript polyfill for mercury",
   "main": "dist/index.js",
   "scripts": {
-    "build": "cross-env NODE_ENV=development rollup --config rollup.config.js && npm run mainToC && npm run testToC",
-    "build:release": "cross-env NODE_ENV=production rollup --config rollup.config.js && npm run mainToC && npm run testToC",
-    "mainToC": "node scripts/js_to_c.js -s ../dist/main.js -o ../dist",
-    "testToC": "node scripts/js_to_c.js -s ../dist/test.js -o ../dist -n TestFramework"
+    "build": "cross-env NODE_ENV=development rollup --config rollup.config.js && npm run mainToC",
+    "build:release": "cross-env NODE_ENV=production rollup --config rollup.config.js && npm run mainToC",
+    "mainToC": "node scripts/js_to_c.js -s ../dist/main.js -o ../dist"
   },
   "dependencies": {
     "@types/raf": "^3.4.0",

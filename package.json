@@ -22,8 +22,6 @@
     "posttest": "npm run lint",
     "benchmark": "npm install && ENABLE_PROFILE=true MERCURY_BUILD=Release node scripts/run_benchmark.js",
     "start": "cd mercury/example && flutter run",
-    "test": "node scripts/run_test.js",
-    "plugin_test": "node scripts/run_plugin_test.js",
     "lint": "cd mercury && flutter pub get && flutter analyze",
     "format": "cd mercury && flutter format . --line-length=120",
     "ci": "npm install && npm run lint",

@@ -15,16 +15,16 @@
 
 namespace mercury {
 
-std::shared_ptr<DOMTimer> DOMTimer::create(ExecutingContext* context,
+std::shared_ptr<Timer> Timer::create(ExecutingContext* context,
                                            const std::shared_ptr<QJSFunction>& callback,
                                            TimerKind timer_kind) {
-  return std::make_shared<DOMTimer>(context, callback, timer_kind);
+  return std::make_shared<Timer>(context, callback, timer_kind);
 }
 
-DOMTimer::DOMTimer(ExecutingContext* context, std::shared_ptr<QJSFunction> callback, TimerKind timer_kind)
+Timer::Timer(ExecutingContext* context, std::shared_ptr<QJSFunction> callback, TimerKind timer_kind)
     : context_(context), callback_(std::move(callback)), status_(TimerStatus::kPending), kind_(timer_kind) {}
 
-void DOMTimer::Fire() {
+void Timer::Fire() {
   if (status_ == TimerStatus::kTerminated)
     return;
 
@@ -38,12 +38,12 @@ void DOMTimer::Fire() {
   }
 }
 
-void DOMTimer::Terminate() {
+void Timer::Terminate() {
   callback_ = nullptr;
   status_ = TimerStatus::kTerminated;
 }
 
-void DOMTimer::setTimerId(int32_t timerId) {
+void Timer::setTimerId(int32_t timerId) {
   timer_id_ = timerId;
 }
 

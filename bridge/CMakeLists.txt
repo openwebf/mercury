@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(MSVC)
-  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+  set(CMAKE_GLOBALS_EXPORT_ALL_SYMBOLS TRUE)
   set(BUILD_SHARED_LIBS TRUE)
 endif()
 
@@ -94,13 +94,12 @@ list(APPEND BRIDGE_SOURCE
   mercury_bridge.cc
   foundation/logging.cc
   foundation/native_string.cc
-  foundation/ui_task_queue.cc
   foundation/inspector_task_queue.cc
   foundation/task_queue.cc
   foundation/string_view.cc
   foundation/native_value.cc
   foundation/native_type.cc
-  foundation/ui_command_buffer.cc
+  foundation/main_command_buffer.cc
   polyfill/dist/polyfill.cc
   ${CMAKE_CURRENT_LIST_DIR}/third_party/dart/include/dart_api_dl.c
   )
@@ -255,9 +254,9 @@ if ($ENV{MERCURY_JS_ENGINE} MATCHES "quickjs")
     core/dart_context_data.cc
     core/executing_context_data.cc
     core/module/console.cc
-    core/module/dom_timer.cc
-    core/module/dom_timer_coordinator.cc
-    core/module/global_or_worker_global_scope.cc
+    core/module/timer/timer.cc
+    core/module/timer/timer_coordinator.cc
+    core/module/global_or_worker_scope.cc
     core/module/module_listener.cc
     core/module/module_listener_container.cc
     core/module/module_manager.cc
@@ -275,7 +274,6 @@ if ($ENV{MERCURY_JS_ENGINE} MATCHES "quickjs")
     core/event/builtin/error_event.cc
     core/event/builtin/message_event.cc
     core/event/builtin/close_event.cc
-    core/event/builtin/keyboard_event.cc
     core/event/builtin/promise_rejection_event.cc
     )
 
@@ -305,7 +303,6 @@ if ($ENV{MERCURY_JS_ENGINE} MATCHES "quickjs")
     out/binding_call_methods.cc
     out/qjs_promise_rejection_event.cc
     out/qjs_promise_rejection_event_init.cc
-    out/script_type_names.cc
     out/defined_properties.cc
     )
 

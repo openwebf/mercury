@@ -19,7 +19,6 @@ interface Event {
    * Returns true if preventDefault() was invoked successfully to indicate cancelation, and false otherwise.
    */
   readonly defaultPrevented: boolean;
-  readonly srcElement: EventTarget | null;
   readonly target: EventTarget | null;
   readonly isTrusted: boolean;
   /**

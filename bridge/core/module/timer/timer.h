@@ -11,15 +11,15 @@
 
 namespace mercury {
 
-class DOMTimer {
+class Timer {
  public:
   enum TimerKind { kOnce, kMultiple };
   enum TimerStatus { kPending, kExecuting, kFinished, kCanceled, kTerminated };
 
-  static std::shared_ptr<DOMTimer> create(ExecutingContext* context,
+  static std::shared_ptr<Timer> create(ExecutingContext* context,
                                           const std::shared_ptr<QJSFunction>& callback,
                                           TimerKind timer_kind);
-  DOMTimer(ExecutingContext* context, std::shared_ptr<QJSFunction> callback, TimerKind timer_kind);
+  Timer(ExecutingContext* context, std::shared_ptr<QJSFunction> callback, TimerKind timer_kind);
 
   // Trigger timer callback.
   void Fire();

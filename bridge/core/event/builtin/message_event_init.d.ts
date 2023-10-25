@@ -1,4 +1,4 @@
-import { EventInit } from "../dom/events/event_init";
+import { EventInit } from "../event_init";
 
 // @ts-ignore
 @Dictionary()

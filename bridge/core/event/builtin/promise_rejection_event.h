@@ -6,7 +6,7 @@
 #ifndef BRIDGE_CORE_EVENTS_PROMISE_REJECTION_EVENT_H_
 #define BRIDGE_CORE_EVENTS_PROMISE_REJECTION_EVENT_H_
 
-#include "core/dom/events/event.h"
+#include "core/event/event.h"
 #include "qjs_promise_rejection_event_init.h"
 
 namespace mercury {

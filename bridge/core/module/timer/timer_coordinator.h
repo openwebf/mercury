@@ -13,29 +13,29 @@
 
 namespace mercury {
 
-class DOMTimer;
+class Timer;
 class ExecutingContext;
 
-// Maintains a set of DOMTimers for a given page
-// DOMTimerCoordinator assigns IDs to timers; these IDs are
+// Maintains a set of Timers for a given page
+// TimerCoordinator assigns IDs to timers; these IDs are
 // the ones returned to web authors from setTimeout or setInterval. It
 // also tracks recursive creation or iterative scheduling of timers,
 // which is used as a signal for throttling repetitive timers.
-class DOMTimerCoordinator {
+class TimerCoordinator {
  public:
   // Creates and installs a new timer. Returns the assigned ID.
-  void installNewTimer(ExecutingContext* context, int32_t timer_id, std::shared_ptr<DOMTimer> timer);
+  void installNewTimer(ExecutingContext* context, int32_t timer_id, std::shared_ptr<Timer> timer);
 
   // Then timer are going to be finished, remove them from active_timers_ list.
   void removeTimeoutById(int32_t timer_id);
   // Force stop and remove a timer, even if it's still executing.
   void forceStopTimeoutById(int32_t timer_id);
 
-  std::shared_ptr<DOMTimer> getTimerById(int32_t timer_id);
+  std::shared_ptr<Timer> getTimerById(int32_t timer_id);
 
  private:
-  std::unordered_map<int, std::shared_ptr<DOMTimer>> active_timers_;
-  std::unordered_map<int, std::shared_ptr<DOMTimer>> terminated_timers;
+  std::unordered_map<int, std::shared_ptr<Timer>> active_timers_;
+  std::unordered_map<int, std::shared_ptr<Timer>> terminated_timers;
 };
 
 }  // namespace mercury

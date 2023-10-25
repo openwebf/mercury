@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <vector>
 #include "core/binding_object.h"
-#include "core/dom/events/event_target.h"
+#include "core/event/event_target.h"
 #include "cppgc/gc_visitor.h"
 
 namespace mercury {

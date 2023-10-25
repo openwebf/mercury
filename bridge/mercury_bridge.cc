@@ -9,9 +9,9 @@
 
 #include "bindings/qjs/native_string_utils.h"
 #include "core/dart_isolate_context.h"
-#include "core/page.h"
+#include "core/main.h"
 #include "foundation/logging.h"
-#include "foundation/ui_command_buffer.h"
+#include "foundation/main_command_buffer.h"
 #include "include/mercury_bridge.h"
 
 #if defined(_WIN32)
@@ -47,7 +47,7 @@ void* initDartIsolateContext(uint64_t* dart_methods, int32_t dart_methods_len) {
 void* allocateNewPage(void* dart_isolate_context, int32_t targetContextId) {
   assert(dart_isolate_context != nullptr);
   auto page =
-      std::make_unique<mercury::MercuryPage>((mercury::DartIsolateContext*)dart_isolate_context, targetContextId, nullptr);
+      std::make_unique<mercury::MercuryMain>((mercury::DartIsolateContext*)dart_isolate_context, targetContextId, nullptr);
   void* ptr = page.get();
   ((mercury::DartIsolateContext*)dart_isolate_context)->AddNewPage(std::move(page));
   return ptr;
@@ -58,7 +58,7 @@ int64_t newPageId() {
 }
 
 void disposeMain(void* dart_isolate_context, void* page_) {
-  auto* page = reinterpret_cast<mercury::MercuryPage*>(page_);
+  auto* page = reinterpret_cast<mercury::MercuryMain*>(page_);
   assert(std::this_thread::get_id() == page->currentThread());
   ((mercury::DartIsolateContext*)dart_isolate_context)->RemovePage(page);
 }
@@ -69,7 +69,7 @@ int8_t evaluateScripts(void* page_,
                        uint64_t* bytecode_len,
                        const char* bundleFilename,
                        int32_t startLine) {
-  auto page = reinterpret_cast<mercury::MercuryPage*>(page_);
+  auto page = reinterpret_cast<mercury::MercuryMain*>(page_);
   assert(std::this_thread::get_id() == page->currentThread());
   return page->evaluateScript(reinterpret_cast<mercury::SharedNativeString*>(code), parsed_bytecodes, bytecode_len,
                               bundleFilename, startLine)
@@ -78,13 +78,13 @@ int8_t evaluateScripts(void* page_,
 }
 
 int8_t evaluateQuickjsByteCode(void* page_, uint8_t* bytes, int32_t byteLen) {
-  auto page = reinterpret_cast<mercury::MercuryPage*>(page_);
+  auto page = reinterpret_cast<mercury::MercuryMain*>(page_);
   assert(std::this_thread::get_id() == page->currentThread());
   return page->evaluateByteCode(bytes, byteLen) ? 1 : 0;
 }
 
 void parseHTML(void* page_, const char* code, int32_t length) {
-  auto page = reinterpret_cast<mercury::MercuryPage*>(page_);
+  auto page = reinterpret_cast<mercury::MercuryMain*>(page_);
   assert(std::this_thread::get_id() == page->currentThread());
   page->parseHTML(code, length);
 }
@@ -94,7 +94,7 @@ NativeValue* invokeModuleEvent(void* page_,
                                const char* eventType,
                                void* event,
                                NativeValue* extra) {
-  auto page = reinterpret_cast<mercury::MercuryPage*>(page_);
+  auto page = reinterpret_cast<mercury::MercuryMain*>(page_);
   assert(std::this_thread::get_id() == page->currentThread());
   auto* result = page->invokeModuleEvent(reinterpret_cast<mercury::SharedNativeString*>(module_name), eventType, event,
                                          reinterpret_cast<mercury::NativeValue*>(extra));
@@ -116,27 +116,27 @@ MercuryInfo* getMercuryInfo() {
 }
 
 void dispatchUITask(void* page_, void* context, void* callback) {
-  auto page = reinterpret_cast<mercury::MercuryPage*>(page_);
+  auto page = reinterpret_cast<mercury::MercuryMain*>(page_);
   assert(std::this_thread::get_id() == page->currentThread());
   reinterpret_cast<void (*)(void*)>(callback)(context);
 }
 
 void* getMainCommandItems(void* page_) {
-  auto page = reinterpret_cast<mercury::MercuryPage*>(page_);
+  auto page = reinterpret_cast<mercury::MercuryMain*>(page_);
   assert(std::this_thread::get_id() == page->currentThread());
-  return page->GetExecutingContext()->uiCommandBuffer()->data();
+  return page->GetExecutingContext()->mainCommandBuffer()->data();
 }
 
 int64_t getMainCommandItemSize(void* page_) {
-  auto page = reinterpret_cast<mercury::MercuryPage*>(page_);
+  auto page = reinterpret_cast<mercury::MercuryMain*>(page_);
   assert(std::this_thread::get_id() == page->currentThread());
-  return page->GetExecutingContext()->uiCommandBuffer()->size();
+  return page->GetExecutingContext()->mainCommandBuffer()->size();
 }
 
 void clearMainCommandItems(void* page_) {
-  auto page = reinterpret_cast<mercury::MercuryPage*>(page_);
+  auto page = reinterpret_cast<mercury::MercuryMain*>(page_);
   assert(std::this_thread::get_id() == page->currentThread());
-  page->GetExecutingContext()->uiCommandBuffer()->clear();
+  page->GetExecutingContext()->mainCommandBuffer()->clear();
 }
 
 void registerPluginByteCode(uint8_t* bytes, int32_t length, const char* pluginName) {

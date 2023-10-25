@@ -7,18 +7,15 @@
 #include <modp_b64/modp_b64.h>
 #include "binding_call_methods.h"
 #include "bindings/qjs/cppgc/garbage_collected.h"
-#include "core/css/computed_css_style_declaration.h"
-#include "core/dom/document.h"
-#include "core/dom/element.h"
-#include "core/events/message_event.h"
+#include "core/event/builtin/message_event.h"
 #include "core/executing_context.h"
 #include "event_type_names.h"
 #include "foundation/native_value_converter.h"
 
 namespace mercury {
 
-Window::Window(ExecutingContext* context) : EventTargetWithInlineData(context) {
-  context->uiCommandBuffer()->addCommand(MainCommand::kCreateWindow, nullptr, (void*)bindingObject(), nullptr);
+Global::Global(ExecutingContext* context) : EventTargetWithInlineData(context) {
+  context->mainCommandBuffer()->addCommand(MainCommand::kCreateGlobal, nullptr, (void*)bindingObject(), nullptr);
 }
 
 // https://infra.spec.whatwg.org/#ascii-whitespace
@@ -29,7 +26,7 @@ bool IsAsciiWhitespace(CharType character) {
          (character == ' ' || character == '\n' || character == '\t' || character == '\r' || character == '\f');
 }
 
-AtomicString Window::btoa(const AtomicString& source, ExceptionState& exception_state) {
+AtomicString Global::btoa(const AtomicString& source, ExceptionState& exception_state) {
   if (source.IsEmpty())
     return AtomicString::Empty();
   size_t encode_len = modp_b64_encode_data_len(source.length());
@@ -79,7 +76,7 @@ bool Base64Decode(JSContext* ctx, AtomicString in, std::vector<uint8_t>& out, Mo
   }
 }
 
-AtomicString Window::atob(const AtomicString& source, ExceptionState& exception_state) {
+AtomicString Global::atob(const AtomicString& source, ExceptionState& exception_state) {
   if (source.IsEmpty())
     return AtomicString::Empty();
   if (!source.ContainsOnlyLatin1OrEmpty()) {
@@ -101,11 +98,11 @@ AtomicString Window::atob(const AtomicString& source, ExceptionState& exception_
   return result;
 }
 
-Window* Window::open(ExceptionState& exception_state) {
+Global* Global::open(ExceptionState& exception_state) {
   return this;
 }
 
-Window* Window::open(const AtomicString& url, ExceptionState& exception_state) {
+Global* Global::open(const AtomicString& url, ExceptionState& exception_state) {
   const NativeValue args[] = {
       NativeValueConverter<NativeTypeString>::ToNativeValue(ctx(), url),
   };
@@ -113,7 +110,7 @@ Window* Window::open(const AtomicString& url, ExceptionState& exception_state) {
   return this;
 }
 
-Screen* Window::screen() {
+Screen* Global::screen() {
   if (screen_ == nullptr) {
     NativeValue value = GetBindingProperty(binding_call_methods::kscreen, ASSERT_NO_EXCEPTION());
     screen_ = MakeGarbageCollected<Screen>(
@@ -122,11 +119,11 @@ Screen* Window::screen() {
   return screen_;
 }
 
-void Window::scroll(ExceptionState& exception_state) {
+void Global::scroll(ExceptionState& exception_state) {
   return scroll(0, 0, exception_state);
 }
 
-void Window::scroll(double x, double y, ExceptionState& exception_state) {
+void Global::scroll(double x, double y, ExceptionState& exception_state) {
   const NativeValue args[] = {
       NativeValueConverter<NativeTypeDouble>::ToNativeValue(x),
       NativeValueConverter<NativeTypeDouble>::ToNativeValue(y),
@@ -134,7 +131,7 @@ void Window::scroll(double x, double y, ExceptionState& exception_state) {
   InvokeBindingMethod(binding_call_methods::kscroll, 2, args, exception_state);
 }
 
-void Window::scroll(const std::shared_ptr<ScrollToOptions>& options, ExceptionState& exception_state) {
+void Global::scroll(const std::shared_ptr<ScrollToOptions>& options, ExceptionState& exception_state) {
   const NativeValue args[] = {
       NativeValueConverter<NativeTypeDouble>::ToNativeValue(options->hasLeft() ? options->left() : 0.0),
       NativeValueConverter<NativeTypeDouble>::ToNativeValue(options->hasTop() ? options->top() : 0.0),
@@ -142,11 +139,11 @@ void Window::scroll(const std::shared_ptr<ScrollToOptions>& options, ExceptionSt
   InvokeBindingMethod(binding_call_methods::kscroll, 2, args, exception_state);
 }
 
-void Window::scrollBy(ExceptionState& exception_state) {
+void Global::scrollBy(ExceptionState& exception_state) {
   return scrollBy(0, 0, exception_state);
 }
 
-void Window::scrollBy(double x, double y, ExceptionState& exception_state) {
+void Global::scrollBy(double x, double y, ExceptionState& exception_state) {
   const NativeValue args[] = {
       NativeValueConverter<NativeTypeDouble>::ToNativeValue(x),
       NativeValueConverter<NativeTypeDouble>::ToNativeValue(y),
@@ -154,7 +151,7 @@ void Window::scrollBy(double x, double y, ExceptionState& exception_state) {
   InvokeBindingMethod(binding_call_methods::kscrollBy, 2, args, exception_state);
 }
 
-void Window::scrollBy(const std::shared_ptr<ScrollToOptions>& options, ExceptionState& exception_state) {
+void Global::scrollBy(const std::shared_ptr<ScrollToOptions>& options, ExceptionState& exception_state) {
   const NativeValue args[] = {
       NativeValueConverter<NativeTypeDouble>::ToNativeValue(options->hasLeft() ? options->left() : 0.0),
       NativeValueConverter<NativeTypeDouble>::ToNativeValue(options->hasTop() ? options->top() : 0.0),
@@ -162,19 +159,19 @@ void Window::scrollBy(const std::shared_ptr<ScrollToOptions>& options, Exception
   InvokeBindingMethod(binding_call_methods::kscrollBy, 2, args, exception_state);
 }
 
-void Window::scrollTo(ExceptionState& exception_state) {
+void Global::scrollTo(ExceptionState& exception_state) {
   return scroll(exception_state);
 }
 
-void Window::scrollTo(double x, double y, ExceptionState& exception_state) {
+void Global::scrollTo(double x, double y, ExceptionState& exception_state) {
   return scroll(x, y, exception_state);
 }
 
-void Window::scrollTo(const std::shared_ptr<ScrollToOptions>& options, ExceptionState& exception_state) {
+void Global::scrollTo(const std::shared_ptr<ScrollToOptions>& options, ExceptionState& exception_state) {
   return scroll(options, exception_state);
 }
 
-void Window::postMessage(const ScriptValue& message, ExceptionState& exception_state) {
+void Global::postMessage(const ScriptValue& message, ExceptionState& exception_state) {
   auto event_init = MessageEventInit::Create();
   event_init->setData(message);
   auto* message_event =
@@ -182,7 +179,7 @@ void Window::postMessage(const ScriptValue& message, ExceptionState& exception_s
   dispatchEvent(message_event, exception_state);
 }
 
-void Window::postMessage(const ScriptValue& message,
+void Global::postMessage(const ScriptValue& message,
                          const AtomicString& target_origin,
                          ExceptionState& exception_state) {
   auto event_init = MessageEventInit::Create();
@@ -193,20 +190,20 @@ void Window::postMessage(const ScriptValue& message,
   dispatchEvent(message_event, exception_state);
 }
 
-ComputedCssStyleDeclaration* Window::getComputedStyle(Element* element, ExceptionState& exception_state) {
+ComputedCssStyleDeclaration* Global::getComputedStyle(Element* element, ExceptionState& exception_state) {
   NativeValue arguments[] = {NativeValueConverter<NativeTypePointer<Element>>::ToNativeValue(element)};
   NativeValue result = InvokeBindingMethod(binding_call_methods::kgetComputedStyle, 1, arguments, exception_state);
   return MakeGarbageCollected<ComputedCssStyleDeclaration>(
       GetExecutingContext(), NativeValueConverter<NativeTypePointer<NativeBindingObject>>::FromNativeValue(result));
 }
 
-ComputedCssStyleDeclaration* Window::getComputedStyle(Element* element,
+ComputedCssStyleDeclaration* Global::getComputedStyle(Element* element,
                                                       const AtomicString& pseudo_elt,
                                                       ExceptionState& exception_state) {
   return getComputedStyle(element, exception_state);
 }
 
-double Window::requestAnimationFrame(const std::shared_ptr<QJSFunction>& callback, ExceptionState& exceptionState) {
+double Global::requestAnimationFrame(const std::shared_ptr<QJSFunction>& callback, ExceptionState& exceptionState) {
   if (GetExecutingContext()->dartMethodPtr()->flushMainCommand == nullptr) {
     exceptionState.ThrowException(ctx(), ErrorType::InternalError,
                                   "Failed to execute 'flushMainCommand': dart method (flushMainCommand) executed "
@@ -228,20 +225,20 @@ double Window::requestAnimationFrame(const std::shared_ptr<QJSFunction>& callbac
   return request_id;
 }
 
-void Window::cancelAnimationFrame(double request_id, ExceptionState& exception_state) {
+void Global::cancelAnimationFrame(double request_id, ExceptionState& exception_state) {
   GetExecutingContext()->document()->CancelAnimationFrame(static_cast<uint32_t>(request_id), exception_state);
 }
 
-bool Window::IsGlobalOrWorkerScope() const {
+bool Global::IsGlobalOrWorkerScope() const {
   return true;
 }
 
-void Window::Trace(GCVisitor* visitor) const {
+void Global::Trace(GCVisitor* visitor) const {
   visitor->TraceMember(screen_);
   EventTargetWithInlineData::Trace(visitor);
 }
 
-JSValue Window::ToQuickJS() const {
+JSValue Global::ToQuickJS() const {
   return JS_GetGlobalObject(ctx());
 }
 

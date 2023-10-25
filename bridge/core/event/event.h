@@ -9,7 +9,7 @@
 #include "bindings/qjs/atomic_string.h"
 #include "bindings/qjs/cppgc/member.h"
 #include "bindings/qjs/script_wrappable.h"
-#include "core/dom/events/event_target.h"
+#include "event_target.h"
 #include "core/executing_context.h"
 #include "foundation/native_string.h"
 #include "qjs_event_init.h"
@@ -156,26 +156,10 @@ class Event : public ScriptWrappable {
   bool DeleteItem(const AtomicString& key, ExceptionState& exception_state);
 
   // These events are general classes of events.
-  virtual bool IsUiEvent() const;
-  virtual bool IsMouseEvent() const;
-  virtual bool IsFocusEvent() const;
-  virtual bool IsKeyboardEvent() const;
-  virtual bool IsTouchEvent() const;
-  virtual bool IsGestureEvent() const;
-  virtual bool IsPointerEvent() const;
-  virtual bool IsInputEvent() const;
   virtual bool IsCloseEvent() const;
   virtual bool IsCustomEvent() const;
-  virtual bool IsTransitionEvent() const;
-  virtual bool IsAnimationEvent() const;
   virtual bool IsMessageEvent() const;
-  virtual bool IsPopstateEvent() const;
-  virtual bool IsIntersectionchangeEvent() const;
 
-  // Drag events are a subset of mouse events.
-  virtual bool IsDragEvent() const;
-
-  virtual bool IsBeforeUnloadEvent() const;
   virtual bool IsErrorEvent() const;
   virtual bool IsPromiseRejectionEvent() const;
 

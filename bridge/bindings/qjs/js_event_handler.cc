@@ -5,8 +5,8 @@
 
 #include "js_event_handler.h"
 #include "bindings/qjs/converter_impl.h"
-#include "core/dom/events/event_target.h"
-#include "core/events/error_event.h"
+#include "core/event/event_target.h"
+#include "core/event/builtin/error_event.h"
 #include "event_type_names.h"
 
 namespace mercury {

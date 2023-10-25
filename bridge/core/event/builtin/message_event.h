@@ -6,7 +6,7 @@
 #ifndef BRIDGE_CORE_EVENTS_MESSAGE_EVENT_H_
 #define BRIDGE_CORE_EVENTS_MESSAGE_EVENT_H_
 
-#include "core/dom/events/event.h"
+#include "core/event/event.h"
 #include "qjs_message_event_init.h"
 
 namespace mercury {

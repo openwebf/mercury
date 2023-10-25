@@ -6,15 +6,14 @@
 
 #include <utility>
 #include "bindings/qjs/converter_impl.h"
+#include "bindings/qjs/cppgc/garbage_collected.h"
 #include "built_in_string.h"
-#include "core/dom/document.h"
-#include "core/events/error_event.h"
-#include "core/events/promise_rejection_event.h"
+#include "core/event/builtin/error_event.h"
+#include "core/event/builtin/promise_rejection_event.h"
 #include "event_type_names.h"
 #include "foundation/logging.h"
 #include "polyfill.h"
 #include "qjs_global.h"
-#include "timing/performance.h"
 
 namespace mercury {
 
@@ -75,7 +74,7 @@ ExecutingContext::ExecutingContext(DartIsolateContext* dart_isolate_context,
   //  nativePerformance.mark(PERF_JS_POLYFILL_INIT_START);
   //#endif
 
-  initWebFPolyFill(this);
+  initMercuryPolyFill(this);
 
   for (auto& p : plugin_byte_code) {
     EvaluateByteCode(p.second.bytes, p.second.length);
@@ -327,7 +326,7 @@ static void DispatchPromiseRejectionEvent(const AtomicString& event_type,
 }
 
 void ExecutingContext::FlushMainCommand() {
-  if (!uiCommandBuffer()->empty()) {
+  if (!mainCommandBuffer()->empty()) {
     dartMethodPtr()->flushMainCommand(context_id_);
   }
 }
@@ -391,7 +390,7 @@ void ExecutingContext::promiseRejectTracker(JSContext* ctx,
   }
 }
 
-DOMTimerCoordinator* ExecutingContext::Timers() {
+TimerCoordinator* ExecutingContext::Timers() {
   return &timers_;
 }
 
@@ -403,34 +402,9 @@ ModuleContextCoordinator* ExecutingContext::ModuleContexts() {
   return &module_contexts_;
 }
 
-void ExecutingContext::SetMutationScope(MemberMutationScope& mutation_scope) {
-  // MemberMutationScope may be called by other MemberMutationScope in the call stack.
-  // Should save the tree corresponding to the call stack.
-  if (active_mutation_scope != nullptr) {
-    mutation_scope.SetParent(active_mutation_scope);
-  }
-  active_mutation_scope = &mutation_scope;
-}
-
-void ExecutingContext::ClearMutationScope() {
-  active_mutation_scope = active_mutation_scope->Parent();
-}
-
-void ExecutingContext::InstallDocument() {
-  MemberMutationScope scope{this};
-  document_ = MakeGarbageCollected<Document>(this);
-  DefineGlobalProperty("document", document_->ToQuickJS());
-}
-
-void ExecutingContext::InstallPerformance() {
-  MemberMutationScope scope{this};
-  performance_ = MakeGarbageCollected<Performance>(this);
-  DefineGlobalProperty("performance", performance_->ToQuickJS());
-}
-
 void ExecutingContext::InstallGlobal() {
   MemberMutationScope mutation_scope{this};
-  global_ = MakeGarbageCollected<Window>(this);
+  global_ = MakeGarbageCollected<Global>(this);
   JS_SetPrototype(ctx(), Global(), global_->ToQuickJSUnsafe());
   JS_SetOpaque(Global(), global_);
 }

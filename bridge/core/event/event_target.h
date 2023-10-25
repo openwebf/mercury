@@ -17,10 +17,6 @@
 #include "qjs_unionadd_event_listener_options_boolean.h"
 #include "qjs_unionevent_listener_options_boolean.h"
 
-#if UNIT_TEST
-void TEST_invokeBindingMethod(void* nativePtr, void* returnValue, void* method, int32_t argc, void* argv);
-#endif
-
 #define GetPropertyMagic "%g"
 #define SetPropertyMagic "%s"
 
@@ -206,33 +202,33 @@ class EventTargetWithInlineData : public EventTarget {
     eventTarget.SetAttributeEventListener(event_type_names::symbol_name, listener, exception_state);      \
   }
 
-#define DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(lower_name, symbol_name)                                      \
+#define DEFINE_GLOBAL_ATTRIBUTE_EVENT_LISTENER(lower_name, symbol_name)                                      \
   std::shared_ptr<EventListener> on##lower_name() {                                                          \
-    return GetDocument().GetWindowAttributeEventListener(event_type_names::symbol_name);                     \
+    return GetDocument().GetGlobalAttributeEventListener(event_type_names::symbol_name);                     \
   }                                                                                                          \
   void setOn##lower_name(const std::shared_ptr<EventListener>& listener, ExceptionState& exception_state) {  \
-    GetDocument().SetWindowAttributeEventListener(event_type_names::symbol_name, listener, exception_state); \
+    GetDocument().SetGlobalAttributeEventListener(event_type_names::symbol_name, listener, exception_state); \
   }
 
 #define DEFINE_DOCUMENT_ATTRIBUTE_EVENT_LISTENER(lower_name, symbol_name)                                   \
   std::shared_ptr<EventListener> on##lower_name() {                                                         \
-    return GetWindowAttributeEventListener(event_type_names::symbol_name);                                  \
+    return GetGlobalAttributeEventListener(event_type_names::symbol_name);                                  \
   }                                                                                                         \
   void setOn##lower_name(const std::shared_ptr<EventListener>& listener, ExceptionState& exception_state) { \
-    SetWindowAttributeEventListener(event_type_names::symbol_name, listener, exception_state);              \
+    SetGlobalAttributeEventListener(event_type_names::symbol_name, listener, exception_state);              \
   }
 
-#define DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(lower_name, symbol_name)                                       \
+#define DEFINE_STATIC_GLOBAL_ATTRIBUTE_EVENT_LISTENER(lower_name, symbol_name)                                       \
   static std::shared_ptr<EventListener> on##lower_name(EventTarget& eventTarget) {                                   \
     if (Node* node = eventTarget.ToNode()) {                                                                         \
-      return node->GetDocument().GetWindowAttributeEventListener(event_type_names::symbol_name);                     \
+      return node->GetDocument().GetGlobalAttributeEventListener(event_type_names::symbol_name);                     \
     }                                                                                                                \
     return eventTarget.GetAttributeEventListener(event_type_names::symbol_name);                                     \
   }                                                                                                                  \
   static void setOn##lower_name(EventTarget& eventTarget, const std::shared_ptr<EventListener>& listener,            \
                                 ExceptionState& exception_state) {                                                   \
     if (Node* node = eventTarget.ToNode()) {                                                                         \
-      node->GetDocument().SetWindowAttributeEventListener(event_type_names::symbol_name, listener, exception_state); \
+      node->GetDocument().SetGlobalAttributeEventListener(event_type_names::symbol_name, listener, exception_state); \
     } else {                                                                                                         \
       eventTarget.SetAttributeEventListener(event_type_names::symbol_name, listener, exception_state);               \
     }                                                                                                                \

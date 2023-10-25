@@ -3,37 +3,37 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
-#include "ui_command_buffer.h"
+#include "main_command_buffer.h"
 #include "core/dart_methods.h"
 #include "core/executing_context.h"
 #include "foundation/logging.h"
-#include "include/webf_bridge.h"
+#include "include/mercury_bridge.h"
 
-namespace webf {
+namespace mercury {
 
-UICommandBuffer::UICommandBuffer(ExecutingContext* context)
-    : context_(context), buffer_((UICommandItem*)malloc(sizeof(UICommandItem) * MAXIMUM_UI_COMMAND_SIZE)) {}
+MainCommandBuffer::MainCommandBuffer(ExecutingContext* context)
+    : context_(context), buffer_((MainCommandItem*)malloc(sizeof(MainCommandItem) * MAXIMUM_UI_COMMAND_SIZE)) {}
 
-UICommandBuffer::~UICommandBuffer() {
+MainCommandBuffer::~MainCommandBuffer() {
   free(buffer_);
 }
 
-void UICommandBuffer::addCommand(UICommand type,
+void MainCommandBuffer::addCommand(MainCommand type,
                                  std::unique_ptr<SharedNativeString>&& args_01,
                                  void* nativePtr,
                                  void* nativePtr2,
                                  bool request_ui_update) {
-  UICommandItem item{static_cast<int32_t>(type), args_01.get(), nativePtr, nativePtr2};
+  MainCommandItem item{static_cast<int32_t>(type), args_01.get(), nativePtr, nativePtr2};
   addCommand(item, request_ui_update);
 }
 
-void UICommandBuffer::addCommand(const UICommandItem& item, bool request_ui_update) {
+void MainCommandBuffer::addCommand(const MainCommandItem& item, bool request_ui_update) {
   if (UNLIKELY(!context_->dartIsolateContext()->valid())) {
     return;
   }
 
   if (size_ >= max_size_) {
-    buffer_ = (UICommandItem*)realloc(buffer_, sizeof(UICommandItem) * max_size_ * 2);
+    buffer_ = (MainCommandItem*)realloc(buffer_, sizeof(MainCommandItem) * max_size_ * 2);
     max_size_ = max_size_ * 2;
   }
 
@@ -49,22 +49,22 @@ void UICommandBuffer::addCommand(const UICommandItem& item, bool request_ui_upda
   size_++;
 }
 
-UICommandItem* UICommandBuffer::data() {
+MainCommandItem* MainCommandBuffer::data() {
   return buffer_;
 }
 
-int64_t UICommandBuffer::size() {
+int64_t MainCommandBuffer::size() {
   return size_;
 }
 
-bool UICommandBuffer::empty() {
+bool MainCommandBuffer::empty() {
   return size_ == 0;
 }
 
-void UICommandBuffer::clear() {
+void MainCommandBuffer::clear() {
   size_ = 0;
   memset(buffer_, 0, sizeof(buffer_));
   update_batched_ = false;
 }
 
-}  // namespace webf
+}  // namespace mercury

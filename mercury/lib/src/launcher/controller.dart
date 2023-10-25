@@ -108,7 +108,7 @@ class MercuryContextController {
 
     // Wait contextport mounted on the outside renderObject tree.
     Future.microtask(() {
-      // Execute MainCommand.createDocument and MainCommand.createWindow to initialize global and document.
+      // Execute MainCommand.createDocument and MainCommand.createGlobal to initialize global and document.
       flushMainCommand(this);
     });
   }

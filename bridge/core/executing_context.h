@@ -25,9 +25,10 @@
 #include "dart_isolate_context.h"
 #include "dart_methods.h"
 #include "executing_context_data.h"
-#include "frame/dom_timer_coordinator.h"
-#include "frame/module_context_coordinator.h"
-#include "frame/module_listener_container.h"
+#include "module/global.h"
+#include "module/timer/timer_coordinator.h"
+#include "module/module_context_coordinator.h"
+#include "module/module_listener_container.h"
 #include "script_state.h"
 
 namespace mercury {
@@ -39,7 +40,7 @@ struct NativeByteCode {
 
 class ExecutingContext;
 class Document;
-class Window;
+class Global;
 class Performance;
 class MemberMutationScope;
 class ErrorEvent;
@@ -52,7 +53,7 @@ bool isContextValid(int32_t contextId);
 
 // An environment in which script can execute. This class exposes the common
 // properties of script execution environments on the mercury.
-// Window : Document : ExecutionContext = 1 : 1 : 1 at any point in time.
+// Global : Document : ExecutionContext = 1 : 1 : 1 at any point in time.
 class ExecutingContext {
  public:
   ExecutingContext() = delete;
@@ -89,18 +90,18 @@ class ExecutingContext {
   ExecutionContextData* contextData();
   uint8_t* DumpByteCode(const char* code, uint32_t codeLength, const char* sourceURL, size_t* bytecodeLength);
 
-  // Make global object inherit from WindowProperties.
+  // Make global object inherit from GlobalProperties.
   void InstallGlobal();
 
   // Register active script wrappers.
   void RegisterActiveScriptWrappers(ScriptWrappable* script_wrappable);
   void InActiveScriptWrappers(ScriptWrappable* script_wrappable);
 
-  // Gets the DOMTimerCoordinator which maintains the "active timer
+  // Gets the TimerCoordinator which maintains the "active timer
   // list" of tasks created by setTimeout and setInterval. The
-  // DOMTimerCoordinator is owned by the ExecutionContext and should
+  // TimerCoordinator is owned by the ExecutionContext and should
   // not be used after the ExecutionContext is destroyed.
-  DOMTimerCoordinator* Timers();
+  TimerCoordinator* Timers();
 
   // Gets the ModuleListeners which registered by `mercury.addModuleListener API`.
   ModuleListenerContainer* ModuleListeners();
@@ -111,23 +112,16 @@ class ExecutingContext {
   // Get current script state.
   ScriptState* GetScriptState() { return &script_state_; }
 
-  void SetMutationScope(MemberMutationScope& mutation_scope);
-  bool HasMutationScope() const { return active_mutation_scope != nullptr; }
-  MemberMutationScope* mutationScope() const { return active_mutation_scope; }
-  void ClearMutationScope();
-
-  FORCE_INLINE Document* document() const { return document_; };
-  FORCE_INLINE Window* global() const { return global_; }
+  FORCE_INLINE Global* global() const { return global_; }
   FORCE_INLINE DartIsolateContext* dartIsolateContext() const { return dart_isolate_context_; };
-  FORCE_INLINE Performance* performance() const { return performance_; }
-  FORCE_INLINE MainCommandBuffer* uiCommandBuffer() { return &ui_command_buffer_; };
+  FORCE_INLINE MainCommandBuffer* mainCommandBuffer() { return &main_command_buffer_; };
   FORCE_INLINE const std::unique_ptr<DartMethodPointer>& dartMethodPtr() {
     assert(dart_isolate_context_->valid());
     return dart_isolate_context_->dartMethodPtr();
   }
   FORCE_INLINE std::chrono::time_point<std::chrono::system_clock> timeOrigin() const { return time_origin_; }
 
-  // Force dart side to execute the pending ui commands.
+  // Force dart side to execute the pending main commands.
   void FlushMainCommand();
 
   void DispatchErrorEvent(ErrorEvent* error_event);
@@ -160,11 +154,11 @@ class ExecutingContext {
   // Warning: Don't change the orders of members in ExecutingContext if you really know what are you doing.
   // From C++ standard, https://isocpp.org/wiki/faq/dtors#order-dtors-for-members
   // Members first initialized and destructed at the last.
-  // Keep uiCommandBuffer below dartMethod ptr to make sure we can flush all disposeEventTarget when MainCommandBuffer
+  // Keep mainCommandBuffer below dartMethod ptr to make sure we can flush all disposeEventTarget when MainCommandBuffer
   // release.
-  MainCommandBuffer ui_command_buffer_{this};
+  MainCommandBuffer main_command_buffer_{this};
   DartIsolateContext* dart_isolate_context_{nullptr};
-  // Keep uiCommandBuffer above ScriptState to make sure we can collect all disposedEventTarget command when free
+  // Keep mainCommandBuffer above ScriptState to make sure we can collect all disposedEventTarget command when free
   // JSContext. When call JSFreeContext(ctx) inside ScriptState, all eventTargets will be finalized and MainCommandBuffer
   // will be fill up to MainCommand::disposeEventTarget commands.
   // ----------------------------------------------------------------------
@@ -179,16 +173,13 @@ class ExecutingContext {
   JSExceptionHandler handler_;
   void* owner_;
   JSValue global_object_{JS_NULL};
-  Document* document_{nullptr};
-  Window* global_{nullptr};
-  Performance* performance_{nullptr};
-  DOMTimerCoordinator timers_;
+  Global* global_{nullptr};
+  TimerCoordinator timers_;
   ModuleListenerContainer module_listener_container_;
   ModuleContextCoordinator module_contexts_;
   ExecutionContextData context_data_{this};
   bool in_dispatch_error_event_{false};
   RejectedPromises rejected_promises_;
-  MemberMutationScope* active_mutation_scope{nullptr};
   std::set<ScriptWrappable*> active_wrappers_;
 };
 

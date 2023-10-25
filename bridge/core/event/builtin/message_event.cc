@@ -4,7 +4,7 @@
  */
 
 #include "message_event.h"
-#include "core/dom/events/event.h"
+#include "core/event/event.h"
 #include "qjs_message_event.h"
 
 namespace mercury {
