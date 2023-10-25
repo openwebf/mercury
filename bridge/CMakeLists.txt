@@ -386,11 +386,6 @@ execute_process(
 string(REPLACE \n "" GIT_HEAD ${GIT_HEAD}) # Remove last \n
 add_definitions(-DAPP_REV="${GIT_HEAD}") # Read from git head sha1
 
-if (${ENABLE_TEST})
-  add_compile_definitions(IS_TEST=true)
-  include(./test/test.cmake)
-endif ()
-
 if (DEFINED ENV{LIBRARY_OUTPUT_DIR})
   set_target_properties(mercury
     PROPERTIES

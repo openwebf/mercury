@@ -6,7 +6,6 @@
 // Forked from https://github.com/driverdan/node-XMLHttpRequest/blob/master/lib/XMLHttpRequest.js
 
 import { URL } from './url';
-import { navigator } from './navigator';
 import { initPropertyHandlersForEventTargets } from './helpers';
 
 // XHR buildin events
@@ -22,9 +21,10 @@ const builtInEvents = [
 // Set some default headers
 const defaultHeaders = {
   // Use getter instead of value for lazy read value at initialize time.
-  get "User-Agent"() {
-    return navigator.userAgent;
-  },
+  // TODO
+  // get "User-Agent"() {
+  //   return navigator.userAgent;
+  // },
   get "Accept"() {
     return "*/*";
   }

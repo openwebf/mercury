@@ -45,17 +45,4 @@ module.exports = [
     ],
     context: 'global'
   },
-  {
-    input: 'src/test/index.js',
-    output: Object.assign({ file: 'dist/test.js' }, Object.assign({ name: 'polyfillTester' }, output)),
-    plugins: [
-      ...plugins,
-      commonjs(),
-    ],
-    onwarn(warning, warn) {
-      // suppress eval warnings
-      if (warning.code === 'EVAL') return
-      warn(warning)
-    },
-  }
 ];
