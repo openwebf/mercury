@@ -55,10 +55,10 @@ final DartGetMercuryInfo _getMercuryInfo =
 
 final MercuryInfo _cachedInfo = MercuryInfo(_getMercuryInfo());
 
-final HashMap<int, Pointer<Void>> _allocatedPages = HashMap();
+final HashMap<int, Pointer<Void>> _allocatedMercuryIsolates = HashMap();
 
-Pointer<Void>? getAllocatedPage(int contextId) {
-  return _allocatedPages[contextId];
+Pointer<Void>? getAllocatedMercuryIsolate(int contextId) {
+  return _allocatedMercuryIsolates[contextId];
 }
 
 MercuryInfo getMercuryInfo() {
@@ -83,9 +83,9 @@ dynamic invokeModuleEvent(int contextId, String moduleName, Event? event, extra)
   Pointer<Void> rawEvent = event == null ? nullptr : event.toRaw().cast<Void>();
   Pointer<NativeValue> extraData = malloc.allocate(sizeOf<NativeValue>());
   toNativeValue(extraData, extra);
-  assert(_allocatedPages.containsKey(contextId));
+  assert(_allocatedMercuryIsolates.containsKey(contextId));
   Pointer<NativeValue> dispatchResult = _invokeModuleEvent(
-      _allocatedPages[contextId]!, nativeModuleName, event == null ? nullptr : event.type.toNativeUtf8(), rawEvent, extraData);
+      _allocatedMercuryIsolates[contextId]!, nativeModuleName, event == null ? nullptr : event.type.toNativeUtf8(), rawEvent, extraData);
   dynamic result = fromNativeValue(controller.context, dispatchResult);
   malloc.free(dispatchResult);
   malloc.free(extraData);
@@ -156,18 +156,18 @@ Future<bool> evaluateScripts(int contextId, String code, {String? url, int line 
     Pointer<NativeString> nativeString = stringToNativeString(code);
     Pointer<Utf8> _url = url.toNativeUtf8();
     try {
-      assert(_allocatedPages.containsKey(contextId));
+      assert(_allocatedMercuryIsolates.containsKey(contextId));
       int result;
       if (QuickJSByteCodeCache.isCodeNeedCache(code)) {
         // Export the bytecode from scripts
         Pointer<Pointer<Uint8>> bytecodes = malloc.allocate(sizeOf<Pointer<Uint8>>());
         Pointer<Uint64> bytecodeLen = malloc.allocate(sizeOf<Uint64>());
-        result = _evaluateScripts(_allocatedPages[contextId]!, nativeString, bytecodes, bytecodeLen, _url, line);
+        result = _evaluateScripts(_allocatedMercuryIsolates[contextId]!, nativeString, bytecodes, bytecodeLen, _url, line);
         Uint8List bytes = bytecodes.value.asTypedList(bytecodeLen.value);
         // Save to disk cache
         QuickJSByteCodeCache.putObject(code, bytes);
       } else {
-        result = _evaluateScripts(_allocatedPages[contextId]!, nativeString, nullptr, nullptr, _url, line);
+        result = _evaluateScripts(_allocatedMercuryIsolates[contextId]!, nativeString, nullptr, nullptr, _url, line);
       }
       return result == 1;
     } catch (e, stack) {
@@ -192,8 +192,8 @@ bool evaluateQuickjsByteCode(int contextId, Uint8List bytes) {
   }
   Pointer<Uint8> byteData = malloc.allocate(sizeOf<Uint8>() * bytes.length);
   byteData.asTypedList(bytes.length).setAll(0, bytes);
-  assert(_allocatedPages.containsKey(contextId));
-  int result = _evaluateQuickjsByteCode(_allocatedPages[contextId]!, byteData, bytes.length);
+  assert(_allocatedMercuryIsolates.containsKey(contextId));
+  int result = _evaluateQuickjsByteCode(_allocatedMercuryIsolates[contextId]!, byteData, bytes.length);
   malloc.free(byteData);
   return result == 1;
 }
@@ -204,8 +204,8 @@ void parseHTML(int contextId, String code) {
   }
   Pointer<Utf8> nativeCode = code.toNativeUtf8();
   try {
-    assert(_allocatedPages.containsKey(contextId));
-    _parseHTML(_allocatedPages[contextId]!, nativeCode, nativeCode.length);
+    assert(_allocatedMercuryIsolates.containsKey(contextId));
+    _parseHTML(_allocatedMercuryIsolates[contextId]!, nativeCode, nativeCode.length);
   } catch (e, stack) {
     print('$e\n$stack');
   }
@@ -226,37 +226,37 @@ Pointer<Void> initDartIsolateContext(List<int> dartMethods) {
   return _initDartIsolateContext(bytes, dartMethods.length);
 }
 
-typedef NativeDisposePage = Void Function(Pointer<Void>, Pointer<Void> page);
-typedef DartDisposePage = void Function(Pointer<Void>, Pointer<Void> page);
+typedef NativeDisposeMercuryIsolate = Void Function(Pointer<Void>, Pointer<Void> mercuryIsolate);
+typedef DartDisposeMercuryIsolate = void Function(Pointer<Void>, Pointer<Void> mercuryIsolate);
 
-final DartDisposePage _disposeMain =
-    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeDisposePage>>('disposeMain').asFunction();
+final DartDisposeMercuryIsolate _disposeMain =
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeDisposeMercuryIsolate>>('disposeMain').asFunction();
 
 void disposeMain(int contextId) {
-  Pointer<Void> page = _allocatedPages[contextId]!;
-  _disposeMain(dartContext.pointer, page);
-  _allocatedPages.remove(contextId);
+  Pointer<Void> mercuryIsolate = _allocatedMercuryIsolates[contextId]!;
+  _disposeMain(dartContext.pointer, mercuryIsolate);
+  _allocatedMercuryIsolates.remove(contextId);
 }
 
-typedef NativeNewPageId = Int64 Function();
-typedef DartNewPageId = int Function();
+typedef NativeNewMercuryIsolateId = Int64 Function();
+typedef DartNewMercuryIsolateId = int Function();
 
-final DartNewPageId _newPageId = MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeNewPageId>>('newPageId').asFunction();
+final DartNewMercuryIsolateId _newMercuryIsolateId = MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeNewMercuryIsolateId>>('newMercuryIsolateId').asFunction();
 
-int newPageId() {
-  return _newPageId();
+int newMercuryIsolateId() {
+  return _newMercuryIsolateId();
 }
 
-typedef NativeAllocateNewPage = Pointer<Void> Function(Pointer<Void>, Int32);
-typedef DartAllocateNewPage = Pointer<Void> Function(Pointer<Void>, int);
+typedef NativeAllocateNewMercuryIsolate = Pointer<Void> Function(Pointer<Void>, Int32);
+typedef DartAllocateNewMercuryIsolate = Pointer<Void> Function(Pointer<Void>, int);
 
-final DartAllocateNewPage _allocateNewPage =
-    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeAllocateNewPage>>('allocateNewPage').asFunction();
+final DartAllocateNewMercuryIsolate _allocateNewMercuryIsolate =
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeAllocateNewMercuryIsolate>>('allocateNewMercuryIsolate').asFunction();
 
-void allocateNewPage(int targetContextId) {
-  Pointer<Void> page = _allocateNewPage(dartContext.pointer, targetContextId);
-  assert(!_allocatedPages.containsKey(targetContextId));
-  _allocatedPages[targetContextId] = page;
+void allocateNewMercuryIsolate(int targetContextId) {
+  Pointer<Void> mercuryIsolate = _allocateNewMercuryIsolate(dartContext.pointer, targetContextId);
+  assert(!_allocatedMercuryIsolates.containsKey(targetContextId));
+  _allocatedMercuryIsolates[targetContextId] = mercuryIsolate;
 }
 
 typedef NativeInitDartDynamicLinking = Void Function(Pointer<Void> data);
@@ -291,191 +291,4 @@ void registerPluginByteCode(Uint8List bytecode, String name) {
   _registerPluginByteCode(bytes, bytecode.length, name.toNativeUtf8());
 }
 
-typedef NativeProfileModeEnabled = Int32 Function();
-typedef DartProfileModeEnabled = int Function();
-
-final DartProfileModeEnabled _profileModeEnabled =
-    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeProfileModeEnabled>>('profileModeEnabled').asFunction();
-
-const _CODE_ENABLED = 1;
-
-bool profileModeEnabled() {
-  return _profileModeEnabled() == _CODE_ENABLED;
-}
-
-typedef NativeDispatchUITask = Void Function(Int32 contextId, Pointer<Void> context, Pointer<Void> callback);
-typedef DartDispatchUITask = void Function(int contextId, Pointer<Void> context, Pointer<Void> callback);
-
-void dispatchUITask(int contextId, Pointer<Void> context, Pointer<Void> callback) {
-  // _dispatchUITask(contextId, context, callback);
-}
-
-enum MainCommandType {
-  createGlobal,
-  disposeBindingObject,
-  addEvent,
-  removeEvent,
-}
-
-class MainCommandItem extends Struct {
-  @Int64()
-  external int type;
-
-  external Pointer<Pointer<NativeString>> args;
-
-  @Int64()
-  external int id;
-
-  @Int64()
-  external int length;
-
-  external Pointer nativePtr;
-}
-
-typedef NativeGetMainCommandItems = Pointer<Uint64> Function(Pointer<Void>);
-typedef DartGetMainCommandItems = Pointer<Uint64> Function(Pointer<Void>);
-
-final DartGetMainCommandItems _getMainCommandItems =
-    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeGetMainCommandItems>>('getMainCommandItems').asFunction();
-
-typedef NativeGetMainCommandItemSize = Int64 Function(Pointer<Void>);
-typedef DartGetMainCommandItemSize = int Function(Pointer<Void>);
-
-final DartGetMainCommandItemSize _getMainCommandItemSize =
-    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeGetMainCommandItemSize>>('getMainCommandItemSize').asFunction();
-
-typedef NativeClearMainCommandItems = Void Function(Pointer<Void>);
-typedef DartClearMainCommandItems = void Function(Pointer<Void>);
-
-final DartClearMainCommandItems _clearMainCommandItems =
-    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeClearMainCommandItems>>('clearMainCommandItems').asFunction();
-
-class MainCommand {
-  late final MainCommandType type;
-  late final String args;
-  late final Pointer nativePtr;
-  late final Pointer nativePtr2;
-
-  @override
-  String toString() {
-    return 'MainCommand(type: $type, args: $args, nativePtr: $nativePtr, nativePtr2: $nativePtr2)';
-  }
-}
-
-// struct MainCommandItem {
-//   int32_t type;             // offset: 0 ~ 0.5
-//   int32_t args_01_length;   // offset: 0.5 ~ 1
-//   const uint16_t *string_01;// offset: 1
-//   void* nativePtr;          // offset: 2
-//   void* nativePtr2;         // offset: 3
-// };
-const int nativeCommandSize = 4;
-const int typeAndArgs01LenMemOffset = 0;
-const int args01StringMemOffset = 1;
-const int nativePtrMemOffset = 2;
-const int native2PtrMemOffset = 3;
-
-final bool isEnabledLog = !kReleaseMode && Platform.environment['ENABLE_MERCURY_JS_LOG'] == 'true';
-
-// We found there are performance bottleneck of reading native memory with Dart FFI API.
-// So we align all UI instructions to a whole block of memory, and then convert them into a dart array at one time,
-// To ensure the fastest subsequent random access.
-List<MainCommand> readNativeMainCommandToDart(Pointer<Uint64> nativeCommandItems, int commandLength, int contextId) {
-  List<int> rawMemory =
-      nativeCommandItems.cast<Int64>().asTypedList(commandLength * nativeCommandSize).toList(growable: false);
-  List<MainCommand> results = List.generate(commandLength, (int _i) {
-    int i = _i * nativeCommandSize;
-    MainCommand command = MainCommand();
-
-    int typeArgs01Combine = rawMemory[i + typeAndArgs01LenMemOffset];
-
-    //      int32_t        int32_t
-    // +-------------+-----------------+
-    // |      type     | args_01_length  |
-    // +-------------+-----------------+
-    int args01Length = (typeArgs01Combine >> 32).toSigned(32);
-    int type = (typeArgs01Combine ^ (args01Length << 32)).toSigned(32);
-
-    command.type = MainCommandType.values[type];
-
-    int args01StringMemory = rawMemory[i + args01StringMemOffset];
-    if (args01StringMemory != 0) {
-      Pointer<Uint16> args_01 = Pointer.fromAddress(args01StringMemory);
-      command.args = uint16ToString(args_01, args01Length);
-      malloc.free(args_01);
-    } else {
-      command.args = '';
-    }
-
-    int nativePtrValue = rawMemory[i + nativePtrMemOffset];
-    command.nativePtr = nativePtrValue != 0 ? Pointer.fromAddress(rawMemory[i + nativePtrMemOffset]) : nullptr;
-
-    int nativePtr2Value = rawMemory[i + native2PtrMemOffset];
-    command.nativePtr2 = nativePtr2Value != 0 ? Pointer.fromAddress(nativePtr2Value) : nullptr;
-
-    if (isEnabledLog) {
-      String printMsg = 'nativePtr: ${command.nativePtr} type: ${command.type} args: ${command.args} nativePtr2: ${command.nativePtr2}';
-      print(printMsg);
-    }
-    return command;
-  }, growable: false);
-
-  // Clear native command.
-  _clearMainCommandItems(_allocatedPages[contextId]!);
-
-  return results;
-}
-
-void clearMainCommand(int contextId) {
-  assert(_allocatedPages.containsKey(contextId));
-  _clearMainCommandItems(_allocatedPages[contextId]!);
-}
-
-void flushMainCommandWithContextId(int contextId) {
-  MercuryController? controller = MercuryController.getControllerOfJSContextId(contextId);
-  if (controller != null) {
-    flushMainCommand(controller.context);
-  }
-}
-
-void flushMainCommand(MercuryContextController context) {
-  assert(_allocatedPages.containsKey(context.contextId));
-  Pointer<Uint64> nativeCommandItems = _getMainCommandItems(_allocatedPages[context.contextId]!);
-  int commandLength = _getMainCommandItemSize(_allocatedPages[context.contextId]!);
-
-  if (commandLength == 0 || nativeCommandItems == nullptr) {
-    return;
-  }
-
-  List<MainCommand> commands = readNativeMainCommandToDart(nativeCommandItems, commandLength, context.contextId);
-
-  // For new ui commands, we needs to tell engine to update frames.
-  for (int i = 0; i < commandLength; i++) {
-    MainCommand command = commands[i];
-    MainCommandType commandType = command.type;
-    Pointer nativePtr = command.nativePtr;
-
-    try {
-      switch (commandType) {
-        case MainCommandType.createGlobal:
-          context.initGlobal(context, nativePtr.cast<NativeBindingObject>());
-          break;
-        case MainCommandType.disposeBindingObject:
-          context.disposeBindingObject(context, nativePtr.cast<NativeBindingObject>());
-          break;
-        case MainCommandType.addEvent:
-          Pointer<AddEventListenerOptions> eventListenerOptions = command.nativePtr2.cast<AddEventListenerOptions>();
-          context.addEvent(nativePtr.cast<NativeBindingObject>(), command.args, addEventListenerOptions: eventListenerOptions);
-          break;
-        case MainCommandType.removeEvent:
-          bool isCapture = command.nativePtr2.address == 1;
-          context.removeEvent(nativePtr.cast<NativeBindingObject>(), command.args, isCapture: isCapture);
-          break;
-        default:
-          break;
-      }
-    } catch (e, stack) {
-      print('$e\n$stack');
-    }
-  }
-}
+final bool isEnabledLog = !kReleaseMode && Platform.environment['ENABLE_WEBF_JS_LOG'] == 'true';

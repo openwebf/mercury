@@ -116,6 +116,7 @@ bool ExecutingContext::EvaluateJavaScript(const uint16_t* code,
   DrainPendingPromiseJobs();
   bool success = HandleException(&result);
   JS_FreeValue(script_state_.ctx(), result);
+
   return success;
 }
 

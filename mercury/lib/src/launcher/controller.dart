@@ -105,17 +105,6 @@ class MercuryContextController {
     }
     BindingBridge.setup();
     _contextId = initBridge(this);
-
-    // Wait contextport mounted on the outside renderObject tree.
-    Future.microtask(() {
-      // Execute MainCommand.createDocument and MainCommand.createGlobal to initialize global and document.
-      flushMainCommand(this);
-    });
-  }
-
-  void _postFrameCallback(Duration timeStamp) {
-    if (disposed) return;
-    flushMainCommand(this);
   }
 
   final Map<int, BindingObject> _nativeObjects = {};
@@ -157,6 +146,7 @@ class MercuryContextController {
 
   void evaluateJavaScripts(String code) async {
     assert(!_disposed, 'Mercury have already disposed');
+    print('Javascript being evaluated');
     await evaluateScripts(_contextId, code);
   }
 
@@ -297,6 +287,11 @@ class MercuryController {
     _methodChannel = methodChannel;
     MercuryMethodChannel.setJSMethodCallCallback(this);
 
+    _context = MercuryContextController(
+      enableDebug: enableDebug,
+      rootController: this,
+    );
+
     final int contextId = _context.contextId;
 
     _module = MercuryModuleController(this, contextId);
@@ -340,8 +335,6 @@ class MercuryController {
 
   Future<void> unload() async {
     assert(!_context._disposed, 'Mercury have already disposed');
-    // Should clear previous page cached ui commands
-    clearMainCommand(_context.contextId);
 
     // Wait for next microtask to make sure C++ native Elements are GC collected.
     Completer completer = Completer();
@@ -441,6 +434,7 @@ class MercuryController {
 
   bool _disposed = false;
   bool get disposed => _disposed;
+
   void dispose() {
     _module.dispose();
     _context.dispose();

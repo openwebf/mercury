@@ -8,6 +8,16 @@ import 'package:mercury/mercury.dart';
 import 'package:mercury/devtools.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized(); //imp line need to be added first
+    FlutterError.onError = (FlutterErrorDetails details) {
+    //this line prints the default flutter gesture caught exception in console
+    //FlutterError.dumpErrorToConsole(details);
+    print('Error From INSIDE FRAME_WORK');
+    print('----------------------');
+    print('Error :  ${details.exception}');
+    print('StackTrace :  ${details.stack}');
+    };
+
   runApp(MyApp());
 }
 
@@ -50,53 +60,45 @@ class _MyHomePageState extends State<MyBrowser> {
     ),
   );
 
+  String? example;
+
   @override
   Widget build(BuildContext context) {
-    final MediaQueryData queryData = MediaQuery.of(context);
-    final TextEditingController textEditingController = TextEditingController();
-
-    Mercury? _kraken;
-    AppBar appBar = AppBar(
-      backgroundColor: Colors.black87,
-      titleSpacing: 10.0,
-      title: Container(
-        height: 40.0,
-        child: TextField(
-          controller: textEditingController,
-          onSubmitted: (value) {
-            textEditingController.text = value;
-            _kraken?.load(MercuryBundle.fromUrl(value));
-          },
-          decoration: InputDecoration(
-            hintText: 'Enter URL',
-            hintStyle: TextStyle(color: Colors.black54, fontSize: 16.0),
-            contentPadding: const EdgeInsets.all(10.0),
-            filled: true,
-            fillColor: Colors.grey,
-            border: outlineBorder,
-            focusedBorder: outlineBorder,
-            enabledBorder: outlineBorder,
-          ),
-          style: TextStyle(color: Colors.black, fontSize: 16.0),
-        ),
-      ),
-      // Here we take the value from the MyHomePage object that was created by
-      // the App.build method, and use it to set our appbar title.
-    );
-
-    final Size viewportSize = queryData.size;
     return Scaffold(
-        appBar: appBar,
+        appBar: AppBar(
+          backgroundColor: Colors.black87,
+          titleSpacing: 10.0,
+          title: Container(
+            height: 40.0,
+            child: Text('Mercury Test')
+          ),
+        ),
         body: Center(
           // Center is a layout widget. It takes a single child and positions it
           // in the middle of the parent.
           child: Column(
             children: [
-              _kraken = Mercury(
-                devToolsService: ChromeDevToolsService(),
-                viewportWidth: viewportSize.width - queryData.padding.horizontal,
-                viewportHeight: viewportSize.height - appBar.preferredSize.height - queryData.padding.vertical,
-                bundle: MercuryBundle.fromUrl('assets:assets/bundle.html'),
+              Mercury(
+                //devToolsService: ChromeDevToolsService(),
+                bundle: MercuryBundle.fromUrl('assets:assets/bundle.js'),
+                onControllerCreated: (controller) async {
+                  setState(() {
+                    example = 'Controller loading...';
+                  });
+                  controller.onLoad = (controller) {
+                    print('pls');
+                    setState(() {
+                      example = 'Controller loaded...';
+                    });
+                    controller.context.global.addEventListener('example', (event) {
+                      print(event);
+                      example = 'Hello from JavaScript!'; // TODO: Actually get this string from the runtime somehow
+                      setState(() {});
+                    });
+                    print(controller.context.global.iterator.current);
+                  };
+                },
+                child: Text(example ?? 'Runtime loading...')
               ),
             ],
           ),

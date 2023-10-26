@@ -15,9 +15,6 @@ export const clearMercuryModuleListener = __mercury_clear_module_listener__;
 declare const __mercury_remove_module_listener__: (name: string) => void;
 export const removeMercuryModuleListener = __mercury_remove_module_listener__;
 
-declare const __mercury_location_reload__: () => void;
-export const mercuryLocationReload = __mercury_location_reload__;
-
 declare const __mercury_print__: (log: string, level?: string) => void;
 export const mercuryPrint = __mercury_print__;
 

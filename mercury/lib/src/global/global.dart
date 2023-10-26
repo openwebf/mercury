@@ -26,10 +26,6 @@ class Global extends EventTarget {
 
   @override
   void dispatchEvent(Event event) {
-    // Events such as EVENT_DOM_CONTENT_LOADED need to ensure that listeners are flushed and registered.
-    if (contextId != null && event.type == EVENT_ERROR) {
-      flushMainCommandWithContextId(contextId!);
-    }
     super.dispatchEvent(event);
   }
 

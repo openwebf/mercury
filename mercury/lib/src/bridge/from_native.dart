@@ -258,25 +258,6 @@ void _clearTimeout(int contextId, int timerId) {
 
 final Pointer<NativeFunction<NativeClearTimeout>> _nativeClearTimeout = Pointer.fromFunction(_clearTimeout);
 
-typedef NativeFlushMainCommand = Void Function(Int32 contextId);
-typedef DartFlushMainCommand = void Function(int contextId);
-
-void _flushMainCommand(int contextId) {
-  flushMainCommandWithContextId(contextId);
-}
-
-final Pointer<NativeFunction<NativeFlushMainCommand>> _nativeFlushMainCommand = Pointer.fromFunction(_flushMainCommand);
-
-typedef NativePerformanceGetEntries = Pointer<NativePerformanceEntryList> Function(Int32 contextId);
-typedef DartPerformanceGetEntries = Pointer<NativePerformanceEntryList> Function(int contextId);
-
-Pointer<NativePerformanceEntryList> _performanceGetEntries(int contextId) {
-  return nullptr;
-}
-
-final Pointer<NativeFunction<NativePerformanceGetEntries>> _nativeGetEntries =
-    Pointer.fromFunction(_performanceGetEntries);
-
 typedef NativeJSError = Void Function(Int32 contextId, Pointer<Utf8>);
 
 void _onJSError(int contextId, Pointer<Utf8> charStr) {
@@ -311,8 +292,6 @@ final List<int> _dartNativeMethods = [
   _nativeSetTimeout.address,
   _nativeSetInterval.address,
   _nativeClearTimeout.address,
-  _nativeFlushMainCommand.address,
-  _nativeGetEntries.address,
   _nativeOnJsError.address,
   _nativeOnJsLog.address,
 ];

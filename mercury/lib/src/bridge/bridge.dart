@@ -25,8 +25,8 @@ int initBridge(MercuryContextController view) {
   // Setup binding bridge.
   BindingBridge.setup();
 
-  int pageId = newPageId();
-  allocateNewPage(pageId);
+  int mercuryIsolateId = newMercuryIsolateId();
+  allocateNewMercuryIsolate(mercuryIsolateId);
 
-  return pageId;
+  return mercuryIsolateId;
 }
