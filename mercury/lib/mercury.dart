@@ -10,4 +10,4 @@ export 'foundation.dart';
 export 'global.dart';
 export 'launcher.dart';
 export 'module.dart';
-export 'widget.dart';
+export 'main.dart';

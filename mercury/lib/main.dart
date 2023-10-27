@@ -10,7 +10,7 @@ import 'package:mercury/mercury.dart';
 
 typedef OnControllerCreated = void Function(MercuryController controller);
 
-class Mercury extends InheritedWidget {
+class Mercury {
 
   //  The initial bundle to load.
   final MercuryBundle? bundle;
@@ -34,16 +34,6 @@ class Mercury extends InheritedWidget {
 
   final UriParser? uriParser;
 
-  static Mercury? maybeOf(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<Mercury>();
-  }
-
-  static Mercury of(BuildContext context) {
-    final Mercury? result = maybeOf(context);
-    assert(result != null, 'No Mercury widget found in context');
-    return result!;
-  }
-
   MercuryController? controller;
 
   Future<void> load(MercuryBundle bundle) async {
@@ -66,9 +56,8 @@ class Mercury extends InheritedWidget {
       this.uriParser,
       // Callback functions when loading Javascript scripts failed.
       this.onLoadError,
-      this.onJSError,
-      required Widget child
-    }) : super(child: Row(children: [child])) {
+      this.onJSError
+    }) {
       controller = MercuryController(shortHash(this),
         entrypoint: bundle,
         onLoad: onLoad,
@@ -82,15 +71,5 @@ class Mercury extends InheritedWidget {
       if (onControllerCreated != null) {
         onControllerCreated!(controller!);
       }
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-  }
-
-  @override
-  bool updateShouldNotify(covariant InheritedWidget oldWidget) {
-    return false;
   }
 }

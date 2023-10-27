@@ -160,7 +160,7 @@ class MercuryContextController {
 
     clearIsolateCommand(_contextId);
 
-    disposeMain(_contextId);
+    disposeMercuryIsolate(_contextId);
 
     _nativeObjects.forEach((key, object) {
       object.dispose();

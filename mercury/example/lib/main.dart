@@ -3,6 +3,8 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:mercury/mercury.dart';
 import 'package:mercury/devtools.dart';
@@ -60,12 +62,38 @@ class _MyHomePageState extends State<MyBrowser> {
     ),
   );
 
-  String? example;
+  Mercury? mercury;
 
   bool loaded = false;
 
+  String message = 'Loading...';
+
   @override
   Widget build(BuildContext context) {
+    mercury ??= Mercury(
+      devToolsService: ChromeDevToolsService(),
+      bundle: MercuryBundle.fromUrl('assets:assets/bundle.js'),
+      onControllerCreated: (controller) async {
+        if (!loaded) {
+          setState(() {
+            message = 'Controller loading...';
+          });
+          controller.onLoad = (controller) {
+            if (!loaded) {
+              controller.context.evaluateJavaScripts('hello();');
+              setState(() {
+                message = 'Context loading...';
+              });
+              // controller.context.dispatcher.subscribe('example', (event) {
+              //   setState(() {
+              //     message = json.decode(event)['message'];
+              //   });
+              // });
+            }
+          };
+        }
+      }
+    );
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.black87,
@@ -79,34 +107,7 @@ class _MyHomePageState extends State<MyBrowser> {
           // Center is a layout widget. It takes a single child and positions it
           // in the middle of the parent.
           child: Column(
-            children: [
-              Mercury(
-                //devToolsService: ChromeDevToolsService(),
-                bundle: MercuryBundle.fromUrl('assets:assets/bundle.js'),
-                onControllerCreated: (controller) async {
-                  if (!loaded) {
-                    setState(() {
-                      example = 'Controller loading...';
-                    });
-                    controller.onLoad = (controller) {
-                      if (!loaded) {
-                        loaded = true;
-                        controller.context.evaluateJavaScripts('hello();');
-                        setState(() {
-                          example = 'Controller loaded...';
-                        });
-                        controller.context.global.addEventListener('example', (event) {
-                          print('test');
-                          example = 'Hello from JavaScript!'; // TODO: Actually get this string from the runtime somehow
-                          setState(() {});
-                        });
-                      }
-                    };
-                  }
-                },
-                child: Text(example ?? 'Runtime loading...')
-              ),
-            ],
+            children: [Text(message)],
           ),
         ));
   }

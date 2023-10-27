@@ -1,7 +1,7 @@
 import 'package:mercury/mercury.dart';
 
 class MercuryDispatcher extends EventTarget {
-  Map<String, List<Function(String data)>> subscribed = Map()
+  Map<String, List<Function(String data)>> subscribed = {};
 
   MercuryDispatcher(BindingContext? context) : super(context)
 
@@ -22,5 +22,11 @@ class MercuryDispatcher extends EventTarget {
 
   @override
   void initializeProperties(Map<String, BindingObjectProperty> properties) {
+  }
+
+  void subscribe(String event, Function(String data) func) {
+    subscribed[event] ??= [];
+
+    subscribed[event]!.add(func);
   }
 }

@@ -229,12 +229,12 @@ Pointer<Void> initDartIsolateContext(List<int> dartMethods) {
 typedef NativeDisposeMercuryIsolate = Void Function(Pointer<Void>, Pointer<Void> mercuryIsolate);
 typedef DartDisposeMercuryIsolate = void Function(Pointer<Void>, Pointer<Void> mercuryIsolate);
 
-final DartDisposeMercuryIsolate _disposeMain =
-    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeDisposeMercuryIsolate>>('disposeMain').asFunction();
+final DartDisposeMercuryIsolate _disposeMercuryIsolate =
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeDisposeMercuryIsolate>>('disposeMercuryIsolate').asFunction();
 
-void disposeMain(int contextId) {
+void disposeMercuryIsolate(int contextId) {
   Pointer<Void> mercuryIsolate = _allocatedMercuryIsolates[contextId]!;
-  _disposeMain(dartContext.pointer, mercuryIsolate);
+  _disposeMercuryIsolate(dartContext.pointer, mercuryIsolate);
   _allocatedMercuryIsolates.remove(contextId);
 }
 
