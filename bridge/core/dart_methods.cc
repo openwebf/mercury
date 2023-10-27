@@ -16,10 +16,7 @@ mercury::DartMethodPointer::DartMethodPointer(const uint64_t* dart_methods, int3
   setTimeout = reinterpret_cast<SetTimeout>(dart_methods[i++]);
   setInterval = reinterpret_cast<SetInterval>(dart_methods[i++]);
   clearTimeout = reinterpret_cast<ClearTimeout>(dart_methods[i++]);
-  requestAnimationFrame = reinterpret_cast<RequestAnimationFrame>(dart_methods[i++]);
-  cancelAnimationFrame = reinterpret_cast<CancelAnimationFrame>(dart_methods[i++]);
-  toBlob = reinterpret_cast<ToBlob>(dart_methods[i++]);
-  flushMainCommand = reinterpret_cast<FlushMainCommand>(dart_methods[i++]);
+  flushIsolateCommand = reinterpret_cast<FlushIsolateCommand>(dart_methods[i++]);
   create_binding_object = reinterpret_cast<CreateBindingObject>(dart_methods[i++]);
 
 #if ENABLE_PROFILE

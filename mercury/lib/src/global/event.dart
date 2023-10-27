@@ -13,6 +13,7 @@ enum AppearEventType { none, appear, disappear }
 
 const String EVENT_OPEN = 'open';
 const String EVENT_CLOSE = 'close';
+const String EVENT_LOAD = 'load';
 const String EVENT_ERROR = 'error';
 const String EVENT_MESSAGE = 'message';
 const String EVENT_CANCEL = 'cancel';

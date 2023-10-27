@@ -52,7 +52,7 @@ typedef void (*ToBlob)(void* callback_context,
                        double devicePixelRatio);
 typedef void (*OnJSError)(int32_t context_id, const char*);
 typedef void (*OnJSLog)(int32_t context_id, int32_t level, const char*);
-typedef void (*FlushMainCommand)(int32_t context_id);
+typedef void (*FlushIsolateCommand)(int32_t context_id);
 typedef void (
     *CreateBindingObject)(int32_t context_id, void* native_binding_object, int32_t type, void* args, int32_t argc);
 
@@ -103,17 +103,9 @@ struct DartMethodPointer {
   SetTimeout setTimeout{nullptr};
   SetInterval setInterval{nullptr};
   ClearTimeout clearTimeout{nullptr};
-  RequestAnimationFrame requestAnimationFrame{nullptr};
-  CancelAnimationFrame cancelAnimationFrame{nullptr};
-  ToBlob toBlob{nullptr};
   OnJSError onJsError{nullptr};
   OnJSLog onJsLog{nullptr};
-  MatchImageSnapshot matchImageSnapshot{nullptr};
-  MatchImageSnapshotBytes matchImageSnapshotBytes{nullptr};
-  Environment environment{nullptr};
-  SimulatePointer simulatePointer{nullptr};
-  SimulateInputText simulateInputText{nullptr};
-  FlushMainCommand flushMainCommand{nullptr};
+  FlushIsolateCommand flushIsolateCommand{nullptr};
   CreateBindingObject create_binding_object{nullptr};
 #if ENABLE_PROFILE
   GetPerformanceEntries getPerformanceEntries{nullptr};

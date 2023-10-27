@@ -8,6 +8,7 @@
 #include "bindings/qjs/atomic_string.h"
 #include "bindings/qjs/wrapper_type_info.h"
 #include "core/event/event_target.h"
+#include "foundation/isolate_command_buffer.h"
 #include "global_event_handlers.h"
 
 namespace mercury {

@@ -302,6 +302,12 @@ static void DispatchPromiseRejectionEvent(const AtomicString& event_type,
   }
 }
 
+void ExecutingContext::FlushIsolateCommand() {
+  if (!isolateCommandBuffer()->empty()) {
+    dartMethodPtr()->flushIsolateCommand(context_id_);
+  }
+}
+
 void ExecutingContext::DispatchErrorEvent(ErrorEvent* error_event) {
   if (in_dispatch_error_event_) {
     return;

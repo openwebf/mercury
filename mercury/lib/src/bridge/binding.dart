@@ -89,8 +89,20 @@ void _dispatchEventToNative(Event event, bool isCapture) {
   }
 }
 
+class DummyObject extends BindingObject {
+  DummyObject(BindingContext context): super(context);
+
+  @override
+  void initializeMethods(Map<String, BindingObjectMethod> methods) {
+  }
+
+  @override
+  void initializeProperties(Map<String, BindingObjectProperty> properties) {
+  }
+}
+
 enum CreateBindingObjectType {
-  createDOMMatrix
+  createDummyObject
 }
 
 abstract class BindingBridge {
@@ -99,6 +111,17 @@ abstract class BindingBridge {
 
   static Pointer<NativeFunction<InvokeBindingsMethodsFromNative>> get nativeInvokeBindingMethod =>
       _invokeBindingMethodFromNative;
+
+  static void createBindingObject(int contextId, Pointer<NativeBindingObject> pointer, CreateBindingObjectType type, Pointer<NativeValue> args, int argc) {
+    MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
+    switch(type) {
+      case CreateBindingObjectType.createDummyObject: {
+        DummyObject dummyObject = DummyObject(BindingContext(controller.context, contextId, pointer));
+        controller.context.setBindingObject(pointer, dummyObject);
+        return;
+      }
+    }
+  }
 
   // For compatible requirement, we set the MercuryContextController to nullable due to the historical reason.
   // exp: We can not break the types for WidgetElement which will break all the codes for Users.

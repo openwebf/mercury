@@ -6,6 +6,7 @@
 #include <cstdint>
 #include "binding_call_methods.h"
 #include "bindings/qjs/converter_impl.h"
+#include "foundation/isolate_command_buffer.h"
 #include "event_factory.h"
 #include "include/dart_api.h"
 #include "native_value_converter.h"
@@ -278,6 +279,9 @@ bool EventTarget::AddEventListenerInternal(const AtomicString& event_type,
     if (options->hasPassive()) {
       listener_options->passive = options->passive();
     }
+
+    GetExecutingContext()->isolateCommandBuffer()->addCommand(
+        IsolateCommand::kAddEvent, std::move(event_type.ToNativeString(ctx())), bindingObject(), listener_options);
   }
 
   return added;
@@ -323,6 +327,10 @@ bool EventTarget::RemoveEventListenerInternal(const AtomicString& event_type,
 
   if (listener_count == 0) {
     bool has_capture = options->hasCapture() && options->capture();
+
+    GetExecutingContext()->isolateCommandBuffer()->addCommand(IsolateCommand::kRemoveEvent,
+                                                         std::move(event_type.ToNativeString(ctx())), bindingObject(),
+                                                         has_capture ? (void*)0x01 : nullptr);
   }
 
   return true;

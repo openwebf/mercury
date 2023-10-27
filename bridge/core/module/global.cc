@@ -11,10 +11,12 @@
 #include "core/executing_context.h"
 #include "event_type_names.h"
 #include "foundation/native_value_converter.h"
+#include "foundation/isolate_command_buffer.h"
 
 namespace mercury {
 
 Global::Global(ExecutingContext* context) : EventTargetWithInlineData(context) {
+  context->isolateCommandBuffer()->addCommand(IsolateCommand::kCreateGlobal, nullptr, (void*)bindingObject(), nullptr);
 }
 
 // https://infra.spec.whatwg.org/#ascii-whitespace

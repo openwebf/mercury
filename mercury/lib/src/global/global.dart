@@ -26,6 +26,9 @@ class Global extends EventTarget {
 
   @override
   void dispatchEvent(Event event) {
+    if (contextId != null && event.type == EVENT_LOAD || event.type == EVENT_ERROR) {
+      flushIsolateCommandWithContextId(contextId!);
+    }
     super.dispatchEvent(event);
   }
 

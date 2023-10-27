@@ -105,6 +105,11 @@ class MercuryContextController {
     }
     BindingBridge.setup();
     _contextId = initBridge(this);
+
+    Future.microtask(() {
+      // Execute IsolateCommand.createGlobal to initialize the global.
+      flushIsolateCommand(this);
+    });
   }
 
   final Map<int, BindingObject> _nativeObjects = {};
@@ -153,6 +158,8 @@ class MercuryContextController {
   // Dispose controller and recycle all resources.
   void dispose() {
     _disposed = true;
+
+    clearIsolateCommand(_contextId);
 
     disposeMain(_contextId);
 
@@ -335,6 +342,7 @@ class MercuryController {
 
   Future<void> unload() async {
     assert(!_context._disposed, 'Mercury have already disposed');
+    clearIsolateCommand(_context.contextId);
 
     // Wait for next microtask to make sure C++ native Elements are GC collected.
     Completer completer = Completer();

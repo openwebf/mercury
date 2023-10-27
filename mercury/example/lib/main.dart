@@ -82,9 +82,11 @@ class _MyHomePageState extends State<MyBrowser> {
                 //devToolsService: ChromeDevToolsService(),
                 bundle: MercuryBundle.fromUrl('assets:assets/bundle.js'),
                 onControllerCreated: (controller) async {
+                  print('what');
                   setState(() {
                     example = 'Controller loading...';
                   });
+                  controller.context.evaluateJavaScripts('console.log(global.stupider);');
                   controller.onLoad = (controller) {
                     print('pls');
                     setState(() {

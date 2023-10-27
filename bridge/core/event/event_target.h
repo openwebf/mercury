@@ -13,6 +13,7 @@
 #include "event_listener_map.h"
 #include "foundation/logging.h"
 #include "foundation/native_string.h"
+#include "foundation/isolate_command_buffer.h"
 #include "qjs_add_event_listener_options.h"
 #include "qjs_unionadd_event_listener_options_boolean.h"
 #include "qjs_unionevent_listener_options_boolean.h"
