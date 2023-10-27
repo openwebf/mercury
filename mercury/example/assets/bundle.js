@@ -1,8 +1,6 @@
-function stupid() {
-  console.log('maybe?');
-  return 'hmm';
-}
-console.log('1');
-//Object.defineProperty(global, 'stupid', { test: 15 });
 
-var stupider = stupid
+console.log('bundle is running');
+
+var hello = () => {
+  console.log('hello from bundle!');
+};

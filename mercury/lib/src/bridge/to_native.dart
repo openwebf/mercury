@@ -445,7 +445,6 @@ void flushIsolateCommand(MercuryContextController context) {
     Pointer nativePtr = command.nativePtr;
 
     try {
-      print(nativePtr.cast<NativeBindingObject>());
       switch (commandType) {
         case IsolateCommandType.createGlobal:
           context.initGlobal(context, nativePtr.cast<NativeBindingObject>());

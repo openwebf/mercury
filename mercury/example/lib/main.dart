@@ -62,6 +62,8 @@ class _MyHomePageState extends State<MyBrowser> {
 
   String? example;
 
+  bool loaded = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -82,23 +84,25 @@ class _MyHomePageState extends State<MyBrowser> {
                 //devToolsService: ChromeDevToolsService(),
                 bundle: MercuryBundle.fromUrl('assets:assets/bundle.js'),
                 onControllerCreated: (controller) async {
-                  print('what');
-                  setState(() {
-                    example = 'Controller loading...';
-                  });
-                  controller.context.evaluateJavaScripts('console.log(global.stupider);');
-                  controller.onLoad = (controller) {
-                    print('pls');
+                  if (!loaded) {
                     setState(() {
-                      example = 'Controller loaded...';
+                      example = 'Controller loading...';
                     });
-                    controller.context.global.addEventListener('example', (event) {
-                      print(event);
-                      example = 'Hello from JavaScript!'; // TODO: Actually get this string from the runtime somehow
-                      setState(() {});
-                    });
-                    print(controller.context.global.iterator.current);
-                  };
+                    controller.onLoad = (controller) {
+                      if (!loaded) {
+                        loaded = true;
+                        controller.context.evaluateJavaScripts('hello();');
+                        setState(() {
+                          example = 'Controller loaded...';
+                        });
+                        controller.context.global.addEventListener('example', (event) {
+                          print('test');
+                          example = 'Hello from JavaScript!'; // TODO: Actually get this string from the runtime somehow
+                          setState(() {});
+                        });
+                      }
+                    };
+                  }
                 },
                 child: Text(example ?? 'Runtime loading...')
               ),

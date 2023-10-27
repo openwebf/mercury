@@ -184,7 +184,7 @@ class InspectPageModule extends UIInspectorModule {
 
   void handleReloadPage() async {
     try {
-      // await context.reload(); // TODO: Implement
+      await context.rootController.reload();
     } catch (e, stack) {
       print('Dart Error: $e\n$stack');
     }

@@ -151,7 +151,6 @@ class MercuryContextController {
 
   void evaluateJavaScripts(String code) async {
     assert(!_disposed, 'Mercury have already disposed');
-    print('Javascript being evaluated');
     await evaluateScripts(_contextId, code);
   }
 
@@ -528,6 +527,19 @@ class MercuryController {
         // The resource type can not be evaluated.
         throw FlutterError('Can\'t evaluate content of $url');
       }
+
+      _dispatchGlobalLoadEvent();
+    }
+  }
+
+
+
+  void _dispatchGlobalLoadEvent() {
+    Event event = Event(EVENT_LOAD);
+    _context.global.dispatchEvent(event);
+
+    if (onLoad != null) {
+      onLoad!(this);
     }
   }
 }
