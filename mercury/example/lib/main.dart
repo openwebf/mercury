@@ -64,8 +64,6 @@ class _MyHomePageState extends State<MyBrowser> {
 
   Mercury? mercury;
 
-  bool loaded = false;
-
   String message = 'Loading...';
 
   @override
@@ -74,25 +72,21 @@ class _MyHomePageState extends State<MyBrowser> {
       devToolsService: ChromeDevToolsService(),
       bundle: MercuryBundle.fromUrl('assets:assets/bundle.js'),
       onControllerCreated: (controller) async {
-        if (!loaded) {
+        setState(() {
+          message = 'Controller loading...';
+        });
+        controller.onLoad = (controller) {
           setState(() {
-            message = 'Controller loading...';
+            message = 'Context loading...';
           });
-          controller.onLoad = (controller) {
-            if (!loaded) {
-              controller.context.evaluateJavaScripts('hello();');
-              setState(() {
-                message = 'Context loading...';
-              });
-              // controller.context.dispatcher.subscribe('example', (event) {
-              //   setState(() {
-              //     message = json.decode(event)['message'];
-              //   });
-              // });
-            }
-          };
+          // controller.context.dispatcher.subscribe('example', (event) {
+          //   setState(() {
+          //     message = json.decode(event)['message'];
+          //   });
+          // });
+          controller.context.evaluateJavaScripts('hello();');
+        };
         }
-      }
     );
     return Scaffold(
         appBar: AppBar(
