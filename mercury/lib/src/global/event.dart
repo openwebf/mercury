@@ -6,13 +6,14 @@ import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
-import 'package:mercury/bridge.dart';
-import 'package:mercury/src/global/event_target.dart';
+import 'package:mercury_js/bridge.dart';
+import 'package:mercury_js/src/global/event_target.dart';
 
 enum AppearEventType { none, appear, disappear }
 
 const String EVENT_OPEN = 'open';
 const String EVENT_CLOSE = 'close';
+const String EVENT_LOAD = 'load';
 const String EVENT_ERROR = 'error';
 const String EVENT_MESSAGE = 'message';
 const String EVENT_CANCEL = 'cancel';

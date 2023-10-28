@@ -5,7 +5,7 @@
 import FlutterMacOS
 import Foundation
 
-import mercury
+import mercury_js
 import shared_preferences_foundation
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {

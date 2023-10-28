@@ -4,7 +4,7 @@
  */
 
 import 'dart:ffi';
-import 'package:mercury/launcher.dart';
+import 'package:mercury_js/launcher.dart';
 
 import 'binding.dart';
 import 'from_native.dart';
@@ -25,8 +25,8 @@ int initBridge(MercuryContextController view) {
   // Setup binding bridge.
   BindingBridge.setup();
 
-  int pageId = newPageId();
-  allocateNewPage(pageId);
+  int mercuryIsolateId = newMercuryIsolateId();
+  allocateNewMercuryIsolate(mercuryIsolateId);
 
-  return pageId;
+  return mercuryIsolateId;
 }

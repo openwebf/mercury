@@ -7,8 +7,8 @@ import 'dart:collection';
 import 'package:collection/collection.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
-import 'package:mercury/bridge.dart';
-import 'package:mercury/launcher.dart';
+import 'package:mercury_js/bridge.dart';
+import 'package:mercury_js/launcher.dart';
 
 typedef BindingObjectOperation = void Function(MercuryContextController? context, BindingObject bindingObject);
 
@@ -52,13 +52,12 @@ class AsyncBindingObjectMethod extends BindingObjectMethod {
   final AsyncBindingMethodCallback call;
 }
 
-
 abstract class BindingObject<T> extends Iterable<T> {
   static BindingObjectOperation? bind;
   static BindingObjectOperation? unbind;
 
   // To make sure same kind of WidgetElement only sync once.
-  static final Map<Type, bool> _alreadySyncWidgetElements = {};
+  static final Map<Type, bool> _alreadySyncClasses = {};
 
   final BindingContext? _context;
 
@@ -72,6 +71,13 @@ abstract class BindingObject<T> extends Iterable<T> {
     _bind(_ownerContext);
     initializeProperties(_properties);
     initializeMethods(_methods);
+
+    if (!_alreadySyncClasses.containsKey(runtimeType)) {
+      bool success = _syncPropertiesAndMethodsToNativeSlow();
+      if (success) {
+        _alreadySyncClasses[runtimeType] = true;
+      }
+    }
   }
 
   bool _syncPropertiesAndMethodsToNativeSlow() {

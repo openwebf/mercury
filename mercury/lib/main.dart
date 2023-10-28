@@ -1,16 +1,16 @@
 /*
  * Copyright (C) 2019-2022 The Kraken authors. All rights reserved.
- * Copyright (C) 2022-present The Mercury authors. All rights reserved.
+ * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:mercury/mercury.dart';
+import 'package:mercury_js/mercury_js.dart';
 
 typedef OnControllerCreated = void Function(MercuryController controller);
 
-class Mercury extends InheritedWidget {
+class Mercury {
 
   //  The initial bundle to load.
   final MercuryBundle? bundle;
@@ -18,7 +18,7 @@ class Mercury extends InheritedWidget {
   // A method channel for receiving messaged from JavaScript code and sending message to JavaScript.
   final MercuryMethodChannel? javaScriptChannel;
 
-  // Trigger when webf controller once created.
+  // Trigger when mercury controller once created.
   final OnControllerCreated? onControllerCreated;
 
   final LoadErrorHandler? onLoadError;
@@ -34,9 +34,7 @@ class Mercury extends InheritedWidget {
 
   final UriParser? uriParser;
 
-  MercuryController? get controller {
-    return MercuryController.getControllerOfName(shortHash(this));
-  }
+  MercuryController? controller;
 
   Future<void> load(MercuryBundle bundle) async {
     await controller?.load(bundle);
@@ -46,30 +44,36 @@ class Mercury extends InheritedWidget {
     await controller?.reload();
   }
 
-  Mercury(
-      {Key? key,
+  static void addEventTarget(String className, EventTargetCreator creator) {
+    MercuryContextController.addEventTargetClass(className, creator);
+  }
+
+  Mercury({
+      Key? key,
       this.bundle,
       this.onControllerCreated,
       this.onLoad,
       this.javaScriptChannel,
       this.devToolsService,
-      // webf's http client interceptor.
+      // mercury's http client interceptor.
       this.httpClientInterceptor,
       this.uriParser,
       // Callback functions when loading Javascript scripts failed.
       this.onLoadError,
-      this.onJSError,
-      required Widget child
-      })
-    : super(child: Row(children: [child]));
+      this.onJSError
+    }) {
+      controller = MercuryController(shortHash(this),
+        entrypoint: bundle,
+        onLoad: onLoad,
+        onLoadError: onLoadError,
+        onJSError: onJSError,
+        methodChannel: javaScriptChannel,
+        devToolsService: devToolsService,
+        httpClientInterceptor: httpClientInterceptor,
+        uriParser: uriParser);
 
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-  }
-
-  @override
-  bool updateShouldNotify(covariant InheritedWidget oldWidget) {
-    return false;
+      if (onControllerCreated != null) {
+        onControllerCreated!(controller!);
+      }
   }
 }

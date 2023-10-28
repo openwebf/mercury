@@ -2,10 +2,10 @@
  * Copyright (C) 2019-2022 The Kraken authors. All rights reserved.
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
-import 'package:mercury/bridge.dart';
-import 'package:mercury/src/global/event.dart';
-import 'package:mercury/src/global/event_target.dart';
-import 'package:mercury/foundation.dart';
+import 'package:mercury_js/bridge.dart';
+import 'package:mercury_js/src/global/event.dart';
+import 'package:mercury_js/src/global/event_target.dart';
+import 'package:mercury_js/foundation.dart';
 
 const String GLOBAL = 'GLOBAL';
 
@@ -26,9 +26,8 @@ class Global extends EventTarget {
 
   @override
   void dispatchEvent(Event event) {
-    // Events such as EVENT_DOM_CONTENT_LOADED need to ensure that listeners are flushed and registered.
-    if (contextId != null && event.type == EVENT_ERROR) {
-      flushMainCommandWithContextId(contextId!);
+    if (contextId != null && event.type == EVENT_LOAD || event.type == EVENT_ERROR) {
+      flushIsolateCommandWithContextId(contextId!);
     }
     super.dispatchEvent(event);
   }

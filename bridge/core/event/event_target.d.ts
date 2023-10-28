@@ -8,5 +8,6 @@ interface EventTarget {
   addEventListener(type: string, callback: JSEventListener | null, options?: AddEventListenerOptions | boolean): void;
   removeEventListener(type: string, callback: JSEventListener | null, options?: EventListenerOptions | boolean): void;
   dispatchEvent(event: Event): boolean;
+  [key: string]: any;
   new(): EventTarget;
 }

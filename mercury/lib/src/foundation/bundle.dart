@@ -8,9 +8,9 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:mercury/foundation.dart';
-import 'package:mercury/launcher.dart';
-import 'package:mercury/module.dart';
+import 'package:mercury_js/foundation.dart';
+import 'package:mercury_js/launcher.dart';
+import 'package:mercury_js/module.dart';
 
 const String DEFAULT_URL = 'about:blank';
 const String UTF_8 = 'utf-8';

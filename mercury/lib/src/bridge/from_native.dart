@@ -2,14 +2,13 @@
  * Copyright (C) 2019-2022 The Kraken authors. All rights reserved.
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
-
 import 'dart:async';
 import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
-import 'package:mercury/bridge.dart';
-import 'package:mercury/launcher.dart';
+import 'package:mercury_js/bridge.dart';
+import 'package:mercury_js/launcher.dart';
 
 String uint16ToString(Pointer<Uint16> pointer, int length) {
   return String.fromCharCodes(pointer.asTypedList(length));
@@ -258,24 +257,23 @@ void _clearTimeout(int contextId, int timerId) {
 
 final Pointer<NativeFunction<NativeClearTimeout>> _nativeClearTimeout = Pointer.fromFunction(_clearTimeout);
 
-typedef NativeFlushMainCommand = Void Function(Int32 contextId);
-typedef DartFlushMainCommand = void Function(int contextId);
+typedef NativeFlushIsolateCommand = Void Function(Int32 contextId);
+typedef DartFlushIsolateCommand = void Function(int contextId);
 
-void _flushMainCommand(int contextId) {
-  flushMainCommandWithContextId(contextId);
+void _flushIsolateCommand(int contextId) {
+  flushIsolateCommandWithContextId(contextId);
 }
 
-final Pointer<NativeFunction<NativeFlushMainCommand>> _nativeFlushMainCommand = Pointer.fromFunction(_flushMainCommand);
+final Pointer<NativeFunction<NativeFlushIsolateCommand>> _nativeFlushIsolateCommand = Pointer.fromFunction(_flushIsolateCommand);
 
-typedef NativePerformanceGetEntries = Pointer<NativePerformanceEntryList> Function(Int32 contextId);
-typedef DartPerformanceGetEntries = Pointer<NativePerformanceEntryList> Function(int contextId);
+typedef NativeCreateBindingObject = Void Function(Int32 contextId, Pointer<NativeBindingObject> nativeBindingObject, Int32 type, Pointer<NativeValue> args, Int32 argc);
+typedef DartCreateBindingObject = void Function(int contextId, Pointer<NativeBindingObject> nativeBindingObject, int type, Pointer<NativeValue> args, int argc);
 
-Pointer<NativePerformanceEntryList> _performanceGetEntries(int contextId) {
-  return nullptr;
+void _createBindingObject(int contextId, Pointer<NativeBindingObject> nativeBindingObject, int type, Pointer<NativeValue> args, int argc) {
+  BindingBridge.createBindingObject(contextId, nativeBindingObject, CreateBindingObjectType.values[type], args, argc);
 }
 
-final Pointer<NativeFunction<NativePerformanceGetEntries>> _nativeGetEntries =
-    Pointer.fromFunction(_performanceGetEntries);
+final Pointer<NativeFunction<NativeCreateBindingObject>> _nativeCreateBindingObject = Pointer.fromFunction(_createBindingObject);
 
 typedef NativeJSError = Void Function(Int32 contextId, Pointer<Utf8>);
 
@@ -311,8 +309,8 @@ final List<int> _dartNativeMethods = [
   _nativeSetTimeout.address,
   _nativeSetInterval.address,
   _nativeClearTimeout.address,
-  _nativeFlushMainCommand.address,
-  _nativeGetEntries.address,
+  _nativeFlushIsolateCommand.address,
+  _nativeCreateBindingObject.address,
   _nativeOnJsError.address,
   _nativeOnJsLog.address,
 ];

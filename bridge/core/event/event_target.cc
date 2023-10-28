@@ -6,7 +6,9 @@
 #include <cstdint>
 #include "binding_call_methods.h"
 #include "bindings/qjs/converter_impl.h"
+#include "built_in_string.h"
 #include "event_factory.h"
+#include "foundation/isolate_command_buffer.h"
 #include "include/dart_api.h"
 #include "native_value_converter.h"
 #include "qjs_add_event_listener_options.h"
@@ -52,8 +54,10 @@ void EventTargetData::Trace(GCVisitor* visitor) const {
   event_capture_listener_map.Trace(visitor);
 }
 
-EventTarget* EventTarget::Create(ExecutingContext* context, ExceptionState& exception_state) {
-  return MakeGarbageCollected<EventTargetWithInlineData>(context);
+EventTarget* EventTarget::Create(ExecutingContext* context,
+                                 const AtomicString& constructor_name,
+                                 ExceptionState& exception_state) {
+  return MakeGarbageCollected<EventTargetWithInlineData>(context, constructor_name);
 }
 
 EventTarget::~EventTarget() {
@@ -65,13 +69,21 @@ EventTarget::~EventTarget() {
 #endif
 }
 
-EventTarget::EventTarget(ExecutingContext* context) : BindingObject(context->ctx()) {}
+EventTarget::EventTarget(ExecutingContext* context, const AtomicString& constructor_name)
+    : className_(constructor_name), BindingObject(context->ctx()) {
+  GetExecutingContext()->isolateCommandBuffer()->addCommand(
+      IsolateCommand::kCreateEventTarget, std::move(constructor_name.ToNativeString(ctx())), bindingObject(), nullptr);
+}
 
 EventTarget::EventTarget(ExecutingContext* context, NativeBindingObject* native_binding_object)
     : BindingObject(context->ctx(), native_binding_object) {}
 
 Node* EventTarget::ToNode() {
   return nullptr;
+}
+
+AtomicString EventTarget::className() {
+  return className_;
 }
 
 bool EventTarget::addEventListener(const AtomicString& event_type,
@@ -249,6 +261,17 @@ bool EventTarget::IsEventTarget() const {
 void EventTarget::Trace(GCVisitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   BindingObject::Trace(visitor);
+  for (auto& entry : unimplemented_properties_) {
+    entry.second.Trace(visitor);
+  }
+
+  for (auto& entry : cached_methods_) {
+    entry.second.Trace(visitor);
+  }
+
+  for (auto& entry : async_cached_methods_) {
+    entry.second.Trace(visitor);
+  }
 }
 
 bool EventTarget::AddEventListenerInternal(const AtomicString& event_type,
@@ -278,6 +301,9 @@ bool EventTarget::AddEventListenerInternal(const AtomicString& event_type,
     if (options->hasPassive()) {
       listener_options->passive = options->passive();
     }
+
+    GetExecutingContext()->isolateCommandBuffer()->addCommand(
+        IsolateCommand::kAddEvent, std::move(event_type.ToNativeString(ctx())), bindingObject(), listener_options);
   }
 
   return added;
@@ -323,6 +349,10 @@ bool EventTarget::RemoveEventListenerInternal(const AtomicString& event_type,
 
   if (listener_count == 0) {
     bool has_capture = options->hasCapture() && options->capture();
+
+    GetExecutingContext()->isolateCommandBuffer()->addCommand(IsolateCommand::kRemoveEvent,
+                                                         std::move(event_type.ToNativeString(ctx())), bindingObject(),
+                                                         has_capture ? (void*)0x01 : nullptr);
   }
 
   return true;
@@ -347,6 +377,8 @@ NativeValue EventTarget::HandleCallFromDartSide(const AtomicString& method,
 
   if (method == binding_call_methods::kdispatchEvent) {
     return HandleDispatchEventFromDart(argc, argv, dart_object);
+  } else if (method == binding_call_methods::ksyncPropertiesAndMethods) {
+    return HandleSyncPropertiesAndMethodsFromDart(argc, argv);
   }
 
   return Native_NewNull();
@@ -470,6 +502,134 @@ bool EventTarget::FireEventListeners(Event& event,
 void EventTargetWithInlineData::Trace(GCVisitor* visitor) const {
   EventTarget::Trace(visitor);
   data_.Trace(visitor);
+}
+
+bool EventTarget::NamedPropertyQuery(const AtomicString& key, ExceptionState& exception_state) {
+  return GetExecutingContext()->dartIsolateContext()->EnsureData()->HasWidgetElementShape(key);
+}
+
+void EventTarget::NamedPropertyEnumerator(std::vector<AtomicString>& names, ExceptionState& exception_state) {
+  NativeValue result = GetAllBindingPropertyNames(exception_state);
+  assert(result.tag == NativeTag::TAG_LIST);
+  std::vector<AtomicString> property_names =
+      NativeValueConverter<NativeTypeArray<NativeTypeString>>::FromNativeValue(ctx(), result);
+  names.reserve(property_names.size());
+  for (auto& property_name : property_names) {
+    names.emplace_back(property_name);
+  }
+}
+
+ScriptValue EventTarget::item(const AtomicString& key, ExceptionState& exception_state) {
+  if (unimplemented_properties_.count(key) > 0) {
+    return unimplemented_properties_[key];
+  }
+
+  if (!GetExecutingContext()->dartIsolateContext()->EnsureData()->HasWidgetElementShape(className())) {
+    GetExecutingContext()->FlushIsolateCommand();
+  }
+
+  if (key == built_in_string::kSymbol_toStringTag) {
+    return ScriptValue(ctx(), className().ToNativeString(ctx()).release());
+  }
+
+  auto shape = GetExecutingContext()->dartIsolateContext()->EnsureData()->GetWidgetElementShape(className());
+  if (shape != nullptr) {
+    if (shape->built_in_properties_.find(key) != shape->built_in_properties_.end()) {
+      return ScriptValue(ctx(), GetBindingProperty(key, exception_state));
+    }
+
+    if (shape->built_in_methods_.find(key) != shape->built_in_methods_.end()) {
+      if (cached_methods_.count(key) > 0) {
+        return cached_methods_[key];
+      }
+
+      auto func = CreateSyncMethodFunc(key);
+      cached_methods_[key] = func;
+      return func;
+    }
+
+    if (shape->built_in_async_methods_.find(key) != shape->built_in_async_methods_.end()) {
+      if (async_cached_methods_.count(key) > 0) {
+        return async_cached_methods_[key];
+      }
+
+      auto func = CreateAsyncMethodFunc(key);
+      async_cached_methods_[key] = CreateAsyncMethodFunc(key);
+      return func;
+    }
+  }
+
+  return ScriptValue::Undefined(ctx());
+}
+
+bool EventTarget::SetItem(const AtomicString& key, const ScriptValue& value, ExceptionState& exception_state) {
+  if (!GetExecutingContext()->dartIsolateContext()->EnsureData()->HasWidgetElementShape(className())) {
+    GetExecutingContext()->FlushIsolateCommand();
+  }
+
+  auto shape = GetExecutingContext()->dartIsolateContext()->EnsureData()->GetWidgetElementShape(className());
+  // This property is defined in the Dart side
+  if (shape != nullptr && shape->built_in_properties_.count(key) > 0) {
+    NativeValue result = SetBindingProperty(key, value.ToNative(ctx(), exception_state), exception_state);
+    return NativeValueConverter<NativeTypeBool>::FromNativeValue(result);
+  }
+
+  // This property is defined in WidgetElement.prototype, should return false to let it handled in the prototype
+  // methods.
+  JSValue prototypeObject = GetExecutingContext()->contextData()->prototypeForType(GetWrapperTypeInfo());
+  if (JS_HasProperty(ctx(), prototypeObject, key.Impl())) {
+    return false;
+  }
+
+  // Nothing at all
+  unimplemented_properties_[key] = value;
+  return true;
+}
+
+bool EventTarget::DeleteItem(const AtomicString& key, ExceptionState& exception_state) {
+  return true;
+}
+
+NativeValue EventTarget::HandleSyncPropertiesAndMethodsFromDart(int32_t argc, const NativeValue* argv) {
+  assert(argc == 3);
+  AtomicString key = className();
+  assert(!GetExecutingContext()->dartIsolateContext()->EnsureData()->HasWidgetElementShape(key));
+
+  auto shape = std::make_shared<WidgetElementShape>();
+
+  auto&& properties = NativeValueConverter<NativeTypeArray<NativeTypeString>>::FromNativeValue(ctx(), argv[0]);
+  auto&& sync_methods = NativeValueConverter<NativeTypeArray<NativeTypeString>>::FromNativeValue(ctx(), argv[1]);
+  auto&& async_methods = NativeValueConverter<NativeTypeArray<NativeTypeString>>::FromNativeValue(ctx(), argv[2]);
+
+  for (auto& property : properties) {
+    shape->built_in_properties_.emplace(property);
+  }
+
+  for (auto& method : sync_methods) {
+    shape->built_in_methods_.emplace(method);
+  }
+
+  for (auto& method : async_methods) {
+    shape->built_in_async_methods_.emplace(method);
+  }
+
+  GetExecutingContext()->dartIsolateContext()->EnsureData()->SetWidgetElementShape(key, shape);
+
+  return Native_NewBool(true);
+}
+
+ScriptValue EventTarget::CreateSyncMethodFunc(const AtomicString& method_name) {
+  auto* data = new BindingObject::AnonymousFunctionData();
+  data->method_name = method_name.ToStdString(ctx());
+  return ScriptValue(ctx(),
+                     QJSFunction::Create(ctx(), BindingObject::AnonymousFunctionCallback, 1, data)->ToQuickJSUnsafe());
+}
+
+ScriptValue EventTarget::CreateAsyncMethodFunc(const AtomicString& method_name) {
+  auto* data = new BindingObject::AnonymousFunctionData();
+  data->method_name = method_name.ToStdString(ctx());
+  return ScriptValue(
+      ctx(), QJSFunction::Create(ctx(), BindingObject::AnonymousAsyncFunctionCallback, 4, data)->ToQuickJSUnsafe());
 }
 
 }  // namespace mercury

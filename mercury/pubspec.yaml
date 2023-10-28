@@ -1,6 +1,6 @@
-name: mercury
-description: W3C standards-compliant web rendering engine based on Flutter, allowing web applications to run natively on Flutter.
-version: 0.16.0-beta.1
+name: mercury_js
+description: A library with integrated JavaScript engine and extension utils for Flutter Apps.
+version: 0.1.0
 homepage: https://openwebf.com
 
 environment:
@@ -25,6 +25,7 @@ dependencies:
   shared_preferences: 2.2.0 # No AndroidX used.
   archive: ^3.3.7 # Pure dart module.
   web_socket_channel: ^2.2.0
+  rename: ^3.0.1
 
 dev_dependencies:
   flutter_test:

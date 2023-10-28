@@ -1,13 +1,8 @@
-var text1 = document.createTextNode('Hello mercury!');
-var br = document.createElement('br');
-var text2 = document.createTextNode('你好，mercury！');
-var p = document.createElement('p');
-p.className = 'p';
-p.style.display = 'inline-block';
-p.style.textAlign = 'center';
-p.style.animation = '3s ease-in 1s 1 reverse both running example';
-p.appendChild(text1);
-p.appendChild(br);
-p.appendChild(text2);
+let seconds = 0;
 
-document.body.appendChild(p);
+const hello = () => {
+  setInterval(() => {
+    mercury.dispatcher.dispatch('example', { message: `Hello from JavaScript! It has been ${seconds} seconds.`});
+    seconds++;
+  }, 1000)
+};

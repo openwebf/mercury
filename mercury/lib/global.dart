@@ -3,10 +3,6 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
-library mercury;
-
-export 'bridge.dart';
-export 'foundation.dart';
-export 'launcher.dart';
-export 'module.dart';
-export 'widget.dart';
+export 'src/global/global.dart';
+export 'src/global/event.dart';
+export 'src/global/event_target.dart';

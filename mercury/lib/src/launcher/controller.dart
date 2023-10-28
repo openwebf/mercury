@@ -11,10 +11,8 @@ import 'dart:isolate';
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
-import 'package:mercury/devtools.dart';
-import 'package:mercury/src/global/global.dart';
-import 'package:mercury/src/global/event_target.dart';
-import 'package:mercury/mercury.dart';
+import 'package:mercury_js/devtools.dart';
+import 'package:mercury_js/mercury_js.dart';
 
 // Error handler when load bundle failed.
 typedef LoadErrorHandler = void Function(FlutterError error, StackTrace stack);
@@ -23,6 +21,7 @@ typedef TitleChangedHandler = void Function(String title);
 typedef JSErrorHandler = void Function(String message);
 typedef JSLogHandler = void Function(int level, String message);
 typedef PendingCallback = void Function();
+typedef EventTargetCreator = EventTarget Function(BindingContext? context);
 
 // See http://github.com/flutter/flutter/wiki/Desktop-shells
 /// If the current platform is a desktop platform that isn't yet supported by
@@ -93,9 +92,23 @@ abstract class DevToolsService {
   }
 }
 
+
+bool _isDispatcherDefined = false;
+
+void defineDispatcher() {
+  if (_isDispatcherDefined) return;
+  _isDispatcherDefined = true;
+
+  MercuryContextController.addEventTargetClass('MercuryDispatcher', (context) => MercuryDispatcher(context));
+}
+
 // An mercury View Controller designed for multiple mercury context control.
 class MercuryContextController {
   MercuryController rootController;
+
+  static final Map<String, EventTargetCreator> _eventTargetCreator = {};
+
+  MercuryDispatcher? dispatcher;
 
   MercuryContextController({
       this.enableDebug = false,
@@ -103,19 +116,14 @@ class MercuryContextController {
     if (enableDebug) {
       debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
     }
+    defineDispatcher();
     BindingBridge.setup();
     _contextId = initBridge(this);
 
-    // Wait contextport mounted on the outside renderObject tree.
     Future.microtask(() {
-      // Execute MainCommand.createDocument and MainCommand.createGlobal to initialize global and document.
-      flushMainCommand(this);
+      // Execute IsolateCommand.createGlobal to initialize the global.
+      flushIsolateCommand(this);
     });
-  }
-
-  void _postFrameCallback(Duration timeStamp) {
-    if (disposed) return;
-    flushMainCommand(this);
   }
 
   final Map<int, BindingObject> _nativeObjects = {};
@@ -164,7 +172,9 @@ class MercuryContextController {
   void dispose() {
     _disposed = true;
 
-    disposeMain(_contextId);
+    clearIsolateCommand(_contextId);
+
+    disposeMercuryIsolate(_contextId);
 
     _nativeObjects.forEach((key, object) {
       object.dispose();
@@ -196,6 +206,29 @@ class MercuryContextController {
     bindingObject?.dispose();
     context.removeBindingObject(pointer);
     malloc.free(pointer);
+  }
+
+  static bool _isValidEventTargetClassName(className) {
+    return RegExp(r'^[A-Z][a-z]*(?:[A-Z][a-z]*)*$').hasMatch(className);
+  }
+
+  static void addEventTargetClass(String className, EventTargetCreator creator) {
+    if (!_isValidEventTargetClassName(className)) {
+      throw ArgumentError('The eventTarget className "$className" is not valid.');
+    }
+    _eventTargetCreator[className] = creator;
+  }
+
+  void createEventTarget(MercuryContextController context, String className, Pointer<NativeBindingObject> pointer) {
+    if (_eventTargetCreator.containsKey(className)) {
+      final target = _eventTargetCreator[className]!(BindingContext(context, _contextId, pointer));
+
+      switch (className) {
+        case 'MercuryDispatcher': dispatcher = target as MercuryDispatcher;
+        break;
+        default: break;
+      }
+    }
   }
 }
 
@@ -297,6 +330,11 @@ class MercuryController {
     _methodChannel = methodChannel;
     MercuryMethodChannel.setJSMethodCallCallback(this);
 
+    _context = MercuryContextController(
+      enableDebug: enableDebug,
+      rootController: this,
+    );
+
     final int contextId = _context.contextId;
 
     _module = MercuryModuleController(this, contextId);
@@ -340,8 +378,7 @@ class MercuryController {
 
   Future<void> unload() async {
     assert(!_context._disposed, 'Mercury have already disposed');
-    // Should clear previous page cached ui commands
-    clearMainCommand(_context.contextId);
+    clearIsolateCommand(_context.contextId);
 
     // Wait for next microtask to make sure C++ native Elements are GC collected.
     Completer completer = Completer();
@@ -441,6 +478,7 @@ class MercuryController {
 
   bool _disposed = false;
   bool get disposed => _disposed;
+
   void dispose() {
     _module.dispose();
     _context.dispose();
@@ -526,6 +564,19 @@ class MercuryController {
         // The resource type can not be evaluated.
         throw FlutterError('Can\'t evaluate content of $url');
       }
+
+      _dispatchGlobalLoadEvent();
+    }
+  }
+
+
+
+  void _dispatchGlobalLoadEvent() {
+    Event event = Event(EVENT_LOAD);
+    _context.global.dispatchEvent(event);
+
+    if (onLoad != null) {
+      onLoad!(this);
     }
   }
 }

@@ -5,8 +5,8 @@
 
 import 'dart:isolate';
 import 'dart:ffi';
-import 'package:mercury/mercury.dart';
-import 'package:mercury/devtools.dart';
+import 'package:mercury_js/mercury_js.dart';
+import 'package:mercury_js/devtools.dart';
 
 typedef NativePostTaskToInspectorThread = Void Function(Int32 contextId, Pointer<Void> context, Pointer<Void> callback);
 typedef DartPostTaskToInspectorThread = void Function(int contextId, Pointer<Void> context, Pointer<Void> callback);

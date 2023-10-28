@@ -7,3 +7,4 @@ export 'src/module/module_manager.dart';
 export 'src/module/fetch.dart';
 export 'src/module/method_channel.dart';
 export 'src/module/timer.dart';
+export 'src/module/dispatcher.dart';

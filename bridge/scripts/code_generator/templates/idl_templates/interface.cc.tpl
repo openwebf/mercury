@@ -1,5 +1,9 @@
 <% if (object.construct) { %>
 JSValue QJS<%= className %>::ConstructorCallback(JSContext* ctx, JSValue func_obj, JSValue this_val, int argc, JSValue* argv, int flags) {
+  JSValue proto = JS_GetPropertyStr(ctx, this_val, "prototype");
+  JSValue constructor_fn = JS_GetProperty(ctx, proto, JS_ATOM_constructor);
+  JSValue fn_name_value = JS_GetProperty(ctx, constructor_fn, JS_ATOM_name);
+
   <%= generateFunctionBody(blob, object.construct, {isConstructor: true}) %>
 }
 <% } %>

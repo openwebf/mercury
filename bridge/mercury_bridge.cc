@@ -10,6 +10,7 @@
 #include "bindings/qjs/native_string_utils.h"
 #include "core/dart_isolate_context.h"
 #include "core/mercury_isolate.h"
+#include "foundation/isolate_command_buffer.h"
 #include "foundation/logging.h"
 #include "include/mercury_bridge.h"
 
@@ -109,12 +110,22 @@ MercuryInfo* getMercuryInfo() {
   return mercuryInfo;
 }
 
-int32_t profileModeEnabled() {
-#if ENABLE_PROFILE
-  return 1;
-#else
-  return 0;
-#endif
+void* getIsolateCommandItems(void* isolate_) {
+  auto isolate = reinterpret_cast<mercury::MercuryIsolate*>(isolate_);
+  assert(std::this_thread::get_id() == isolate->currentThread());
+  return isolate->GetExecutingContext()->isolateCommandBuffer()->data();
+}
+
+int64_t getIsolateCommandItemSize(void* isolate_) {
+  auto isolate = reinterpret_cast<mercury::MercuryIsolate*>(isolate_);
+  assert(std::this_thread::get_id() == isolate->currentThread());
+  return isolate->GetExecutingContext()->isolateCommandBuffer()->size();
+}
+
+void clearIsolateCommandItems(void* isolate_) {
+  auto isolate = reinterpret_cast<mercury::MercuryIsolate*>(isolate_);
+  assert(std::this_thread::get_id() == isolate->currentThread());
+  isolate->GetExecutingContext()->isolateCommandBuffer()->clear();
 }
 
 // Callbacks when dart context object was finalized by Dart GC.

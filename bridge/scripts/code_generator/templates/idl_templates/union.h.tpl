@@ -57,4 +57,4 @@ class <%= generateUnionTypeClassName(unionType) %> final : public UnionBase {
 
 
 }
-#endif  // WEBF_OUT_QJS_UNION_STRING_DOUBLESEQUENCE_H_
+#endif  // MERCURY_OUT_QJS_UNION_STRING_DOUBLESEQUENCE_H_

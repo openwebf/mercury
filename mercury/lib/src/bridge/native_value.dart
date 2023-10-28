@@ -7,9 +7,9 @@ import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
-import 'package:mercury/bridge.dart';
-import 'package:mercury/launcher.dart';
-import 'package:mercury/foundation.dart';
+import 'package:mercury_js/bridge.dart';
+import 'package:mercury_js/launcher.dart';
+import 'package:mercury_js/foundation.dart';
 
 class NativeValue extends Struct {
   @Int64()

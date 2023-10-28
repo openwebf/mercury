@@ -116,6 +116,7 @@ bool ExecutingContext::EvaluateJavaScript(const uint16_t* code,
   DrainPendingPromiseJobs();
   bool success = HandleException(&result);
   JS_FreeValue(script_state_.ctx(), result);
+
   return success;
 }
 
@@ -298,6 +299,12 @@ static void DispatchPromiseRejectionEvent(const AtomicString& event_type,
   context->global()->dispatchEvent(event, exception_state);
   if (exception_state.HasException()) {
     context->ReportError(reason);
+  }
+}
+
+void ExecutingContext::FlushIsolateCommand() {
+  if (!isolateCommandBuffer()->empty()) {
+    dartMethodPtr()->flushIsolateCommand(context_id_);
   }
 }
 

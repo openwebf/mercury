@@ -5,7 +5,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:mercury/mercury.dart';
+import 'package:mercury_js/mercury_js.dart';
 
 // ignore: avoid_annotating_with_dynamic
 typedef MethodCallCallback = Future<dynamic> Function(String method, dynamic args);

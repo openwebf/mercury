@@ -22,6 +22,7 @@
 #include "dart_methods.h"
 #include "executing_context_data.h"
 #include "foundation/macros.h"
+#include "foundation/isolate_command_buffer.h"
 #include "module/timer/timer_coordinator.h"
 #include "module/module_callback.h"
 #include "module/module_listener_container.h"
@@ -114,12 +115,17 @@ class ExecutingContext {
   void ClearMutationScope();
 
   FORCE_INLINE Global* global() const { return global_; }
+  IsolateCommandBuffer isolate_command_buffer_{this};
   FORCE_INLINE DartIsolateContext* dartIsolateContext() const { return dart_isolate_context_; };
   FORCE_INLINE const std::unique_ptr<DartMethodPointer>& dartMethodPtr() {
     assert(dart_isolate_context_->valid());
     return dart_isolate_context_->dartMethodPtr();
   }
   FORCE_INLINE std::chrono::time_point<std::chrono::system_clock> timeOrigin() const { return time_origin_; }
+
+  FORCE_INLINE IsolateCommandBuffer* isolateCommandBuffer() { return &isolate_command_buffer_; };
+
+  void FlushIsolateCommand();
 
   void DispatchErrorEvent(ErrorEvent* error_event);
   void DispatchErrorEventInterval(ErrorEvent* error_event);

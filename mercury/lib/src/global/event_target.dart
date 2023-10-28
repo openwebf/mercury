@@ -3,8 +3,8 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 import 'package:flutter/foundation.dart';
-import 'package:mercury/src/global/event.dart';
-import 'package:mercury/foundation.dart';
+import 'package:mercury_js/src/global/event.dart';
+import 'package:mercury_js/foundation.dart';
 
 typedef EventHandler = void Function(Event event);
 

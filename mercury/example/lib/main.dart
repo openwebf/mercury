@@ -4,8 +4,8 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:mercury/mercury.dart';
-import 'package:mercury/devtools.dart';
+import 'package:mercury_js/mercury.dart';
+import 'package:mercury_js/devtools.dart';
 
 void main() {
   runApp(MyApp());
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Kraken Browser',
+      title: 'Mercury Example',
       // theme: ThemeData.dark(),
       debugShowCheckedModeBanner: false,
       home: MyBrowser(),
@@ -50,55 +50,46 @@ class _MyHomePageState extends State<MyBrowser> {
     ),
   );
 
+  Mercury? mercury;
+
+  String message = 'Loading...';
+
   @override
   Widget build(BuildContext context) {
-    final MediaQueryData queryData = MediaQuery.of(context);
-    final TextEditingController textEditingController = TextEditingController();
-
-    Mercury? _kraken;
-    AppBar appBar = AppBar(
-      backgroundColor: Colors.black87,
-      titleSpacing: 10.0,
-      title: Container(
-        height: 40.0,
-        child: TextField(
-          controller: textEditingController,
-          onSubmitted: (value) {
-            textEditingController.text = value;
-            _kraken?.load(MercuryBundle.fromUrl(value));
-          },
-          decoration: InputDecoration(
-            hintText: 'Enter URL',
-            hintStyle: TextStyle(color: Colors.black54, fontSize: 16.0),
-            contentPadding: const EdgeInsets.all(10.0),
-            filled: true,
-            fillColor: Colors.grey,
-            border: outlineBorder,
-            focusedBorder: outlineBorder,
-            enabledBorder: outlineBorder,
-          ),
-          style: TextStyle(color: Colors.black, fontSize: 16.0),
-        ),
-      ),
-      // Here we take the value from the MyHomePage object that was created by
-      // the App.build method, and use it to set our appbar title.
+    mercury ??= Mercury(
+      devToolsService: ChromeDevToolsService(),
+      bundle: MercuryBundle.fromUrl('assets:assets/bundle.js'),
+      onControllerCreated: (controller) {
+        setState(() {
+          message = 'Controller loading...';
+        });
+        controller.onLoad = (controller) {
+          setState(() {
+            message = 'Context loading...';
+          });
+          controller.context.dispatcher?.subscribe('example', (args) {
+            setState(() {
+              message = args[0]['message'];
+            });
+          });
+          controller.context.evaluateJavaScripts('hello();');
+        };
+      }
     );
-
-    final Size viewportSize = queryData.size;
     return Scaffold(
-        appBar: appBar,
+        appBar: AppBar(
+          backgroundColor: Colors.black87,
+          titleSpacing: 10.0,
+          title: Container(
+            height: 40.0,
+            child: Text('Mercury Test')
+          ),
+        ),
         body: Center(
           // Center is a layout widget. It takes a single child and positions it
           // in the middle of the parent.
           child: Column(
-            children: [
-              _kraken = Mercury(
-                devToolsService: ChromeDevToolsService(),
-                viewportWidth: viewportSize.width - queryData.padding.horizontal,
-                viewportHeight: viewportSize.height - appBar.preferredSize.height - queryData.padding.vertical,
-                bundle: MercuryBundle.fromUrl('assets:assets/bundle.html'),
-              ),
-            ],
+            children: [Text(message)],
           ),
         ));
   }

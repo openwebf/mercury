@@ -4,7 +4,7 @@
  */
 import 'dart:io';
 
-import 'package:mercury/mercury.dart';
+import 'package:mercury_js/mercury_js.dart';
 
 // TODO: Don't use header to mark context.
 const String HttpHeaderContext = 'x-context';

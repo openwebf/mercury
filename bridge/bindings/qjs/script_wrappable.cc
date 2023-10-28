@@ -74,8 +74,10 @@ static JSValue HandleJSPropertyGetterCallback(JSContext* ctx, JSValueConst obj, 
     return getterValue;
   }
 
-  JSValue prototypeObject = context->contextData()->prototypeForType(wrapper_type_info);
-  return JS_GetPropertyInternal(ctx, prototypeObject, atom, obj, NULL, 0);
+  JSValue prototypeObject = JS_GetPrototype(ctx, obj);
+  JSValue result = JS_GetPropertyInternal(ctx, prototypeObject, atom, obj, NULL, 0);
+  JS_FreeValue(ctx, prototypeObject);
+  return result;
 }
 
 /// This callback will be called when JS code set property on this object using [] or `.` operator.
