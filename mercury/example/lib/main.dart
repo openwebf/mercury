@@ -3,23 +3,11 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:mercury/mercury.dart';
 import 'package:mercury/devtools.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized(); //imp line need to be added first
-    FlutterError.onError = (FlutterErrorDetails details) {
-    //this line prints the default flutter gesture caught exception in console
-    //FlutterError.dumpErrorToConsole(details);
-    print('Error From INSIDE FRAME_WORK');
-    print('----------------------');
-    print('Error :  ${details.exception}');
-    print('StackTrace :  ${details.stack}');
-    };
-
   runApp(MyApp());
 }
 
@@ -28,7 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Kraken Browser',
+      title: 'Mercury Example',
       // theme: ThemeData.dark(),
       debugShowCheckedModeBanner: false,
       home: MyBrowser(),
@@ -71,7 +59,7 @@ class _MyHomePageState extends State<MyBrowser> {
     mercury ??= Mercury(
       devToolsService: ChromeDevToolsService(),
       bundle: MercuryBundle.fromUrl('assets:assets/bundle.js'),
-      onControllerCreated: (controller) async {
+      onControllerCreated: (controller) {
         setState(() {
           message = 'Controller loading...';
         });
@@ -79,14 +67,14 @@ class _MyHomePageState extends State<MyBrowser> {
           setState(() {
             message = 'Context loading...';
           });
-          // controller.context.dispatcher.subscribe('example', (event) {
-          //   setState(() {
-          //     message = json.decode(event)['message'];
-          //   });
-          // });
+          controller.context.dispatcher?.subscribe('example', (args) {
+            setState(() {
+              message = args[0]['message'];
+            });
+          });
           controller.context.evaluateJavaScripts('hello();');
         };
-        }
+      }
     );
     return Scaffold(
         appBar: AppBar(

@@ -93,11 +93,12 @@ abstract class DevToolsService {
 }
 
 
-bool _isEventTargetDefined = false;
+bool _isDispatcherDefined = false;
 
-void defineBuiltInEventTargets() {
-  if (_isEventTargetDefined) return;
-  _isEventTargetDefined = true;
+void defineDispatcher() {
+  if (_isDispatcherDefined) return;
+  _isDispatcherDefined = true;
+
   MercuryContextController.addEventTargetClass('MercuryDispatcher', (context) => MercuryDispatcher(context));
 }
 
@@ -107,13 +108,15 @@ class MercuryContextController {
 
   static final Map<String, EventTargetCreator> _eventTargetCreator = {};
 
+  MercuryDispatcher? dispatcher;
+
   MercuryContextController({
       this.enableDebug = false,
       required this.rootController}) {
     if (enableDebug) {
       debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
     }
-    defineBuiltInEventTargets();
+    defineDispatcher();
     BindingBridge.setup();
     _contextId = initBridge(this);
 
@@ -218,7 +221,13 @@ class MercuryContextController {
 
   void createEventTarget(MercuryContextController context, String className, Pointer<NativeBindingObject> pointer) {
     if (_eventTargetCreator.containsKey(className)) {
-      _eventTargetCreator[className]!(BindingContext(context, _contextId, pointer));
+      final target = _eventTargetCreator[className]!(BindingContext(context, _contextId, pointer));
+
+      switch (className) {
+        case 'MercuryDispatcher': dispatcher = target as MercuryDispatcher;
+        break;
+        default: break;
+      }
     }
   }
 }
