@@ -4,7 +4,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:mercury_js/mercury.dart';
+import 'package:mercury_js/mercury_js.dart';
 import 'package:mercury_js/devtools.dart';
 
 void main() {
