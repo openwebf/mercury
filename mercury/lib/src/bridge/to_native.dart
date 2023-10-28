@@ -303,6 +303,7 @@ void dispatchIsolateTask(int contextId, Pointer<Void> context, Pointer<Void> cal
 
 enum IsolateCommandType {
   createGlobal,
+  createEventTarget,
   disposeBindingObject,
   addEvent,
   removeEvent,
@@ -448,6 +449,9 @@ void flushIsolateCommand(MercuryContextController context) {
       switch (commandType) {
         case IsolateCommandType.createGlobal:
           context.initGlobal(context, nativePtr.cast<NativeBindingObject>());
+          break;
+        case IsolateCommandType.createEventTarget:
+          context.createEventTarget(context, command.args, nativePtr.cast<NativeBindingObject>());
           break;
         case IsolateCommandType.disposeBindingObject:
           context.disposeBindingObject(context, nativePtr.cast<NativeBindingObject>());

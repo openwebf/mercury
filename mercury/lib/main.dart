@@ -44,6 +44,10 @@ class Mercury {
     await controller?.reload();
   }
 
+  static void addEventTarget(String className, EventTargetCreator creator) {
+    MercuryContextController.addEventTargetClass(className, creator);
+  }
+
   Mercury({
       Key? key,
       this.bundle,

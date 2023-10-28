@@ -12,8 +12,6 @@ import 'dart:isolate';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mercury/devtools.dart';
-import 'package:mercury/src/global/global.dart';
-import 'package:mercury/src/global/event_target.dart';
 import 'package:mercury/mercury.dart';
 
 // Error handler when load bundle failed.
@@ -23,6 +21,7 @@ typedef TitleChangedHandler = void Function(String title);
 typedef JSErrorHandler = void Function(String message);
 typedef JSLogHandler = void Function(int level, String message);
 typedef PendingCallback = void Function();
+typedef EventTargetCreator = EventTarget Function(BindingContext? context);
 
 // See http://github.com/flutter/flutter/wiki/Desktop-shells
 /// If the current platform is a desktop platform that isn't yet supported by
@@ -93,9 +92,20 @@ abstract class DevToolsService {
   }
 }
 
+
+bool _isEventTargetDefined = false;
+
+void defineBuiltInEventTargets() {
+  if (_isEventTargetDefined) return;
+  _isEventTargetDefined = true;
+  MercuryContextController.addEventTargetClass('MercuryDispatcher', (context) => MercuryDispatcher(context));
+}
+
 // An mercury View Controller designed for multiple mercury context control.
 class MercuryContextController {
   MercuryController rootController;
+
+  static final Map<String, EventTargetCreator> _eventTargetCreator = {};
 
   MercuryContextController({
       this.enableDebug = false,
@@ -103,6 +113,7 @@ class MercuryContextController {
     if (enableDebug) {
       debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
     }
+    defineBuiltInEventTargets();
     BindingBridge.setup();
     _contextId = initBridge(this);
 
@@ -192,6 +203,23 @@ class MercuryContextController {
     bindingObject?.dispose();
     context.removeBindingObject(pointer);
     malloc.free(pointer);
+  }
+
+  static bool _isValidEventTargetClassName(className) {
+    return RegExp(r'^[A-Z][a-z]*(?:[A-Z][a-z]*)*$').hasMatch(className);
+  }
+
+  static void addEventTargetClass(String className, EventTargetCreator creator) {
+    if (!_isValidEventTargetClassName(className)) {
+      throw ArgumentError('The eventTarget className "$className" is not valid.');
+    }
+    _eventTargetCreator[className] = creator;
+  }
+
+  void createEventTarget(MercuryContextController context, String className, Pointer<NativeBindingObject> pointer) {
+    if (_eventTargetCreator.containsKey(className)) {
+      _eventTargetCreator[className]!(BindingContext(context, _contextId, pointer));
+    }
   }
 }
 

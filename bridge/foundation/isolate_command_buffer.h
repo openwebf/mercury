@@ -16,6 +16,7 @@ class ExecutingContext;
 
 enum class IsolateCommand {
   kCreateGlobal,
+  kCreateEventTarget,
   kDisposeBindingObject,
   kAddEvent,
   kRemoveEvent,

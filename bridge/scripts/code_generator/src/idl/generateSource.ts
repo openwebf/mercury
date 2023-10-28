@@ -425,6 +425,9 @@ function generateFunctionCallBody(blob: IDLBlob, declaration: FunctionDeclaratio
     call = `auto* self = toScriptWrappable<${getClassName(blob)}>(JS_IsUndefined(this_val) ? context->GlobalObject() : this_val);
 ${returnValueAssignment} self->${generateCallMethodName(declaration.name)}(${minimalRequiredArgc > 0 ? `${requiredArguments.join(',')}` : 'exception_state'});`;
   } else {
+    if (options.isConstructor && getClassName(blob) == 'EventTarget') {
+      requiredArguments.unshift('constructor_name');
+    }
     call = `${returnValueAssignment} ${getClassName(blob)}::${generateCallMethodName(declaration.name)}(context, ${requiredArguments.join(',')});`;
   }
 
@@ -432,6 +435,10 @@ ${returnValueAssignment} self->${generateCallMethodName(declaration.name)}(${min
   ${call}
   break;
 }`;
+
+  if (options.isConstructor) {
+    requiredArgumentsInit.unshift('auto&& constructor_name = Converter<IDLDOMString>::FromValue(ctx, fn_name_value, exception_state);');
+  }
 
   return `${requiredArgumentsInit.join('\n')}
 ${minimalRequiredCall}
@@ -521,9 +528,15 @@ function generateFunctionBody(blob: IDLBlob, declare: FunctionDeclaration, optio
   let returnValueInit = generateReturnValueInit(blob, declare.returnType, options);
   let returnValueResult = generateReturnValueResult(blob, declare.returnType, declare.returnTypeMode, options);
 
-  let constructorPrototypeInit = (options.isConstructor && returnValueInit.length > 0) ? `JSValue proto = JS_GetPropertyStr(ctx, this_val, "prototype");
+  let constructorPrototypeInit = (options.isConstructor && returnValueInit.length > 0) ? `
+  JSValue return_value_proto = JS_GetPrototype(ctx, return_value->ToQuickJSUnsafe());
+  JS_SetPrototype(ctx, proto, return_value_proto);
   JS_SetPrototype(ctx, return_value->ToQuickJSUnsafe(), proto);
-  JS_FreeValue(ctx, proto);` : '';
+  JS_FreeValue(ctx, proto);
+  JS_FreeValue(ctx, constructor_fn);
+  JS_FreeValue(ctx, fn_name_value);
+  JS_FreeValue(ctx, return_value_proto);
+  ` : '';
 
   return `${paramCheck}
 

@@ -86,14 +86,16 @@ class EventTarget : public BindingObject {
  public:
   using ImplType = EventTarget*;
 
-  static EventTarget* Create(ExecutingContext* context, ExceptionState& exception_state);
+  static EventTarget* Create(ExecutingContext* context, const AtomicString& constructor_name, ExceptionState& exception_state);
 
   EventTarget() = delete;
   ~EventTarget();
-  explicit EventTarget(ExecutingContext* context);
+  explicit EventTarget(ExecutingContext* context, const AtomicString& constructor_name);
   explicit EventTarget(ExecutingContext* context, NativeBindingObject* native_binding_object);
 
   virtual Node* ToNode();
+
+  AtomicString className();
 
   bool addEventListener(const AtomicString& event_type,
                         const std::shared_ptr<EventListener>& event_listener,
@@ -139,6 +141,13 @@ class EventTarget : public BindingObject {
 
   void Trace(GCVisitor* visitor) const override;
 
+  bool NamedPropertyQuery(const AtomicString& key, ExceptionState& exception_state);
+  void NamedPropertyEnumerator(std::vector<AtomicString>& names, ExceptionState&);
+
+  ScriptValue item(const AtomicString& key, ExceptionState& exception_state);
+  bool SetItem(const AtomicString& key, const ScriptValue& value, ExceptionState& exception_state);
+  bool DeleteItem(const AtomicString& key, ExceptionState& exception_state);
+
  protected:
   virtual bool AddEventListenerInternal(const AtomicString& event_type,
                                         const std::shared_ptr<EventListener>& listener,
@@ -160,6 +169,16 @@ class EventTarget : public BindingObject {
   RegisteredEventListener* GetAttributeRegisteredEventListener(const AtomicString& event_type);
 
   bool FireEventListeners(Event&, EventTargetData*, EventListenerVector&, ExceptionState&);
+
+  ScriptValue CreateSyncMethodFunc(const AtomicString& method_name);
+  ScriptValue CreateAsyncMethodFunc(const AtomicString& method_name);
+  NativeValue HandleSyncPropertiesAndMethodsFromDart(int32_t argc, const NativeValue* argv);
+
+  std::unordered_map<AtomicString, ScriptValue, AtomicString::KeyHasher> cached_methods_;
+  std::unordered_map<AtomicString, ScriptValue, AtomicString::KeyHasher> async_cached_methods_;
+  std::unordered_map<AtomicString, ScriptValue, AtomicString::KeyHasher> unimplemented_properties_;
+
+  AtomicString className_;
 };
 
 template <>
@@ -171,7 +190,7 @@ struct DowncastTraits<EventTarget> {
 class EventTargetWithInlineData : public EventTarget {
  public:
   EventTargetWithInlineData() = delete;
-  explicit EventTargetWithInlineData(ExecutingContext* context) : EventTarget(context){};
+  explicit EventTargetWithInlineData(ExecutingContext* context, const AtomicString& constructor_name) : EventTarget(context, constructor_name){};
   explicit EventTargetWithInlineData(ExecutingContext* context, NativeBindingObject* native_binding_object)
       : EventTarget(context, native_binding_object){};
 
