@@ -1,4 +1,4 @@
-#include "include/mercury/mercury_plugin.h"
+#include "include/mercury_js/mercury_js_plugin.h"
 
 // This must be included before many other Windows headers.
 #include <windows.h>
@@ -36,7 +36,7 @@ void MercuryPlugin::RegisterWithRegistrar(
     flutter::PluginRegistrarWindows *registrar) {
   auto channel =
       std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
-          registrar->messenger(), "mercury",
+          registrar->messenger(), "mercury_js",
           &flutter::StandardMethodCodec::GetInstance());
 
   auto plugin = std::make_unique<MercuryPlugin>();

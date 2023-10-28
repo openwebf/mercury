@@ -50,13 +50,13 @@ class _MyHomePageState extends State<MyBrowser> {
     ),
   );
 
-  Mercury? mercury;
+  Mercury? mercury_js;
 
   String message = 'Loading...';
 
   @override
   Widget build(BuildContext context) {
-    mercury ??= Mercury(
+    mercury_js ??= Mercury(
       devToolsService: ChromeDevToolsService(),
       bundle: MercuryBundle.fromUrl('assets:assets/bundle.js'),
       onControllerCreated: (controller) {

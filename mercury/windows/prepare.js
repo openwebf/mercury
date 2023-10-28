@@ -12,6 +12,6 @@ function replaceTextToDLL(p) {
     }
 }
 //
-replaceTextToDLL('./mercury.txt');
+replaceTextToDLL('./mercury_js.txt');
 replaceTextToDLL('./pthreadVC2.txt');
 replaceTextToDLL('./quickjs.txt');

@@ -115,14 +115,14 @@ task('build-darwin-mercury-lib', done => {
     }
   });
 
-  let mercuryTargets = ['mercury'];
+  let mercuryTargets = ['mercury_js'];
 
   let cpus = os.cpus();
   execSync(`cmake --build ${paths.bridge}/cmake-build-macos-x86_64 --target ${mercuryTargets.join(' ')} -- -j ${cpus.length}`, {
     stdio: 'inherit'
   });
 
-  const binaryPath = path.join(paths.bridge, `build/macos/lib/x86_64/libmercury.dylib`);
+  const binaryPath = path.join(paths.bridge, `build/macos/lib/x86_64/libmercury_js.dylib`);
 
   if (buildMode == 'Release' || buildMode == 'RelWithDebInfo') {
     execSync(`dsymutil ${binaryPath}`, { stdio: 'inherit' });
@@ -353,7 +353,7 @@ task('build-linux-mercury-lib', (done) => {
   });
 
   const libs = [
-    'libmercury.so'
+    'libmercury_js.so'
   ];
 
   libs.forEach(lib => {
@@ -423,7 +423,7 @@ task('build-window-mercury-lib', (done) => {
       }
     });
 
-  const mercuryTargets = ['mercury'];
+  const mercuryTargets = ['mercury_js'];
 
   // build
   execSync(`cmake --build ${bridgeCmakeDir} --target ${mercuryTargets.join(' ')} --verbose --config ${buildType}`, {
@@ -485,7 +485,7 @@ task('build-android-mercury-lib', (done) => {
   }
 
   const soFileNames = [
-    'libmercury',
+    'libmercury_js',
     'libc++_shared'
   ];
 

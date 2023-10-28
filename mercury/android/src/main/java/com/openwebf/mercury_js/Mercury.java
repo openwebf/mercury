@@ -1,4 +1,4 @@
-package com.openwebf.mercury;
+package com.openwebf.mercury_js;
 
 import android.os.Handler;
 import android.os.Looper;

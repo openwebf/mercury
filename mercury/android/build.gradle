@@ -1,4 +1,4 @@
-group 'com.openwebf.mercury'
+group 'com.openwebf.mercury_js'
 version '1.0'
 
 buildscript {

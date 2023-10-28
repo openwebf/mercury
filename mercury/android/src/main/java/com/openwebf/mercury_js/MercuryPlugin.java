@@ -33,7 +33,7 @@ public class MercuryPlugin implements FlutterPlugin, MethodCallHandler {
   // depending on the user's project. onAttachedToEngine or registerWith must both be defined
   // in the same class.
   public static void registerWith(Registrar registrar) {
-    final MethodChannel channel = new MethodChannel(registrar.messenger(), "mercury");
+    final MethodChannel channel = new MethodChannel(registrar.messenger(), "mercury_js");
     MercuryPlugin plugin = new MercuryPlugin();
     plugin.mContext = registrar.context();
     channel.setMethodCallHandler(plugin);
@@ -43,7 +43,7 @@ public class MercuryPlugin implements FlutterPlugin, MethodCallHandler {
   public void onAttachedToEngine(FlutterPluginBinding flutterPluginBinding) {
     loadLibrary();
     mContext = flutterPluginBinding.getApplicationContext();
-    channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "mercury");
+    channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "mercury_js");
     flutterEngine = flutterPluginBinding.getFlutterEngine();
     channel.setMethodCallHandler(this);
   }
@@ -60,8 +60,8 @@ public class MercuryPlugin implements FlutterPlugin, MethodCallHandler {
     if (isLibraryLoaded) {
       return;
     }
-    // Loads `libmercury.so`.
-    System.loadLibrary("mercury");
+    // Loads `libmercury_js.so`.
+    System.loadLibrary("mercury_js");
     // Loads `libquickjs.so`.
     System.loadLibrary("quickjs");
     isLibraryLoaded = true;
@@ -88,7 +88,7 @@ public class MercuryPlugin implements FlutterPlugin, MethodCallHandler {
     channel.setMethodCallHandler(null);
     Mercury mercury = Mercury.get(flutterEngine);
     if (mercury == null) return;
-    mercury.destroy();
+    mercury_js.destroy();
     flutterEngine = null;
   }
 

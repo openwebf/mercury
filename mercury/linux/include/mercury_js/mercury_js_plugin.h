@@ -1,5 +1,5 @@
-#ifndef FLUTTER_PLUGIN_MERCURY_PLUGIN_H_
-#define FLUTTER_PLUGIN_MERCURY_PLUGIN_H_
+#ifndef FLUTTER_PLUGIN_MERCURY_JS_PLUGIN__H_
+#define FLUTTER_PLUGIN_MERCURY_JS_PLUGIN_H_
 
 #include <flutter_linux/flutter_linux.h>
 
@@ -16,11 +16,11 @@ typedef struct {
   GObjectClass parent_class;
 } MercuryPluginClass;
 
-FLUTTER_PLUGIN_EXPORT GType mercury_plugin_get_type();
+FLUTTER_PLUGIN_EXPORT GType mercury_js_plugin_get_type();
 
-FLUTTER_PLUGIN_EXPORT void mercury_plugin_register_with_registrar(
+FLUTTER_PLUGIN_EXPORT void mercury_js_plugin_register_with_registrar(
     FlPluginRegistrar* registrar);
 
 G_END_DECLS
 
-#endif  // FLUTTER_PLUGIN_MERCURY_PLUGIN_H_
+#endif  // FLUTTER_PLUGIN_MERCURY_JS_PLUGIN_H_

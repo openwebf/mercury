@@ -1,9 +1,9 @@
 ROOT=$(pwd)/Frameworks
 cd $ROOT
 
-if [ -L "mercury_bridge.xcframework" ]; then
-  rm mercury_bridge.xcframework
-  ln -s $ROOT/../../../bridge/build/ios/framework/mercury_bridge.xcframework
+if [ -L "mercury_js_bridge.xcframework" ]; then
+  rm mercury_js_bridge.xcframework
+  ln -s $ROOT/../../../bridge/build/ios/framework/mercury_js_bridge.xcframework
 fi
 
 if [ -L "quickjs.xcframework" ]; then

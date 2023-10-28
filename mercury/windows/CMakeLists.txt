@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.14)
-set(PROJECT_NAME "mercury")
+set(PROJECT_NAME "mercury_js")
 project(${PROJECT_NAME} LANGUAGES CXX)
 
 # This value is used when generating builds using this plugin, so it must
 # not be changed
-set(PLUGIN_NAME "mercury_plugin")
+set(PLUGIN_NAME "mercury_js_plugin")
 
 add_library(${PLUGIN_NAME} SHARED
-  "mercury_plugin.cpp"
+  "mercury_js_plugin.cpp"
 )
 
 apply_standard_settings(${PLUGIN_NAME})
@@ -25,9 +25,9 @@ execute_process(
 )
 
 # List of absolute paths to libraries that should be bundled with the plugin
-set(mercury_bundled_libraries
+set(mercury_js_bundled_libraries
   ${CMAKE_CURRENT_SOURCE_DIR}/pthreadVC2.dll
   ${CMAKE_CURRENT_SOURCE_DIR}/quickjs.dll
-  ${CMAKE_CURRENT_SOURCE_DIR}/mercury.dll
+  ${CMAKE_CURRENT_SOURCE_DIR}/mercury_js.dll
   PARENT_SCOPE
 )

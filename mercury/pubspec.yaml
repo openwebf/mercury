@@ -37,7 +37,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.openwebf.mercury
+        package: com.openwebf.mercury_js
         pluginClass: MercuryPlugin
       ios:
         pluginClass: MercuryPlugin

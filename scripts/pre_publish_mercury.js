@@ -32,19 +32,19 @@ const krakenDir = PATH.join(__dirname, "../mercury");
 
 const symbolFiles = [
   "android/jniLibs/arm64-v8a/libc++_shared.so",
-  "android/jniLibs/arm64-v8a/libmercury.so",
+  "android/jniLibs/arm64-v8a/libmercury_js.so",
   "android/jniLibs/arm64-v8a/libquickjs.so",
   "android/jniLibs/armeabi-v7a/libc++_shared.so",
-  "android/jniLibs/armeabi-v7a/libmercury.so",
+  "android/jniLibs/armeabi-v7a/libmercury_js.so",
   "android/jniLibs/armeabi-v7a/libquickjs.so",
   "android/jniLibs/x86/libc++_shared.so",
-  "android/jniLibs/x86/libmercury.so",
+  "android/jniLibs/x86/libmercury_js.so",
   "android/jniLibs/x86/libquickjs.so",
   "ios/Frameworks/mercury_bridge.xcframework",
   "ios/Frameworks/quickjs.xcframework",
-  "linux/libmercury.so",
+  "linux/libmercury_js.so",
   "linux/libquickjs.so",
-  "macos/libmercury.dylib",
+  "macos/libmercury_js.dylib",
   "macos/libquickjs.dylib",
 ];
 

@@ -1,4 +1,4 @@
-#include "include/mercury/mercury_plugin.h"
+#include "include/mercury_js/mercury_js_plugin.h"
 
 #include <flutter_linux/flutter_linux.h>
 #include <gtk/gtk.h>
@@ -6,18 +6,18 @@
 
 #include <cstring>
 
-#define MERCURY_PLUGIN(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST((obj), mercury_plugin_get_type(), \
+#define MERCURY_JS_PLUGIN(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST((obj), mercury_js_plugin_get_type(), \
                               MercuryPlugin))
 
 struct _MercuryPlugin {
   GObject parent_instance;
 };
 
-G_DEFINE_TYPE(MercuryPlugin, mercury_plugin, g_object_get_type())
+G_DEFINE_TYPE(MercuryPlugin, mercury_js_plugin, g_object_get_type())
 
 // Called when a method call is received from Flutter.
-static void mercury_plugin_handle_method_call(
+static void mercury_js_plugin_handle_method_call(
     MercuryPlugin* self,
     FlMethodCall* method_call) {
   g_autoptr(FlMethodResponse) response = nullptr;
@@ -41,30 +41,30 @@ static void mercury_plugin_handle_method_call(
   fl_method_call_respond(method_call, response, nullptr);
 }
 
-static void mercury_plugin_dispose(GObject* object) {
-  G_OBJECT_CLASS(mercury_plugin_parent_class)->dispose(object);
+static void mercury_js_plugin_dispose(GObject* object) {
+  G_OBJECT_CLASS(mercury_js_plugin_parent_class)->dispose(object);
 }
 
-static void mercury_plugin_class_init(MercuryPluginClass* klass) {
-  G_OBJECT_CLASS(klass)->dispose = mercury_plugin_dispose;
+static void mercury_js_plugin_class_init(MercuryPluginClass* klass) {
+  G_OBJECT_CLASS(klass)->dispose = mercury_js_plugin_dispose;
 }
 
-static void mercury_plugin_init(MercuryPlugin* self) {}
+static void mercury_js_plugin_init(MercuryPlugin* self) {}
 
 static void method_call_cb(FlMethodChannel* channel, FlMethodCall* method_call,
                            gpointer user_data) {
-  MercuryPlugin* plugin = MERCURY_PLUGIN(user_data);
-  mercury_plugin_handle_method_call(plugin, method_call);
+  MercuryPlugin* plugin = MERCURY_JS_PLUGIN(user_data);
+  mercury_js_plugin_handle_method_call(plugin, method_call);
 }
 
-void mercury_plugin_register_with_registrar(FlPluginRegistrar* registrar) {
-  MercuryPlugin* plugin = MERCURY_PLUGIN(
-      g_object_new(mercury_plugin_get_type(), nullptr));
+void mercury_js_plugin_register_with_registrar(FlPluginRegistrar* registrar) {
+  MercuryPlugin* plugin = MERCURY_JS_PLUGIN(
+      g_object_new(mercury_js_plugin_get_type(), nullptr));
 
   g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();
   g_autoptr(FlMethodChannel) channel =
       fl_method_channel_new(fl_plugin_registrar_get_messenger(registrar),
-                            "mercury",
+                            "mercury_js",
                             FL_METHOD_CODEC(codec));
   fl_method_channel_set_method_call_handler(channel, method_call_cb,
                                             g_object_ref(plugin),
