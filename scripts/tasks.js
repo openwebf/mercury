@@ -237,12 +237,12 @@ task(`build-ios-mercury-lib`, (done) => {
   let cpus = os.cpus();
 
   // build for simulator x86
-  execSync(`cmake --build ${paths.bridge}/cmake-build-ios-simulator-x86 --target mercury -- -j ${cpus.length}`, {
+  execSync(`cmake --build ${paths.bridge}/cmake-build-ios-simulator-x86 --target mercury_js -- -j ${cpus.length}`, {
     stdio: 'inherit'
   });
 
   // build for simulator arm64
-  execSync(`cmake --build ${paths.bridge}/cmake-build-ios-simulator-arm64 --target mercury -- -j ${cpus.length}`, {
+  execSync(`cmake --build ${paths.bridge}/cmake-build-ios-simulator-arm64 --target mercury_js -- -j ${cpus.length}`, {
     stdio: 'inherit'
   });
 
@@ -265,7 +265,7 @@ task(`build-ios-mercury-lib`, (done) => {
   });
 
   // Build for ARM64
-  execSync(`cmake --build ${paths.bridge}/cmake-build-ios-arm64 --target mercury -- -j ${cpus.length}`, {
+  execSync(`cmake --build ${paths.bridge}/cmake-build-ios-arm64 --target mercury_js -- -j ${cpus.length}`, {
     stdio: 'inherit'
   });
 
@@ -348,7 +348,7 @@ task('build-linux-mercury-lib', (done) => {
     });
 
   // build
-  execSync(`cmake --build ${bridgeCmakeDir} --target mercury -- -j 12`, {
+  execSync(`cmake --build ${bridgeCmakeDir} --target mercury_js -- -j 12`, {
     stdio: 'inherit'
   });
 
@@ -521,7 +521,7 @@ task('build-android-mercury-lib', (done) => {
       });
 
     // build
-    execSync(`cmake --build ${bridgeCmakeDir} --target mercury -- -j 12`, {
+    execSync(`cmake --build ${bridgeCmakeDir} --target mercury_js -- -j 12`, {
       stdio: 'inherit'
     });
 
