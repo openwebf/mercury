@@ -3,8 +3,8 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
-import 'package:mercury/launcher.dart';
-import 'package:mercury/devtools.dart';
+import 'package:mercury_js/launcher.dart';
+import 'package:mercury_js/devtools.dart';
 
 String enumKey(String key) {
   return key.split('.').last;

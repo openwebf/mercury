@@ -8,11 +8,11 @@
 import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
-import 'package:mercury/bridge.dart';
-import 'package:mercury/src/global/event.dart';
-import 'package:mercury/src/global/event_target.dart';
-import 'package:mercury/foundation.dart';
-import 'package:mercury/launcher.dart';
+import 'package:mercury_js/bridge.dart';
+import 'package:mercury_js/src/global/event.dart';
+import 'package:mercury_js/src/global/event_target.dart';
+import 'package:mercury_js/foundation.dart';
+import 'package:mercury_js/launcher.dart';
 
 // We have some integrated built-in behavior starting with string prefix reuse the callNativeMethod implements.
 enum BindingMethodCallOperations {

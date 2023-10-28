@@ -10,8 +10,8 @@ import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
-import 'package:mercury/src/global/event.dart';
-import 'package:mercury/mercury.dart';
+import 'package:mercury_js/src/global/event.dart';
+import 'package:mercury_js/mercury_js.dart';
 
 // Steps for using dart:ffi to call a C function from Dart:
 // 1. Import dart:ffi.

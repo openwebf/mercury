@@ -3,8 +3,8 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
-import 'package:mercury/devtools.dart';
-import 'package:mercury/launcher.dart';
+import 'package:mercury_js/devtools.dart';
+import 'package:mercury_js/launcher.dart';
 
 class InspectLogModule extends UIInspectorModule {
   InspectLogModule(DevToolsService server) : super(server) {

@@ -1,4 +1,4 @@
-import 'package:mercury/mercury.dart';
+import 'package:mercury_js/mercury_js.dart';
 
 class MercuryDispatcher extends EventTarget {
   Map<String, List<Function(List<dynamic>)>> _subscribed = {};

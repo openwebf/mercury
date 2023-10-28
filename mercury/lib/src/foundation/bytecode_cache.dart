@@ -7,8 +7,8 @@ import 'package:archive/archive.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/foundation.dart';
 import 'package:quiver/collection.dart';
-import 'package:mercury/bridge.dart';
-import 'package:mercury/foundation.dart';
+import 'package:mercury_js/bridge.dart';
+import 'package:mercury_js/foundation.dart';
 
 enum ByteCodeCacheMode {
   /// Default cache usage mode: If the JavaScript source has a corresponding bytecode file,
