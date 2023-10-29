@@ -10,7 +10,7 @@
    'clean',
    'compile-polyfill',
    'generate-bindings-code',
-   'build-window-ury-lib'
+   'build-window-mercury-lib'
  )((err) => {
    if (err) {
      console.log(err);
