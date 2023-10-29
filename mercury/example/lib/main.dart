@@ -4,8 +4,8 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:mercury_js/mercury.dart';
-import 'package:mercury_js/devtools.dart';
+import 'package:mercuryjs/mercuryjs.dart';
+import 'package:mercuryjs/devtools.dart';
 
 void main() {
   runApp(MyApp());
@@ -50,13 +50,13 @@ class _MyHomePageState extends State<MyBrowser> {
     ),
   );
 
-  Mercury? mercury;
+  Mercury? mercuryjs;
 
   String message = 'Loading...';
 
   @override
   Widget build(BuildContext context) {
-    mercury ??= Mercury(
+    mercuryjs ??= Mercury(
       devToolsService: ChromeDevToolsService(),
       bundle: MercuryBundle.fromUrl('assets:assets/bundle.js'),
       onControllerCreated: (controller) {

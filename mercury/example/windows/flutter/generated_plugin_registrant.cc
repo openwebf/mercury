@@ -6,9 +6,9 @@
 
 #include "generated_plugin_registrant.h"
 
-#include <mercury_js/mercury_plugin.h>
+#include <mercuryjs/mercuryjs_plugin.h>
 
 void RegisterPlugins(flutter::PluginRegistry* registry) {
-  MercuryPluginRegisterWithRegistrar(
-      registry->GetRegistrarForPlugin("MercuryPlugin"));
+  MercuryjsPluginRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("MercuryjsPlugin"));
 }

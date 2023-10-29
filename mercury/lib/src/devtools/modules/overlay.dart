@@ -4,8 +4,8 @@
  */
 
 import 'dart:ffi';
-import 'package:mercury_js/devtools.dart';
-import 'package:mercury_js/launcher.dart';
+import 'package:mercuryjs/devtools.dart';
+import 'package:mercuryjs/launcher.dart';
 
 class InspectOverlayModule extends UIInspectorModule {
   @override

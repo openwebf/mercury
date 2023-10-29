@@ -4,7 +4,7 @@
  */
 
 import 'dart:ffi';
-import 'package:mercury_js/launcher.dart';
+import 'package:mercuryjs/launcher.dart';
 
 import 'binding.dart';
 import 'from_native.dart';

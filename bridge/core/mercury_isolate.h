@@ -3,8 +3,8 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 
-#ifndef MERCURY_JS_QJS_BRIDGE_H_
-#define MERCURY_JS_QJS_BRIDGE_H_
+#ifndef MERCURYJS_QJS_BRIDGE_H_
+#define MERCURYJS_QJS_BRIDGE_H_
 
 #include <quickjs/quickjs.h>
 #include <atomic>
@@ -81,4 +81,4 @@ class MercuryIsolate final {
 
 }  // namespace mercury
 
-#endif  // MERCURY_JS_QJS_BRIDGE_H_
+#endif  // MERCURYJS_QJS_BRIDGE_H_

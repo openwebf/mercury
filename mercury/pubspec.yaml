@@ -1,4 +1,4 @@
-name: mercury_js
+name: mercuryjs
 description: A library with integrated JavaScript engine and extension utils for Flutter Apps.
 version: 0.1.0
 homepage: https://openwebf.com
@@ -37,13 +37,13 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.openwebf.mercury
-        pluginClass: MercuryPlugin
+        package: com.openwebf.mercuryjs
+        pluginClass: MercuryjsPlugin
       ios:
-        pluginClass: MercuryPlugin
+        pluginClass: MercuryjsPlugin
       macos:
-        pluginClass: MercuryPlugin
+        pluginClass: MercuryjsPlugin
       linux:
-        pluginClass: MercuryPlugin
+        pluginClass: MercuryjsPlugin
       windows:
-        pluginClass: MercuryPlugin
+        pluginClass: MercuryjsPlugin

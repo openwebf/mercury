@@ -21,7 +21,7 @@ program
 .parse(process.argv);
 
 const SUPPORTED_JS_ENGINES = ['jsc', 'quickjs'];
-const targetJSEngine = process.env.MERCURY_JS_ENGINE || 'quickjs';
+const targetJSEngine = process.env.MERCURYJS_ENGINE || 'quickjs';
 
 if (SUPPORTED_JS_ENGINES.indexOf(targetJSEngine) < 0) {
   throw new Error('Unsupported js engine:' + targetJSEngine);
@@ -110,19 +110,19 @@ task('build-darwin-mercury-lib', done => {
     stdio: 'inherit',
     env: {
       ...process.env,
-      MERCURY_JS_ENGINE: targetJSEngine,
+      MERCURYJS_ENGINE: targetJSEngine,
       LIBRARY_OUTPUT_DIR: path.join(paths.bridge, 'build/macos/lib/x86_64')
     }
   });
 
-  let mercuryTargets = ['mercury'];
+  let mercuryTargets = ['mercuryjs'];
 
   let cpus = os.cpus();
   execSync(`cmake --build ${paths.bridge}/cmake-build-macos-x86_64 --target ${mercuryTargets.join(' ')} -- -j ${cpus.length}`, {
     stdio: 'inherit'
   });
 
-  const binaryPath = path.join(paths.bridge, `build/macos/lib/x86_64/libmercury.dylib`);
+  const binaryPath = path.join(paths.bridge, `build/macos/lib/x86_64/libmercuryjs.dylib`);
 
   if (buildMode == 'Release' || buildMode == 'RelWithDebInfo') {
     execSync(`dsymutil ${binaryPath}`, { stdio: 'inherit' });
@@ -144,7 +144,7 @@ task('compile-polyfill', (done) => {
     cwd: paths.polyfill,
     env: {
       ...process.env,
-      MERCURY_JS_ENGINE: targetJSEngine
+      MERCURYJS_ENGINE: targetJSEngine
     },
     stdio: 'inherit'
   });
@@ -212,7 +212,7 @@ task(`build-ios-mercury-lib`, (done) => {
     stdio: 'inherit',
     env: {
       ...process.env,
-      MERCURY_JS_ENGINE: targetJSEngine,
+      MERCURYJS_ENGINE: targetJSEngine,
       LIBRARY_OUTPUT_DIR: path.join(paths.bridge, 'build/ios/lib/simulator_x86')
     }
   });
@@ -229,7 +229,7 @@ task(`build-ios-mercury-lib`, (done) => {
     stdio: 'inherit',
     env: {
       ...process.env,
-      MERCURY_JS_ENGINE: targetJSEngine,
+      MERCURYJS_ENGINE: targetJSEngine,
       LIBRARY_OUTPUT_DIR: path.join(paths.bridge, 'build/ios/lib/simulator_arm64')
     }
   });
@@ -237,12 +237,12 @@ task(`build-ios-mercury-lib`, (done) => {
   let cpus = os.cpus();
 
   // build for simulator x86
-  execSync(`cmake --build ${paths.bridge}/cmake-build-ios-simulator-x86 --target mercury -- -j ${cpus.length}`, {
+  execSync(`cmake --build ${paths.bridge}/cmake-build-ios-simulator-x86 --target mercuryjs -- -j ${cpus.length}`, {
     stdio: 'inherit'
   });
 
   // build for simulator arm64
-  execSync(`cmake --build ${paths.bridge}/cmake-build-ios-simulator-arm64 --target mercury -- -j ${cpus.length}`, {
+  execSync(`cmake --build ${paths.bridge}/cmake-build-ios-simulator-arm64 --target mercuryjs -- -j ${cpus.length}`, {
     stdio: 'inherit'
   });
 
@@ -259,13 +259,13 @@ task(`build-ios-mercury-lib`, (done) => {
     stdio: 'inherit',
     env: {
       ...process.env,
-      MERCURY_JS_ENGINE: targetJSEngine,
+      MERCURYJS_ENGINE: targetJSEngine,
       LIBRARY_OUTPUT_DIR: path.join(paths.bridge, 'build/ios/lib/arm64')
     }
   });
 
   // Build for ARM64
-  execSync(`cmake --build ${paths.bridge}/cmake-build-ios-arm64 --target mercury -- -j ${cpus.length}`, {
+  execSync(`cmake --build ${paths.bridge}/cmake-build-ios-arm64 --target mercuryjs -- -j ${cpus.length}`, {
     stdio: 'inherit'
   });
 
@@ -342,18 +342,18 @@ task('build-linux-mercury-lib', (done) => {
       stdio: 'inherit',
       env: {
         ...process.env,
-        MERCURY_JS_ENGINE: targetJSEngine,
+        MERCURYJS_ENGINE: targetJSEngine,
         LIBRARY_OUTPUT_DIR: soBinaryDirectory
       }
     });
 
   // build
-  execSync(`cmake --build ${bridgeCmakeDir} --target mercury -- -j 12`, {
+  execSync(`cmake --build ${bridgeCmakeDir} --target mercuryjs -- -j 12`, {
     stdio: 'inherit'
   });
 
   const libs = [
-    'libmercury.so'
+    'libmercuryjs.so'
   ];
 
   libs.forEach(lib => {
@@ -418,12 +418,12 @@ task('build-window-mercury-lib', (done) => {
       stdio: 'inherit',
       env: {
         ...process.env,
-        MERCURY_JS_ENGINE: targetJSEngine,
+        MERCURYJS_ENGINE: targetJSEngine,
         LIBRARY_OUTPUT_DIR: soBinaryDirectory
       }
     });
 
-  const mercuryTargets = ['mercury'];
+  const mercuryTargets = ['mercuryjs'];
 
   // build
   execSync(`cmake --build ${bridgeCmakeDir} --target ${mercuryTargets.join(' ')} --verbose --config ${buildType}`, {
@@ -485,7 +485,7 @@ task('build-android-mercury-lib', (done) => {
   }
 
   const soFileNames = [
-    'libmercury',
+    'libmercuryjs',
     'libc++_shared'
   ];
 
@@ -515,13 +515,13 @@ task('build-android-mercury-lib', (done) => {
         stdio: 'inherit',
         env: {
           ...process.env,
-          MERCURY_JS_ENGINE: targetJSEngine,
+          MERCURYJS_ENGINE: targetJSEngine,
           LIBRARY_OUTPUT_DIR: soBinaryDirectory
         }
       });
 
     // build
-    execSync(`cmake --build ${bridgeCmakeDir} --target mercury -- -j 12`, {
+    execSync(`cmake --build ${bridgeCmakeDir} --target mercuryjs -- -j 12`, {
       stdio: 'inherit'
     });
 

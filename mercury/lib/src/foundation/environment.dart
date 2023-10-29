@@ -18,7 +18,7 @@ Future<String> getMercuryTemporaryPath() async {
   return _mercuryTemporaryPath!;
 }
 
-MethodChannel _methodChannel = const MethodChannel('mercury');
+MethodChannel _methodChannel = const MethodChannel('mercuryjs');
 MethodChannel getMercuryMethodChannel() {
   return _methodChannel;
 }

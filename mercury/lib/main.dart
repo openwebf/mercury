@@ -6,7 +6,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:mercury_js/mercury_js.dart';
+import 'package:mercuryjs/mercuryjs.dart';
 
 typedef OnControllerCreated = void Function(MercuryController controller);
 

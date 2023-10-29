@@ -21,7 +21,7 @@ abstract class MercuryDynamicLibrary {
   }
 
   // The kraken library name.
-  static String libName = 'mercury';
+  static String libName = 'mercuryjs';
   static String testLibName = 'mercury_test';
 
   static String get _nativeDynamicLibraryName {

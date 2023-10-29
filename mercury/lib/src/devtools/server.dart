@@ -8,8 +8,8 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:ffi';
 
-import 'package:mercury_js/mercury_js.dart';
-import 'package:mercury_js/devtools.dart';
+import 'package:mercuryjs/mercuryjs.dart';
+import 'package:mercuryjs/devtools.dart';
 import 'package:ffi/ffi.dart';
 
 const String CONTENT_TYPE = 'Content-Type';
