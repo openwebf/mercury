@@ -8,7 +8,7 @@ import { fetch, Request, Response, Headers } from './fetch';
 import { XMLHttpRequest } from './xhr';
 import { URLSearchParams } from './url-search-params';
 import { URL } from './url';
-import { mercury } from './mercuryjs';
+import { mercury } from './mercury';
 import { WebSocket } from './websocket'
 
 defineGlobalProperty('console', console);
