@@ -10,8 +10,8 @@ import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
-import 'package:mercury_js/src/global/event.dart';
-import 'package:mercury_js/mercury_js.dart';
+import 'package:mercuryjs/src/global/event.dart';
+import 'package:mercuryjs/mercuryjs.dart';
 
 // Steps for using dart:ffi to call a C function from Dart:
 // 1. Import dart:ffi.
@@ -291,7 +291,7 @@ void registerPluginByteCode(Uint8List bytecode, String name) {
   _registerPluginByteCode(bytes, bytecode.length, name.toNativeUtf8());
 }
 
-final bool isEnabledLog = !kReleaseMode && Platform.environment['ENABLE_MERCURY_JS_LOG'] == 'true';
+final bool isEnabledLog = !kReleaseMode && Platform.environment['ENABLE_MERCURYJS_LOG'] == 'true';
 
 
 typedef NativeDispatchIsolateTask = Void Function(Int32 contextId, Pointer<Void> context, Pointer<Void> callback);

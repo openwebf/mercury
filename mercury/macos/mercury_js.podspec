@@ -1,9 +1,9 @@
 #
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
-# Run `pod lib lint mercury_js.podspec' to validate before publishing.
+# Run `pod lib lint mercuryjs.podspec' to validate before publishing.
 #
 Pod::Spec.new do |s|
-  s.name             = 'mercury_js'
+  s.name             = 'mercuryjs'
   s.version          = '0.1.0'
   s.summary          = 'A W3C standard compliant library with integrated JavaScript engine & extension utils based on Flutter.'
   s.description      = <<-DESC
@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   s.source_files     = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'FlutterMacOS'
-  s.vendored_libraries = 'libmercury_js.dylib', 'libquickjs.dylib'
+  s.vendored_libraries = 'libmercuryjs.dylib', 'libquickjs.dylib'
   s.prepare_command = 'bash prepare.sh'
 
   s.platform = :osx, '10.11'

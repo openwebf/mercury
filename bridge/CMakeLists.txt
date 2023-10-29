@@ -114,7 +114,7 @@ list(APPEND BRIDGE_INCLUDE
   ${ADDITIONAL_INCLUDE_DIRS}
   )
 
-if ($ENV{MERCURY_JS_ENGINE} MATCHES "quickjs")
+if ($ENV{MERCURYJS_ENGINE} MATCHES "quickjs")
   add_compile_options(-DMERCURY_QUICK_JS_ENGINE=1)
 
   execute_process(
@@ -307,14 +307,14 @@ list(APPEND PUBLIC_HEADER
   include/mercury_bridge.h
 )
 
-add_library(mercury_js SHARED ${BRIDGE_SOURCE})
+add_library(mercuryjs SHARED ${BRIDGE_SOURCE})
 add_library(mercury_static STATIC ${BRIDGE_SOURCE})
 
 if(MSVC)
-  target_compile_options(mercury_js PRIVATE /JMC)
+  target_compile_options(mercuryjs PRIVATE /JMC)
 endif()
 
-target_compile_definitions(mercury_js PUBLIC -DFLUTTER_BACKEND=1)
+target_compile_definitions(mercuryjs PUBLIC -DFLUTTER_BACKEND=1)
 
 if (${IS_ANDROID})
   find_library(log-lib log)
@@ -331,18 +331,18 @@ endif()
 
 
 ### mercury
-target_include_directories(mercury_js PRIVATE
+target_include_directories(mercuryjs PRIVATE
   ${BRIDGE_INCLUDE}
   ${CMAKE_CURRENT_SOURCE_DIR} PUBLIC ./include)
-target_link_libraries(mercury_js PRIVATE ${BRIDGE_LINK_LIBS})
+target_link_libraries(mercuryjs PRIVATE ${BRIDGE_LINK_LIBS})
 
-if ($ENV{MERCURY_JS_ENGINE} MATCHES "quickjs" AND NOT MSVC)
+if ($ENV{MERCURYJS_ENGINE} MATCHES "quickjs" AND NOT MSVC)
   if (${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
-    target_compile_options(mercury_js PRIVATE -fno-exceptions -fvisibility=hidden -fno-rtti -fdata-sections -ffunction-sections)
+    target_compile_options(mercuryjs PRIVATE -fno-exceptions -fvisibility=hidden -fno-rtti -fdata-sections -ffunction-sections)
     target_compile_options(quickjs PRIVATE -fno-exceptions -fno-rtti -fdata-sections -ffunction-sections)
   else ()
     ### remove dynamic_cast and exceptions
-    target_compile_options(mercury_js PRIVATE -fno-exceptions -fno-rtti)
+    target_compile_options(mercuryjs PRIVATE -fno-exceptions -fno-rtti)
   endif ()
 endif ()
 
@@ -368,7 +368,7 @@ string(REPLACE \n "" GIT_HEAD ${GIT_HEAD}) # Remove last \n
 add_definitions(-DAPP_REV="${GIT_HEAD}") # Read from git head sha1
 
 if (DEFINED ENV{LIBRARY_OUTPUT_DIR})
-  set_target_properties(mercury_js
+  set_target_properties(mercuryjs
     PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "$ENV{LIBRARY_OUTPUT_DIR}"
     RUNTIME_OUTPUT_DIRECTORY "$ENV{LIBRARY_OUTPUT_DIR}"
@@ -376,7 +376,7 @@ if (DEFINED ENV{LIBRARY_OUTPUT_DIR})
   set_target_properties(mercury_static
     PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "$ENV{LIBRARY_OUTPUT_DIR}")
 
-  if ($ENV{MERCURY_JS_ENGINE} MATCHES "quickjs")
+  if ($ENV{MERCURYJS_ENGINE} MATCHES "quickjs")
     set_target_properties(quickjs
       PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "$ENV{LIBRARY_OUTPUT_DIR}"
@@ -395,7 +395,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "iOS")
   set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "NO")
   set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "")
 
-  set_target_properties(mercury_js PROPERTIES
+  set_target_properties(mercuryjs PROPERTIES
     OUTPUT_NAME mercury_bridge
     FRAMEWORK TRUE
     FRAMEWORK_VERSION C

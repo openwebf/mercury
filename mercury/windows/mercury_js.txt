@@ -1,1 +1,1 @@
-../../bridge/build/windows/lib/mercury_js.dll
+../../bridge/build/windows/lib/mercuryjs.dll

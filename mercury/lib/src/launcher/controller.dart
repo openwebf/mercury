@@ -11,8 +11,8 @@ import 'dart:isolate';
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
-import 'package:mercury_js/devtools.dart';
-import 'package:mercury_js/mercury_js.dart';
+import 'package:mercuryjs/devtools.dart';
+import 'package:mercuryjs/mercuryjs.dart';
 
 // Error handler when load bundle failed.
 typedef LoadErrorHandler = void Function(FlutterError error, StackTrace stack);

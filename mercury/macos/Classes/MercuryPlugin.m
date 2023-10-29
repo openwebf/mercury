@@ -11,7 +11,7 @@ static FlutterMethodChannel *methodChannel = nil;
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
   NSObject<FlutterBinaryMessenger>* messager = [registrar messenger];
   FlutterMethodChannel* channel = [FlutterMethodChannel
-      methodChannelWithName:@"mercury_js"
+      methodChannelWithName:@"mercuryjs"
             binaryMessenger:messager];
   methodChannel = channel;
 

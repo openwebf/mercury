@@ -3,7 +3,7 @@
 * Copyright (C) 2022-present The WebF authors. All rights reserved.
 */
 
-import { mercury } from './mercury';
+import { mercury } from './mercuryjs';
 
 function normalizeName(name: any) {
   if (typeof name !== 'string') {

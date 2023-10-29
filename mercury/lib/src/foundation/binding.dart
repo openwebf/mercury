@@ -7,8 +7,8 @@ import 'dart:collection';
 import 'package:collection/collection.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
-import 'package:mercury_js/bridge.dart';
-import 'package:mercury_js/launcher.dart';
+import 'package:mercuryjs/bridge.dart';
+import 'package:mercuryjs/launcher.dart';
 
 typedef BindingObjectOperation = void Function(MercuryContextController? context, BindingObject bindingObject);
 

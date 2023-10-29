@@ -7,8 +7,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:mercury_js/foundation.dart';
-import 'package:mercury_js/module.dart';
+import 'package:mercuryjs/foundation.dart';
+import 'package:mercuryjs/module.dart';
 
 String EMPTY_STRING = '';
 

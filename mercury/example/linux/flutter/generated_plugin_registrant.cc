@@ -6,10 +6,10 @@
 
 #include "generated_plugin_registrant.h"
 
-#include <mercury_js/mercury_plugin.h>
+#include <mercuryjs/mercuryjs_plugin.h>
 
 void fl_register_plugins(FlPluginRegistry* registry) {
-  g_autoptr(FlPluginRegistrar) mercury_js_registrar =
-      fl_plugin_registry_get_registrar_for_plugin(registry, "MercuryPlugin");
-  mercury_plugin_register_with_registrar(mercury_js_registrar);
+  g_autoptr(FlPluginRegistrar) mercuryjs_registrar =
+      fl_plugin_registry_get_registrar_for_plugin(registry, "MercuryjsPlugin");
+  mercuryjs_plugin_register_with_registrar(mercuryjs_registrar);
 }

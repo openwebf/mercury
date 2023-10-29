@@ -5,8 +5,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:mercury_js/devtools.dart';
-import 'package:mercury_js/launcher.dart';
+import 'package:mercuryjs/devtools.dart';
+import 'package:mercuryjs/launcher.dart';
 
 const String INSPECTOR_URL = 'devtools://devtools/bundled/inspector.html';
 const int INSPECTOR_DEFAULT_PORT = 9222;

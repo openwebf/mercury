@@ -2,7 +2,7 @@
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
 #
 Pod::Spec.new do |s|
-  s.name             = 'mercury_js'
+  s.name             = 'mercuryjs'
   s.version          = '0.14.0'
   s.summary          = 'Build flutter apps with HTML/CSS and JavaScript.'
   s.description      = <<-DESC

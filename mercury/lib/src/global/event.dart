@@ -6,8 +6,8 @@ import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
-import 'package:mercury_js/bridge.dart';
-import 'package:mercury_js/src/global/event_target.dart';
+import 'package:mercuryjs/bridge.dart';
+import 'package:mercuryjs/src/global/event_target.dart';
 
 enum AppearEventType { none, appear, disappear }
 

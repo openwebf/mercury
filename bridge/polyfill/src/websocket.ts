@@ -3,7 +3,7 @@
 * Copyright (C) 2022-present The WebF authors. All rights reserved.
 */
 
-import {mercury} from './mercury';
+import {mercury} from './mercuryjs';
 
 function validateUrl(url: string) {
   let protocol = url.substring(0, url.indexOf(':'));

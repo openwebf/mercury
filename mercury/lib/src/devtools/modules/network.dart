@@ -8,9 +8,9 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:mercury_js/devtools.dart';
-import 'package:mercury_js/foundation.dart';
-import 'package:mercury_js/launcher.dart';
+import 'package:mercuryjs/devtools.dart';
+import 'package:mercuryjs/foundation.dart';
+import 'package:mercuryjs/launcher.dart';
 
 class InspectNetworkModule extends UIInspectorModule implements HttpClientInterceptor {
   InspectNetworkModule(DevToolsService devtoolsService) : super(devtoolsService) {
