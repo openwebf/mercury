@@ -51,7 +51,7 @@ const symbolFiles = [
 const txtFiles = [
   'windows/pthreadVC2.txt',
   'windows/quickjs.txt',
-  'windows/mercury.txt'
+  'windows/mercuryjs.txt'
 ];
 
 for (let file of symbolFiles) {
