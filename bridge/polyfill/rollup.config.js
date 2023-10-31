@@ -19,9 +19,9 @@ const uglifyOptions = {
     loops: false,
     keep_fargs: false,
     unsafe: true,
-    pure_getters: true,
-    keep_classnames: true
+    pure_getters: true
   },
+  keep_classnames: true
 };
 const plugins = [
   resolve(),
@@ -42,7 +42,7 @@ module.exports = [
     plugins: [
       ...plugins,
       typescript(),
-      NODE_ENV === 'development' ? null : terser(uglifyOptions),
+      /*NODE_ENV === 'development' ? null :*/ terser(uglifyOptions),
     ],
     context: 'global'
   },
