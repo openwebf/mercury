@@ -42,7 +42,7 @@ module.exports = [
     plugins: [
       ...plugins,
       typescript(),
-      /*NODE_ENV === 'development' ? null :*/ terser(uglifyOptions),
+      NODE_ENV === 'development' ? null : terser(uglifyOptions),
     ],
     context: 'global'
   },
