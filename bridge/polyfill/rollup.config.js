@@ -19,7 +19,8 @@ const uglifyOptions = {
     loops: false,
     keep_fargs: false,
     unsafe: true,
-    pure_getters: true
+    pure_getters: true,
+    keep_classnames: true
   },
 };
 const plugins = [
