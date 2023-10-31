@@ -1,6 +1,6 @@
 name: mercuryjs
 description: A library with integrated JavaScript engine and extension utils for Flutter Apps.
-version: 0.1.1
+version: 0.1.2
 homepage: https://openwebf.com
 
 environment:
