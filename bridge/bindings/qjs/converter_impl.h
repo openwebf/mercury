@@ -12,6 +12,8 @@
 #include "converter.h"
 #include "core/event/event.h"
 #include "core/event/event_target.h"
+#include "core/fileapi/blob_part.h"
+#include "core/fileapi/blob_property_bag.h"
 #include "exception_message.h"
 #include "idl_type.h"
 #include "js_event_handler.h"
@@ -361,6 +363,31 @@ struct Converter<IDLCallback> : public ConverterBase<IDLCallback> {
     }
 
     return QJSFunction::Create(ctx, value);
+  }
+};
+
+template <>
+struct Converter<BlobPart> : public ConverterBase<BlobPart> {
+  using ImplType = BlobPart::ImplType;
+  static ImplType FromValue(JSContext* ctx, JSValue value, ExceptionState& exception_state) {
+    assert(!JS_IsException(value));
+    return BlobPart::Create(ctx, value, exception_state);
+  }
+
+  static JSValue ToValue(JSContext* ctx, BlobPart* data) {
+    if (data == nullptr)
+      return JS_NULL;
+
+    return data->ToQuickJS(ctx);
+  }
+};
+
+template <>
+struct Converter<BlobPropertyBag> : public ConverterBase<BlobPropertyBag> {
+  using ImplType = BlobPropertyBag::ImplType;
+  static ImplType FromValue(JSContext* ctx, JSValue value, ExceptionState& exception_state) {
+    assert(!JS_IsException(value));
+    return BlobPropertyBag::Create(ctx, value, exception_state);
   }
 };
 
