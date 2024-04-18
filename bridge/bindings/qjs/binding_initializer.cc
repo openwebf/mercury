@@ -6,6 +6,7 @@
 #include "binding_initializer.h"
 #include "core/executing_context.h"
 
+#include "qjs_blob.h"
 #include "qjs_close_event.h"
 #include "qjs_console.h"
 #include "qjs_custom_event.h"
@@ -30,6 +31,7 @@ void InstallBindings(ExecutingContext* context) {
   QJSGlobal::Install(context);
   QJSEvent::Install(context);
   QJSErrorEvent::Install(context);
+  QJSBlob::Install(context);
   QJSPromiseRejectionEvent::Install(context);
   QJSMessageEvent::Install(context);
   QJSCloseEvent::Install(context);
