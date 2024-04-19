@@ -83,3 +83,7 @@ pubspec.lock
 *.generated.dart
 
 .flutter-plugins-dependencies
+
+# macos
+macos/libmercuryjs.dylib
+macos/libquickjs.dylib
