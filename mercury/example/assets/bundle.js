@@ -1,8 +1,10 @@
 let seconds = 0;
 
-const hello = () => {
+const hello = async () => {
+  const res = await fetch('https://api.ipify.org');
+  const txt = await res.text();
   setInterval(() => {
-    mercury.dispatcher.dispatch('example', { message: `Hello from JavaScript! It has been ${seconds} seconds.`});
+    mercury.dispatcher.dispatch('example', { message: `${txt}: ${seconds} seconds.`});
     seconds++;
   }, 1000)
 };

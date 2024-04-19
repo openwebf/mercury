@@ -8,6 +8,7 @@ require('./tasks');
 
 // Run tasks
 series(
+  'git-submodule',
   'macos-dylib-clean',
   'compile-polyfill',
   'generate-bindings-code',

@@ -8,6 +8,7 @@
  // Run tasks
  series(
    'clean',
+   'git-submodule',
    'compile-polyfill',
    'generate-bindings-code',
    'build-window-mercury-lib'
