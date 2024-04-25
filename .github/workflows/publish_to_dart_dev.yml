@@ -8,7 +8,7 @@ on:
 env:
   nodeVersion: "21"
   pnpmVersion: "9"
-  cmakeVersion: "3.29.x"
+  cmakeVersion: "3.29.1"
   flutterVersion: "3.13.4"
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -16,22 +16,22 @@ jobs:
   build_windows_binary:
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4.1.3
         with:
           submodules: recursive
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4.0.2
         with:
           node-version: ${{ env.nodeVersion }}
       - uses: pnpm/action-setup@v3
         with:
           version: ${{ env.pnpmVersion }}
           run_install: true
-      - uses: jwlawson/actions-setup-cmake@v1.11
+      - uses: jwlawson/actions-setup-cmake@v2.0.2
         with:
           cmake-version: ${{ env.cmakeVersion }}\
       - name: Build windows dll
         run: pnpm run build:bridge:windows:release
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4.3.3
         with:
           name: windows_binary
           path: bridge/build/windows/
@@ -39,96 +39,96 @@ jobs:
   build_linux_binary:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4.1.3
         with:
           submodules: recursive
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4.0.2
         with:
           node-version: ${{ env.nodeVersion }}
       - uses: pnpm/action-setup@v3
         with:
           version: ${{ env.pnpmVersion }}
           run_install: true
-      - uses: jwlawson/actions-setup-cmake@v1.11
+      - uses: jwlawson/actions-setup-cmake@v2.0.2
         with:
           cmake-version: "3.22.x"
       - run: |
           sudo apt-get update
           sudo apt-get install chrpath ninja-build pkg-config -y
       - run: pnpm run build:bridge:linux:release
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4.3.3
         with:
           name: linux_binary
           path: bridge/build/linux/
   build_macos_binary:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4.1.3
       with:
         submodules: recursive
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@v4.0.2
       with:
         node-version: ${{ env.nodeVersion }}
     - uses: pnpm/action-setup@v3
       with:
         version: ${{ env.pnpmVersion }}
         run_install: true
-    - uses: jwlawson/actions-setup-cmake@v1.11
+    - uses: jwlawson/actions-setup-cmake@v2.0.2
       with:
         cmake-version: ${{ env.cmakeVersion }}
     - name: Build bridge binary
       run: pnpm run build:bridge:macos:release
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4.3.3
       with:
         name: macos_binary
         path: bridge/build/macos/
   build_ios_binary:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4.1.3
       with:
         submodules: recursive
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@v4.0.2
       with:
         node-version: ${{ env.nodeVersion }}
     - uses: pnpm/action-setup@v3
       with:
         version: ${{ env.pnpmVersion }}
         run_install: true
-    - uses: jwlawson/actions-setup-cmake@v1.11
+    - uses: jwlawson/actions-setup-cmake@v2.0.2
       with:
         cmake-version: ${{ env.cmakeVersion }}
     - name: Build bridge binary
       run: pnpm run build:bridge:ios:release
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4.3.3
       with:
         name: ios_binary
         path: bridge/build/ios/
   build_android_binary:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4.1.3
       with:
         submodules: recursive
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@v4.0.2
       with:
         node-version: ${{ env.nodeVersion }}
     - uses: pnpm/action-setup@v3
       with:
         version: ${{ env.pnpmVersion }}
         run_install: true
-    - uses: nttld/setup-ndk@v1
+    - uses: nttld/setup-ndk@v1.4.2
       id: setup-ndk
       with:
-        ndk-version: r27b
-    - uses: jwlawson/actions-setup-cmake@v1.11
+        ndk-version: r26d
+    - uses: jwlawson/actions-setup-cmake@v2.0.2
       with:
         cmake-version: ${{ env.cmakeVersion }}
     - name: Build bridge binary
       run: pnpm run build:bridge:android:release
       env:
         ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4.3.3
       with:
         name: android_binary
         path: bridge/build/android/
@@ -136,7 +136,7 @@ jobs:
     needs: [build_linux_binary, build_android_binary, build_ios_binary, build_macos_binary, build_windows_binary]
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4.1.3
       with:
         submodules: recursive
     - uses: subosito/flutter-action@v2
@@ -146,23 +146,23 @@ jobs:
       with:
         version: ${{ env.pnpmVersion }}
         run_install: true
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: linux_binary
         path: bridge/build/linux/
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: ios_binary
         path: bridge/build/ios/
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: macos_binary
         path: bridge/build/macos/
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: android_binary
         path: bridge/build/android/
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: windows_binary
         path: bridge/build/windows/
