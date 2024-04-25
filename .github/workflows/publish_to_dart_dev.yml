@@ -6,9 +6,10 @@ on:
   workflow_dispatch:
 
 env:
-  nodeVersion: "16"
-  cmakeVersion: "3.22.x"
-  flutterVersion: "3.7.7"
+  nodeVersion: "21"
+  pnpmVersion: "9"
+  cmakeVersion: "3.29.x"
+  flutterVersion: "3.13.4"
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -21,12 +22,15 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: ${{ env.nodeVersion }}
+      - uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.pnpmVersion }}
+          run_install: true
       - uses: jwlawson/actions-setup-cmake@v1.11
         with:
-          cmake-version: ${{ env.cmakeVersion }}
-      - run: npm i
+          cmake-version: ${{ env.cmakeVersion }}\
       - name: Build windows dll
-        run: npm run build:bridge:windows:release
+        run: pnpm run build:bridge:windows:release
       - uses: actions/upload-artifact@v2
         with:
           name: windows_binary
@@ -40,15 +44,18 @@ jobs:
           submodules: recursive
       - uses: actions/setup-node@v2
         with:
-          node-version: "16"
+          node-version: ${{ env.nodeVersion }}
+      - uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.pnpmVersion }}
+          run_install: true
       - uses: jwlawson/actions-setup-cmake@v1.11
         with:
           cmake-version: "3.22.x"
       - run: |
           sudo apt-get update
           sudo apt-get install chrpath ninja-build pkg-config -y
-      - run: npm i
-      - run: npm run build:bridge:linux:release
+      - run: pnpm run build:bridge:linux:release
       - uses: actions/upload-artifact@v2
         with:
           name: linux_binary
@@ -61,14 +68,16 @@ jobs:
         submodules: recursive
     - uses: actions/setup-node@v2
       with:
-        node-version: "16"
+        node-version: ${{ env.nodeVersion }}
+    - uses: pnpm/action-setup@v3
+      with:
+        version: ${{ env.pnpmVersion }}
+        run_install: true
     - uses: jwlawson/actions-setup-cmake@v1.11
       with:
         cmake-version: ${{ env.cmakeVersion }}
-    - name: NPM INSTALL
-      run: npm install
     - name: Build bridge binary
-      run: npm run build:bridge:macos:release
+      run: pnpm run build:bridge:macos:release
     - uses: actions/upload-artifact@v2
       with:
         name: macos_binary
@@ -81,14 +90,16 @@ jobs:
         submodules: recursive
     - uses: actions/setup-node@v2
       with:
-        node-version: "16"
+        node-version: ${{ env.nodeVersion }}
+    - uses: pnpm/action-setup@v3
+      with:
+        version: ${{ env.pnpmVersion }}
+        run_install: true
     - uses: jwlawson/actions-setup-cmake@v1.11
       with:
         cmake-version: ${{ env.cmakeVersion }}
-    - name: NPM INSTALL
-      run: npm install
     - name: Build bridge binary
-      run: npm run build:bridge:ios:release
+      run: pnpm run build:bridge:ios:release
     - uses: actions/upload-artifact@v2
       with:
         name: ios_binary
@@ -101,7 +112,11 @@ jobs:
         submodules: recursive
     - uses: actions/setup-node@v2
       with:
-        node-version: "16"
+        node-version: ${{ env.nodeVersion }}
+    - uses: pnpm/action-setup@v3
+      with:
+        version: ${{ env.pnpmVersion }}
+        run_install: true
     - uses: nttld/setup-ndk@v1
       id: setup-ndk
       with:
@@ -109,10 +124,8 @@ jobs:
     - uses: jwlawson/actions-setup-cmake@v1.11
       with:
         cmake-version: ${{ env.cmakeVersion }}
-    - name: NPM INSTALL
-      run: npm install
     - name: Build bridge binary
-      run: npm run build:bridge:android:release
+      run: pnpm run build:bridge:android:release
       env:
         ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
     - uses: actions/upload-artifact@v2
@@ -129,8 +142,10 @@ jobs:
     - uses: subosito/flutter-action@v2
       with:
         flutter-version: ${{ env.flutterVersion }}
-    - name: NPM INSTALL
-      run: npm install
+    - uses: pnpm/action-setup@v3
+      with:
+        version: ${{ env.pnpmVersion }}
+        run_install: true
     - uses: actions/download-artifact@v2
       with:
         name: linux_binary
