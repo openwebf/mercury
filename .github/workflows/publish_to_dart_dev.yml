@@ -120,7 +120,7 @@ jobs:
     - uses: nttld/setup-ndk@v1.4.2
       id: setup-ndk
       with:
-        ndk-version: r26d
+        ndk-version: r22b
     - uses: jwlawson/actions-setup-cmake@v2.0.2
       with:
         cmake-version: ${{ env.cmakeVersion }}
