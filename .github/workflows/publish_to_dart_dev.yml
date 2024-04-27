@@ -28,7 +28,7 @@ jobs:
           run_install: true
       - uses: jwlawson/actions-setup-cmake@v2.0.2
         with:
-          cmake-version: ${{ env.cmakeVersion }}\
+          cmake-version: ${{ env.cmakeVersion }}
       - name: Build windows dll
         run: pnpm run build:bridge:windows:release
       - uses: actions/upload-artifact@v4.3.3
