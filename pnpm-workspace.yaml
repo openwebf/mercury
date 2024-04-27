@@ -1,0 +1,4 @@
+packages:
+  - '/'
+  - 'bridge/polyfill/'
+  - 'bridge/scripts/code_generator/'

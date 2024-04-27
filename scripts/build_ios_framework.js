@@ -14,6 +14,7 @@ process.env.PATCH_PROMISE_POLYFILL = 'true';
 
 // Run tasks
 series(
+  'git-submodule',
   'ios-framework-clean',
   'compile-polyfill',
   'generate-bindings-code',

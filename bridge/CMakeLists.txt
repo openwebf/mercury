@@ -238,6 +238,9 @@ if ($ENV{MERCURYJS_ENGINE} MATCHES "quickjs")
     core/dart_isolate_context.cc
     core/dart_context_data.cc
     core/executing_context_data.cc
+    core/fileapi/blob.cc
+    core/fileapi/blob_part.cc
+    core/fileapi/blob_property_bag.cc
     core/module/console.cc
     core/module/timer/timer.cc
     core/module/timer/timer_coordinator.cc
@@ -269,6 +272,7 @@ if ($ENV{MERCURYJS_ENGINE} MATCHES "quickjs")
     out/qjs_module_manager.cc
     out/qjs_global_or_worker_scope.cc
     out/qjs_global.cc
+    out/qjs_blob.cc
     out/qjs_event.cc
     out/qjs_add_event_listener_options.cc
     out/qjs_event_listener_options.cc

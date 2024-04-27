@@ -8,6 +8,7 @@ const chalk = require('chalk');
 // Run tasks
 series(
   'clean',
+  'git-submodule',
   'compile-polyfill',
   'generate-bindings-code',
   'build-linux-mercury-lib'

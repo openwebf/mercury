@@ -6,6 +6,8 @@
 #ifndef FOUNDATION_LOGGING_H_
 #define FOUNDATION_LOGGING_H_
 
+#include <cstdint>
+
 #include <sstream>
 #include <string>
 
@@ -36,7 +38,7 @@ constexpr LogSeverity ERROR = 4;
 constexpr LogSeverity NUM_SEVERITIES = 5;
 constexpr LogSeverity FATAL = 6;
 
-enum class MessageLevel : uint8_t {
+enum MessageLevel : uint8_t {
   Log = 1,
   Warning = 2,
   Error = 3,

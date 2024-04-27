@@ -21,6 +21,7 @@ const uglifyOptions = {
     unsafe: true,
     pure_getters: true
   },
+  keep_classnames: true
 };
 const plugins = [
   resolve(),

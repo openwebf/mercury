@@ -44,7 +44,7 @@ const paths = {
   templates: resolveMercury('scripts/templates')
 };
 
-const NPM = platform == 'win32' ? 'npm.cmd' : 'npm';
+const NPM = platform == 'win32' ? 'pnpm.cmd' : 'pnpm';
 const pkgVersion = readFileSync(path.join(paths.mercury, 'pubspec.yaml'), 'utf-8').match(/version: (.*)/)[1].trim();
 const isProfile = process.env.ENABLE_PROFILE === 'true';
 
@@ -65,6 +65,7 @@ function resolveMercury(submodule) {
 }
 
 task('clean', () => {
+  console.log('--- clean---');
   execSync('git clean -xfd', {
     cwd: paths.example,
     env: process.env,
@@ -80,7 +81,19 @@ task('clean', () => {
 
 const libOutputPath = join(TARGET_PATH, platform, 'lib');
 
+task('git-submodule', done => {
+  console.log('--- git-submodule ---');
+  execSync('git submodule update --init', {
+    cwd: MERCURY_ROOT,
+    env: process.env,
+    stdio: 'inherit'
+  });
+
+  done();
+});
+
 task('build-darwin-mercury-lib', done => {
+  console.log('--- build-darwin-mercury-lib ---');
   let externCmakeArgs = [];
   let buildType = 'Debug';
   if (process.env.MERCURY_BUILD === 'Release') {
@@ -133,6 +146,7 @@ task('build-darwin-mercury-lib', done => {
 });
 
 task('compile-polyfill', (done) => {
+  console.log('--- compile-polyfill ---');
   if (!fs.existsSync(path.join(paths.polyfill, 'node_modules'))) {
     spawnSync(NPM, ['install'], {
       cwd: paths.polyfill,
@@ -183,6 +197,7 @@ function patchiOSFrameworkPList(frameworkPath) {
 }
 
 task(`build-ios-mercury-lib`, (done) => {
+  console.log('--- build-ios-mercury-lib ---');
   const buildType = (buildMode == 'Release' || buildMode === 'RelWithDebInfo')  ? 'RelWithDebInfo' : 'Debug';
   let externCmakeArgs = [];
 
@@ -320,6 +335,7 @@ task(`build-ios-mercury-lib`, (done) => {
 });
 
 task('build-linux-mercury-lib', (done) => {
+  console.log('--- build-linux-mercury-lib ---');
   const buildType = buildMode == 'Release' ? 'Release' : 'RelWithDebInfo';
   const cmakeGeneratorTemplate = platform == 'win32' ? 'Ninja' : 'Unix Makefiles';
 
@@ -366,6 +382,7 @@ task('build-linux-mercury-lib', (done) => {
 });
 
 task('generate-bindings-code', (done) => {
+  console.log('--- generate-bindings-code ---');
   if (!fs.existsSync(path.join(paths.codeGen, 'node_modules'))) {
     spawnSync(NPM, ['install'], {
       cwd: paths.codeGen,
@@ -401,6 +418,7 @@ task('generate-bindings-code', (done) => {
 });
 
 task('build-window-mercury-lib', (done) => {
+  console.log('--- build-window-mercury-lib ---');
   const buildType = buildMode == 'Release' ? 'RelWithDebInfo' : 'Debug';
 
   let externCmakeArgs = [];
@@ -438,6 +456,7 @@ task('build-window-mercury-lib', (done) => {
 });
 
 task('build-android-mercury-lib', (done) => {
+  console.log('--- build-android-mercury-lib ---');
   let ndkDir = '';
 
   // If ANDROID_NDK_HOME env defined, use it.
@@ -454,7 +473,7 @@ task('build-android-mercury-lib', (done) => {
     } else if (platform == 'linux') {
       androidHome = path.join(process.env.HOME, 'Android/Sdk');
     }
-    const ndkVersion = '22.1.7171670';
+    const ndkVersion = '26.3.11579264';
     ndkDir = path.join(androidHome, 'ndk', ndkVersion);
 
     if (!fs.existsSync(ndkDir)) {
@@ -546,21 +565,25 @@ task('build-android-mercury-lib', (done) => {
 });
 
 task('android-so-clean', (done) => {
+  console.log('--- android-so-clean ---');
   execSync(`rm -rf ${paths.bridge}/build/android`, { stdio: 'inherit' });
   done();
 });
 
 task('ios-framework-clean', (done) => {
+  console.log('--- ios-framework-clean ---');
   execSync(`rm -rf ${paths.bridge}/build/ios`, { stdio: 'inherit' });
   done();
 });
 
 task('macos-dylib-clean', (done) => {
+  console.log('--- macos-dylib-clean ---');
   execSync(`rm -rf ${paths.bridge}/build/macos`, { stdio: 'inherit' });
   done();
 });
 
 task('android-so-clean', (done) => {
+  console.log('--- android-so-clean ---');
   execSync(`rm -rf ${paths.bridge}/build/android`, { stdio: 'inherit', shell: winShell });
   done();
 });

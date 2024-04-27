@@ -5,6 +5,8 @@
 #ifndef BRIDGE_CORE_FILEAPI_ARRAY_BUFFER_DATA_H_
 #define BRIDGE_CORE_FILEAPI_ARRAY_BUFFER_DATA_H_
 
+#include <cstdint>
+
 namespace mercury {
 
 struct ArrayBufferData {
@@ -12,6 +14,6 @@ struct ArrayBufferData {
   int32_t length;
 };
 
-}  // namespace webf
+}  // namespace mercury
 
 #endif  // BRIDGE_CORE_FILEAPI_ARRAY_BUFFER_DATA_H_

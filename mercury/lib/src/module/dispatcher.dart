@@ -1,7 +1,7 @@
 import 'package:mercuryjs/mercuryjs.dart';
 
 class MercuryDispatcher extends EventTarget {
-  Map<String, List<Function(List<dynamic>)>> _subscribed = {};
+  final Map<String, List<Function(List<dynamic>)>> _subscribed = {};
 
   MercuryDispatcher(BindingContext? context) : super(context);
 
