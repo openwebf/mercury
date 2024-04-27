@@ -115,7 +115,7 @@ jobs:
         node-version: 16
     - uses: pnpm/action-setup@v3
       with:
-        version: ${{ env.pnpmVersion }}
+        version: 8
         run_install: true
     - uses: nttld/setup-ndk@v1.3.1
       id: setup-ndk
