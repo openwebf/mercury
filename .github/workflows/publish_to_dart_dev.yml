@@ -117,10 +117,10 @@ jobs:
       with:
         version: ${{ env.pnpmVersion }}
         run_install: true
-    - uses: anoop-b/setup-ndk@V1
+    - uses: anoop-b/setup-ndk@v1
       id: setup-ndk
       with:
-        ndk-version: r22b
+        ndk-version: r26d
     - uses: jwlawson/actions-setup-cmake@v2.0.2
       with:
         cmake-version: ${{ env.cmakeVersion }}
