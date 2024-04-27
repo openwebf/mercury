@@ -473,7 +473,7 @@ task('build-android-mercury-lib', (done) => {
     } else if (platform == 'linux') {
       androidHome = path.join(process.env.HOME, 'Android/Sdk');
     }
-    const ndkVersion = '22.1.7171670';
+    const ndkVersion = '26.3.11579264';
     ndkDir = path.join(androidHome, 'ndk', ndkVersion);
 
     if (!fs.existsSync(ndkDir)) {
