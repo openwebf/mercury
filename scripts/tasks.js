@@ -152,13 +152,13 @@ task('build-darwin-mercury-lib', done => {
 task('compile-polyfill', (done) => {
   console.log('--- compile-polyfill ---');
   if (!fs.existsSync(path.join(paths.polyfill, 'node_modules'))) {
-    spawnSync(`${NPM} --dir ${paths.polyfill}`, ['install'], {
+    spawnSync(`${NPM} --dir ${paths.polyfill} install`, {
       stdio: 'inherit',
       shell
     });
   }
 
-  let result = spawnSync(`${NPM} --dir ${paths.polyfill}`, ['run', (buildMode === 'Release' || buildMode === 'RelWithDebInfo') ? 'build:release' : 'build'], {
+  let result = spawnSync(`${NPM} --dir ${paths.polyfill} run ${(buildMode === 'Release' || buildMode === 'RelWithDebInfo') ? 'build:release' : 'build'}`, {
     env: {
       ...process.env,
       MERCURYJS_ENGINE: targetJSEngine
