@@ -154,14 +154,14 @@ task('compile-polyfill', (done) => {
   console.log('--- compile-polyfill ---');
   if (!fs.existsSync(paths.polyfill)) console.log('yep, this is happening')
   if (!fs.existsSync(path.join(paths.polyfill, 'node_modules'))) {
-    spawn(`${NPM} install`, {
+    spawn(NPM, ['install'], {
       stdio: 'inherit',
       cwd: paths.polyfill,
       shell
     });
   }
 
-  let result = spawn(`${NPM} run ${(buildMode === 'Release' || buildMode === 'RelWithDebInfo') ? 'build:release' : 'build'}`, {
+  let result = spawn(NPM, ['run' (buildMode === 'Release' || buildMode === 'RelWithDebInfo') ? 'build:release' : 'build'], {
     env: {
       ...process.env,
       MERCURYJS_ENGINE: targetJSEngine
