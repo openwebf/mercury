@@ -95,6 +95,10 @@ jobs:
       with:
         version: ${{ env.pnpmVersion }}
         run_install: true
+    - uses: pnpm/action-setup@v3
+      with:
+        version: ${{ env.pnpmVersion }}
+        run_install: true
     - uses: jwlawson/actions-setup-cmake@v2.0.2
       with:
         cmake-version: ${{ env.cmakeVersion }}
