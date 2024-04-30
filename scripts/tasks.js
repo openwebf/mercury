@@ -7,7 +7,8 @@ const { src, dest, series, parallel, task } = require('gulp');
 const mkdirp = require('mkdirp');
 const path = require('path');
 const { readFileSync, writeFileSync, mkdirSync } = require('fs');
-const { spawnSync, execSync, fork, spawn, exec } = require('child_process');
+const { execSync, fork, exec } = require('child_process');
+const spawn = require('cross-spawn').sync;
 const { join, resolve } = require('path');
 const { program } = require('commander');
 const chalk = require('chalk');
@@ -152,13 +153,13 @@ task('build-darwin-mercury-lib', done => {
 task('compile-polyfill', (done) => {
   console.log('--- compile-polyfill ---');
   if (!fs.existsSync(path.join(paths.polyfill, 'node_modules'))) {
-    spawnSync(`${NPM} --dir ${paths.polyfill} install`, {
+    spawn(`${NPM} --dir ${paths.polyfill} install`, {
       stdio: 'inherit',
       shell
     });
   }
 
-  let result = spawnSync(`${NPM} --dir ${paths.polyfill} run ${(buildMode === 'Release' || buildMode === 'RelWithDebInfo') ? 'build:release' : 'build'}`, {
+  let result = spawn(`${NPM} --dir ${paths.polyfill} run ${(buildMode === 'Release' || buildMode === 'RelWithDebInfo') ? 'build:release' : 'build'}`, {
     env: {
       ...process.env,
       MERCURYJS_ENGINE: targetJSEngine
@@ -389,30 +390,33 @@ task('build-linux-mercury-lib', (done) => {
 task('generate-bindings-code', (done) => {
   console.log('--- generate-bindings-code ---');
   if (!fs.existsSync(path.join(paths.codeGen, 'node_modules'))) {
-    spawnSync(NPM, ['install'], {
+    spawn(NPM, ['install'], {
       cwd: paths.codeGen,
-      stdio: 'inherit'
+      stdio: 'inherit',
+      shell
     });
   }
 
-  let buildResult = spawnSync(NPM, ['run', 'build'], {
+  let buildResult = spawn(NPM, ['run', 'build'], {
     cwd: paths.codeGen,
     env: {
       ...process.env,
     },
-    stdio: 'inherit'
+    stdio: 'inherit',
+    shell
   });
 
   if (buildResult.status !== 0) {
     return done(buildResult.status);
   }
 
-  let compileResult = spawnSync('node', ['bin/code_generator', '-s', '../../core', '-d', '../../out'], {
+  let compileResult = spawn('node', ['bin/code_generator', '-s', '../../core', '-d', '../../out'], {
     cwd: paths.codeGen,
     env: {
       ...process.env,
     },
-    stdio: 'inherit'
+    stdio: 'inherit',
+    shell
   });
 
   if (compileResult.status !== 0) {
