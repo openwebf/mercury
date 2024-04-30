@@ -152,6 +152,7 @@ task('build-darwin-mercury-lib', done => {
 
 task('compile-polyfill', (done) => {
   console.log('--- compile-polyfill ---');
+  if (!fs.existsSync(paths.polyfill)) console.log('yep, this is happening')
   if (!fs.existsSync(path.join(paths.polyfill, 'node_modules'))) {
     spawn(`${NPM} install`, {
       stdio: 'inherit',
