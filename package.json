@@ -44,6 +44,7 @@
     "ws": "^7.3.0"
   },
   "dependencies": {
+    "cross-spawn": "^7.0.3",
     "prepend-file": "^2.0.1"
   }
 }

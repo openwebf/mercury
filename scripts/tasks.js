@@ -7,7 +7,8 @@ const { src, dest, series, parallel, task } = require('gulp');
 const mkdirp = require('mkdirp');
 const path = require('path');
 const { readFileSync, writeFileSync, mkdirSync } = require('fs');
-const { spawnSync, execSync, fork, spawn, exec } = require('child_process');
+const { execSync, fork, exec } = require('child_process');
+const spawn = require('cross-spawn').sync;
 const { join, resolve } = require('path');
 const { program } = require('commander');
 const chalk = require('chalk');
@@ -44,7 +45,10 @@ const paths = {
   templates: resolveMercury('scripts/templates')
 };
 
-const NPM = platform == 'win32' ? 'pnpm.cmd' : 'pnpm';
+const NPM = 'pnpm';
+const shell = process.platform === 'win32'
+  ? 'C:\\Windows\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe'
+  : undefined
 const pkgVersion = readFileSync(path.join(paths.mercury, 'pubspec.yaml'), 'utf-8').match(/version: (.*)/)[1].trim();
 const isProfile = process.env.ENABLE_PROFILE === 'true';
 
@@ -86,7 +90,8 @@ task('git-submodule', done => {
   execSync('git submodule update --init', {
     cwd: MERCURY_ROOT,
     env: process.env,
-    stdio: 'inherit'
+    stdio: 'inherit',
+    shell
   });
 
   done();
@@ -147,23 +152,27 @@ task('build-darwin-mercury-lib', done => {
 
 task('compile-polyfill', (done) => {
   console.log('--- compile-polyfill ---');
+  if (!fs.existsSync(paths.polyfill)) console.log('yep, this is happening')
   if (!fs.existsSync(path.join(paths.polyfill, 'node_modules'))) {
-    spawnSync(NPM, ['install'], {
+    spawn(NPM, ['install'], {
+      stdio: 'inherit',
       cwd: paths.polyfill,
-      stdio: 'inherit'
+      shell
     });
   }
 
-  let result = spawnSync(NPM, ['run', (buildMode === 'Release' || buildMode === 'RelWithDebInfo') ? 'build:release' : 'build'], {
-    cwd: paths.polyfill,
+  let result = spawn(NPM, ['run', (buildMode === 'Release' || buildMode === 'RelWithDebInfo') ? 'build:release' : 'build'], {
     env: {
       ...process.env,
       MERCURYJS_ENGINE: targetJSEngine
     },
-    stdio: 'inherit'
+    stdio: 'inherit',
+    cwd: paths.polyfill,
+    shell
   });
 
   if (result.status !== 0) {
+    console.log(result)
     return done(result.status);
   }
 
@@ -384,30 +393,33 @@ task('build-linux-mercury-lib', (done) => {
 task('generate-bindings-code', (done) => {
   console.log('--- generate-bindings-code ---');
   if (!fs.existsSync(path.join(paths.codeGen, 'node_modules'))) {
-    spawnSync(NPM, ['install'], {
+    spawn(NPM, ['install'], {
       cwd: paths.codeGen,
-      stdio: 'inherit'
+      stdio: 'inherit',
+      shell
     });
   }
 
-  let buildResult = spawnSync(NPM, ['run', 'build'], {
+  let buildResult = spawn(NPM, ['run', 'build'], {
     cwd: paths.codeGen,
     env: {
       ...process.env,
     },
-    stdio: 'inherit'
+    stdio: 'inherit',
+    shell
   });
 
   if (buildResult.status !== 0) {
     return done(buildResult.status);
   }
 
-  let compileResult = spawnSync('node', ['bin/code_generator', '-s', '../../core', '-d', '../../out'], {
+  let compileResult = spawn('node', ['bin/code_generator', '-s', '../../core', '-d', '../../out'], {
     cwd: paths.codeGen,
     env: {
       ...process.env,
     },
-    stdio: 'inherit'
+    stdio: 'inherit',
+    shell
   });
 
   if (compileResult.status !== 0) {
