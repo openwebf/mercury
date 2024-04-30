@@ -85,5 +85,5 @@ pubspec.lock
 .flutter-plugins-dependencies
 
 # macos
-macos/libmercuryjs.dylib
-macos/libquickjs.dylib
+#macos/libmercuryjs.dylib
+#macos/libquickjs.dylib
