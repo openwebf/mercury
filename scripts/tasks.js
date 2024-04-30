@@ -89,7 +89,8 @@ task('git-submodule', done => {
   execSync('git submodule update --init', {
     cwd: MERCURY_ROOT,
     env: process.env,
-    stdio: 'inherit'
+    stdio: 'inherit',
+    shell
   });
 
   done();
@@ -151,7 +152,7 @@ task('build-darwin-mercury-lib', done => {
 task('compile-polyfill', (done) => {
   console.log('--- compile-polyfill ---');
   if (!fs.existsSync(path.join(paths.polyfill, 'node_modules'))) {
-    spawnSync(NPM, [`-C ${paths.polyfill}`, 'install'], {
+    spawnSync(NPM, [`--dir ${paths.polyfill}`, 'install'], {
       stdio: 'inherit',
       shell
     });
