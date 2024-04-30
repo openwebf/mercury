@@ -158,7 +158,7 @@ task('compile-polyfill', (done) => {
     });
   }
 
-  let result = spawnSync(NPM, [`-C ${paths.polyfill}`, 'run', (buildMode === 'Release' || buildMode === 'RelWithDebInfo') ? 'build:release' : 'build'], {
+  let result = spawnSync(NPM, [`--dir ${paths.polyfill}`, 'run', (buildMode === 'Release' || buildMode === 'RelWithDebInfo') ? 'build:release' : 'build'], {
     env: {
       ...process.env,
       MERCURYJS_ENGINE: targetJSEngine
