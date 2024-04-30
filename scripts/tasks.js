@@ -44,7 +44,10 @@ const paths = {
   templates: resolveMercury('scripts/templates')
 };
 
-const NPM = platform == 'win32' ? 'pnpm.cmd' : 'pnpm';
+const NPM = 'pnpm';
+const shell = process.platform === 'win32'
+  ? 'C:\\Windows\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe'
+  : undefined
 const pkgVersion = readFileSync(path.join(paths.mercury, 'pubspec.yaml'), 'utf-8').match(/version: (.*)/)[1].trim();
 const isProfile = process.env.ENABLE_PROFILE === 'true';
 
@@ -148,22 +151,23 @@ task('build-darwin-mercury-lib', done => {
 task('compile-polyfill', (done) => {
   console.log('--- compile-polyfill ---');
   if (!fs.existsSync(path.join(paths.polyfill, 'node_modules'))) {
-    spawnSync(NPM, ['install'], {
-      cwd: paths.polyfill,
-      stdio: 'inherit'
+    spawnSync(NPM, [`-C ${paths.polyfill}`, 'install'], {
+      stdio: 'inherit',
+      shell
     });
   }
 
-  let result = spawnSync(NPM, ['run', (buildMode === 'Release' || buildMode === 'RelWithDebInfo') ? 'build:release' : 'build'], {
-    cwd: paths.polyfill,
+  let result = spawnSync(NPM, [`-C ${paths.polyfill}`, 'run', (buildMode === 'Release' || buildMode === 'RelWithDebInfo') ? 'build:release' : 'build'], {
     env: {
       ...process.env,
       MERCURYJS_ENGINE: targetJSEngine
     },
-    stdio: 'inherit'
+    stdio: 'inherit',
+    shell
   });
 
   if (result.status !== 0) {
+    console.log(result)
     return done(result.status);
   }
 
