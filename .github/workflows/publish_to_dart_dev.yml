@@ -109,7 +109,7 @@ jobs:
         name: ios_binary
         path: bridge/build/ios/
   build_android_binary:
-    runs-on: macos-13
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4.1.3
       with:
@@ -121,10 +121,6 @@ jobs:
       with:
         version: ${{ env.pnpmVersion }}
         run_install: true
-    - uses: nttld/setup-ndk@v1.2.0
-      id: setup-ndk
-      with:
-        ndk-version: r26d
     - uses: jwlawson/actions-setup-cmake@v2.0.2
       with:
         cmake-version: ${{ env.cmakeVersion }}
