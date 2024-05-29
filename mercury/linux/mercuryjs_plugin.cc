@@ -8,17 +8,17 @@
 
 #define MERCURYJS_PLUGIN(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST((obj), mercuryjs_plugin_get_type(), \
-                              MercuryPlugin))
+                              MercuryjsPlugin))
 
-struct _MercuryPlugin {
+struct _MercuryjsPlugin {
   GObject parent_instance;
 };
 
-G_DEFINE_TYPE(MercuryPlugin, mercuryjs_plugin, g_object_get_type())
+G_DEFINE_TYPE(MercuryjsPlugin, mercuryjs_plugin, g_object_get_type())
 
 // Called when a method call is received from Flutter.
 static void mercuryjs_plugin_handle_method_call(
-    MercuryPlugin* self,
+    MercuryjsPlugin* self,
     FlMethodCall* method_call) {
   g_autoptr(FlMethodResponse) response = nullptr;
 
@@ -45,20 +45,20 @@ static void mercuryjs_plugin_dispose(GObject* object) {
   G_OBJECT_CLASS(mercuryjs_plugin_parent_class)->dispose(object);
 }
 
-static void mercuryjs_plugin_class_init(MercuryPluginClass* klass) {
+static void mercuryjs_plugin_class_init(MercuryjsPluginClass* klass) {
   G_OBJECT_CLASS(klass)->dispose = mercuryjs_plugin_dispose;
 }
 
-static void mercuryjs_plugin_init(MercuryPlugin* self) {}
+static void mercuryjs_plugin_init(MercuryjsPlugin* self) {}
 
 static void method_call_cb(FlMethodChannel* channel, FlMethodCall* method_call,
                            gpointer user_data) {
-  MercuryPlugin* plugin = MERCURYJS_PLUGIN(user_data);
+  MercuryjsPlugin* plugin = MERCURYJS_PLUGIN(user_data);
   mercuryjs_plugin_handle_method_call(plugin, method_call);
 }
 
 void mercuryjs_plugin_register_with_registrar(FlPluginRegistrar* registrar) {
-  MercuryPlugin* plugin = MERCURYJS_PLUGIN(
+  MercuryjsPlugin* plugin = MERCURYJS_PLUGIN(
       g_object_new(mercuryjs_plugin_get_type(), nullptr));
 
   g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();

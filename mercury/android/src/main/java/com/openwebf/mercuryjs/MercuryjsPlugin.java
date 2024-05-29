@@ -11,9 +11,9 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 /**
- * MercuryPlugin
+ * MercuryjsPlugin
  */
-public class MercuryPlugin implements FlutterPlugin, MethodCallHandler {
+public class MercuryjsPlugin implements FlutterPlugin, MethodCallHandler {
   /// The MethodChannel that will the communication between Flutter and native Android
   ///
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
@@ -34,7 +34,7 @@ public class MercuryPlugin implements FlutterPlugin, MethodCallHandler {
   // in the same class.
   public static void registerWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), "mercuryjs");
-    MercuryPlugin plugin = new MercuryPlugin();
+    MercuryjsPlugin plugin = new MercuryjsPlugin();
     plugin.mContext = registrar.context();
     channel.setMethodCallHandler(plugin);
   }
@@ -93,6 +93,6 @@ public class MercuryPlugin implements FlutterPlugin, MethodCallHandler {
   }
 
   private String getTemporaryDirectory() {
-    return mContext.getCacheDir().getPath() + "/Mercury";
+    return mContext.getCacheDir().getPath() + "/Mercuryjs";
   }
 }

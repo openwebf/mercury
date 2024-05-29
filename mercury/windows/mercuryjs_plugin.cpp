@@ -16,13 +16,13 @@
 
 namespace {
 
-class MercuryPlugin : public flutter::Plugin {
+class MercuryjsPlugin : public flutter::Plugin {
  public:
   static void RegisterWithRegistrar(flutter::PluginRegistrarWindows *registrar);
 
-  MercuryPlugin();
+  MercuryjsPlugin();
 
-  virtual ~MercuryPlugin();
+  virtual ~MercuryjsPlugin();
 
  private:
   // Called when a method is called on this plugin's channel from Dart.
@@ -32,14 +32,14 @@ class MercuryPlugin : public flutter::Plugin {
 };
 
 // static
-void MercuryPlugin::RegisterWithRegistrar(
+void MercuryjsPlugin::RegisterWithRegistrar(
     flutter::PluginRegistrarWindows *registrar) {
   auto channel =
       std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
           registrar->messenger(), "mercuryjs",
           &flutter::StandardMethodCodec::GetInstance());
 
-  auto plugin = std::make_unique<MercuryPlugin>();
+  auto plugin = std::make_unique<MercuryjsPlugin>();
 
   channel->SetMethodCallHandler(
       [plugin_pointer = plugin.get()](const auto &call, auto result) {
@@ -49,9 +49,9 @@ void MercuryPlugin::RegisterWithRegistrar(
   registrar->AddPlugin(std::move(plugin));
 }
 
-MercuryPlugin::MercuryPlugin() {}
+MercuryjsPlugin::MercuryjsPlugin() {}
 
-MercuryPlugin::~MercuryPlugin() {}
+MercuryjsPlugin::~MercuryjsPlugin() {}
 
 std::string tcharVecToString(const std::vector<TCHAR>& tcharVec) {
 #if defined(UNICODE) || defined(_UNICODE)
@@ -65,7 +65,7 @@ std::string tcharVecToString(const std::vector<TCHAR>& tcharVec) {
     return result;
 }
 
-void MercuryPlugin::HandleMethodCall(
+void MercuryjsPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue> &method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
   if (method_call.method_name().compare("getTemporaryDirectory") == 0) {
@@ -85,9 +85,9 @@ void MercuryPlugin::HandleMethodCall(
 
 }  // namespace
 
-void MercuryPluginRegisterWithRegistrar(
+void MercuryjsPluginRegisterWithRegistrar(
     FlutterDesktopPluginRegistrarRef registrar) {
-  MercuryPlugin::RegisterWithRegistrar(
+  MercuryjsPlugin::RegisterWithRegistrar(
       flutter::PluginRegistrarManager::GetInstance()
           ->GetRegistrar<flutter::PluginRegistrarWindows>(registrar));
 }

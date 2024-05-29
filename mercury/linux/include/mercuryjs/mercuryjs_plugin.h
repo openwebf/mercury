@@ -11,10 +11,10 @@ G_BEGIN_DECLS
 #define FLUTTER_PLUGIN_EXPORT
 #endif
 
-typedef struct _MercuryPlugin MercuryPlugin;
+typedef struct _MercuryjsPlugin MercuryjsPlugin;
 typedef struct {
   GObjectClass parent_class;
-} MercuryPluginClass;
+} MercuryjsPluginClass;
 
 FLUTTER_PLUGIN_EXPORT GType mercuryjs_plugin_get_type();
 

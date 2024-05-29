@@ -13,7 +13,7 @@
 extern "C" {
 #endif
 
-FLUTTER_PLUGIN_EXPORT void MercuryPluginRegisterWithRegistrar(
+FLUTTER_PLUGIN_EXPORT void MercuryjsPluginRegisterWithRegistrar(
     FlutterDesktopPluginRegistrarRef registrar);
 
 #if defined(__cplusplus)
