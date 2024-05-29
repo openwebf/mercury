@@ -1,8 +1,8 @@
-#import "MercuryPlugin.h"
+#import "MercuryjsPlugin.h"
 
 static FlutterMethodChannel *methodChannel = nil;
 
-@implementation MercuryPlugin
+@implementation MercuryjsPlugin
 
 + (FlutterMethodChannel *) getMethodChannel {
   return methodChannel;
@@ -16,7 +16,7 @@ static FlutterMethodChannel *methodChannel = nil;
 
   methodChannel = channel;
 
-  MercuryPlugin* instance = [[MercuryPlugin alloc] initWithRegistrar: registrar];
+  MercuryjsPlugin* instance = [[MercuryjsPlugin alloc] initWithRegistrar: registrar];
 
   [registrar addMethodCallDelegate:instance channel:channel];
 }
@@ -37,7 +37,7 @@ static FlutterMethodChannel *methodChannel = nil;
 
 - (NSString*) getTemporaryDirectory {
   NSArray<NSString *>* paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-  return [paths.firstObject stringByAppendingString: @"/Mercury"];
+  return [paths.firstObject stringByAppendingString: @"/Mercuryjs"];
 }
 
 @end

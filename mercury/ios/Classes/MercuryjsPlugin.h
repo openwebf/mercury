@@ -1,6 +1,6 @@
 #import <Flutter/Flutter.h>
 
-@interface MercuryPlugin : NSObject<FlutterPlugin>
+@interface MercuryjsPlugin : NSObject<FlutterPlugin>
 
 @property NSObject<FlutterPluginRegistrar> *registrar;
 

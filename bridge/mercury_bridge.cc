@@ -101,7 +101,7 @@ static MercuryInfo* mercuryInfo{nullptr};
 MercuryInfo* getMercuryInfo() {
   if (mercuryInfo == nullptr) {
     mercuryInfo = new MercuryInfo();
-    mercuryInfo->app_name = "Mercury";
+    mercuryInfo->app_name = "Mercuryjs";
     mercuryInfo->app_revision = APP_REV;
     mercuryInfo->app_version = APP_VERSION;
     mercuryInfo->system_name = SYSTEM_NAME;
