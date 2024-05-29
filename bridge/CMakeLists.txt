@@ -99,6 +99,7 @@ list(APPEND BRIDGE_SOURCE
   foundation/string_view.cc
   foundation/native_value.cc
   foundation/native_type.cc
+  foundation/dart_readable.cc
   foundation/isolate_command_buffer.cc
   polyfill/dist/polyfill.cc
   ${CMAKE_CURRENT_LIST_DIR}/third_party/dart/include/dart_api_dl.c
