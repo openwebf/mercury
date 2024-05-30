@@ -8,6 +8,7 @@
 *.class
 .gradle/
 local.properties
+*.dylib
 
 # IntelliJ
 .idea/workspace.xml
@@ -63,6 +64,9 @@ package-lock.json
 
 Podfile.lock
 .cxx
+
+# pnpm
+pnpm-lock.yaml
 
 temp
 coverage
