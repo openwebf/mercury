@@ -68,12 +68,12 @@ class _MyHomePageState extends State<MyBrowser> {
             message = 'Context loading...';
           });
           controller.context.dispatcher?.subscribe('example', (args) {
-            print('bar');
+            print('dispatcher fired');
             setState(() {
               message = args[0]['message'];
             });
           });
-          controller.context.evaluateJavaScripts('hello();');
+          controller.context.evaluateJavaScripts('hello()');
         };
       }
     );

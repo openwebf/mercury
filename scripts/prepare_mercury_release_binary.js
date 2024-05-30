@@ -4,7 +4,7 @@ const { series } = require('gulp');
 const os = require('os');
 
 let buildTasks = [
-  'sdk-clean',
+  'clean',
   'compile-polyfill',
   'generate-bindings-code',
   'build-android-mercury-lib',

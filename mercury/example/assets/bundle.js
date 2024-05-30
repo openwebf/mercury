@@ -1,17 +1,19 @@
-console.log('does this even work?');
+console.log('Javascript bundle -- start');
 
 let seconds = 0;
 
-console.log('how about here?')
-
 const hello = async () => {
-  //const res = await fetch('https://api.ipify.org');
-  //const txt = await res.text();
-  setInterval(() => {
-    console.log('yup')
-    mercury.dispatcher.dispatch('example', { message: `foo: ${seconds} seconds.`});
-    seconds++;
-  }, 1000)
+	const res = await fetch('https://api.ipify.org');
+	var msg = await res.text();
+	mercury.dispatcher.dispatch('example', { message: `url: ${msg}`});
+	if (0) {
+		setInterval(() => {
+			console.log('yup')
+			mercury.dispatcher.dispatch('example', { message: `foo: ${seconds} seconds.`});
+			seconds++;
+	  		}, 1000
+		)
+	}
 };
 
-console.log('surely not')
+console.log('Javascript bundle -- end');
