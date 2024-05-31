@@ -65,9 +65,6 @@ package-lock.json
 Podfile.lock
 .cxx
 
-# pnpm
-pnpm-lock.yaml
-
 temp
 coverage
 pubspec.lock
