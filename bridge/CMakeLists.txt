@@ -38,6 +38,12 @@ else ()
   add_definitions(-DENABLE_PROFILE=0)
 endif ()
 
+if (${ENABLE_LOG})
+  add_definitions(-DENABLE_LOG=1)
+else()
+  add_definitions(-DENABLE_LOG=0)
+endif()
+
 if(NOT MSVC)
   if (${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "RelWithDebInfo")
     include(CheckIPOSupported)

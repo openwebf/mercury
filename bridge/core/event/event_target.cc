@@ -63,15 +63,15 @@ EventTarget* EventTarget::Create(ExecutingContext* context,
 EventTarget::~EventTarget() {
 #if UNIT_TEST
   // Callback to unit test specs before eventTarget finalized.
-  if (TEST_getEnv(GetExecutingContext()->uniqueId())->on_event_target_disposed != nullptr) {
-    TEST_getEnv(GetExecutingContext()->uniqueId())->on_event_target_disposed(this);
+  if (TEST_getEnv(executingContext()->uniqueId())->on_event_target_disposed != nullptr) {
+    TEST_getEnv(executingContext()->uniqueId())->on_event_target_disposed(this);
   }
 #endif
 }
 
 EventTarget::EventTarget(ExecutingContext* context, const AtomicString& constructor_name)
     : className_(constructor_name), BindingObject(context->ctx()) {
-  GetExecutingContext()->isolateCommandBuffer()->addCommand(
+  executingContext()->isolateCommandBuffer()->AddCommand(
       IsolateCommand::kCreateEventTarget, std::move(constructor_name.ToNativeString(ctx())), bindingObject(), nullptr);
 }
 
@@ -90,6 +90,7 @@ bool EventTarget::addEventListener(const AtomicString& event_type,
                                    const std::shared_ptr<EventListener>& event_listener,
                                    const std::shared_ptr<QJSUnionAddEventListenerOptionsBoolean>& options,
                                    ExceptionState& exception_state) {
+  if (event_listener == nullptr) return false;
   std::shared_ptr<AddEventListenerOptions> event_listener_options;
   if (options == nullptr) {
     event_listener_options = AddEventListenerOptions::Create();
@@ -159,7 +160,7 @@ bool EventTarget::dispatchEvent(Event* event, ExceptionState& exception_state) {
     return false;
   }
 
-  if (!GetExecutingContext())
+  if (!executingContext())
     return false;
 
   event->SetTrusted(false);
@@ -302,7 +303,7 @@ bool EventTarget::AddEventListenerInternal(const AtomicString& event_type,
       listener_options->passive = options->passive();
     }
 
-    GetExecutingContext()->isolateCommandBuffer()->addCommand(
+    executingContext()->isolateCommandBuffer()->AddCommand(
         IsolateCommand::kAddEvent, std::move(event_type.ToNativeString(ctx())), bindingObject(), listener_options);
   }
 
@@ -350,7 +351,7 @@ bool EventTarget::RemoveEventListenerInternal(const AtomicString& event_type,
   if (listener_count == 0) {
     bool has_capture = options->hasCapture() && options->capture();
 
-    GetExecutingContext()->isolateCommandBuffer()->addCommand(IsolateCommand::kRemoveEvent,
+    executingContext()->isolateCommandBuffer()->AddCommand(IsolateCommand::kRemoveEvent,
                                                          std::move(event_type.ToNativeString(ctx())), bindingObject(),
                                                          has_capture ? (void*)0x01 : nullptr);
   }
@@ -373,7 +374,7 @@ NativeValue EventTarget::HandleCallFromDartSide(const AtomicString& method,
                                                 Dart_Handle dart_object) {
   if (!isContextValid(contextId()))
     return Native_NewNull();
-  MemberMutationScope mutation_scope{GetExecutingContext()};
+  MemberMutationScope mutation_scope{executingContext()};
 
   if (method == binding_call_methods::kdispatchEvent) {
     return HandleDispatchEventFromDart(argc, argv, dart_object);
@@ -385,6 +386,8 @@ NativeValue EventTarget::HandleCallFromDartSide(const AtomicString& method,
 }
 
 NativeValue EventTarget::HandleDispatchEventFromDart(int32_t argc, const NativeValue* argv, Dart_Handle dart_object) {
+  // prof: executingContext()->dartIsolateContext()->profiler()->StartTrackSteps("EventTarget::HandleDispatchEventFromDart");
+
   assert(argc >= 2);
   NativeValue native_event_type = argv[0];
   NativeValue native_is_capture = argv[2];
@@ -393,9 +396,15 @@ NativeValue EventTarget::HandleDispatchEventFromDart(int32_t argc, const NativeV
       NativeValueConverter<NativeTypeString>::FromNativeValue(ctx(), std::move(native_event_type));
   RawEvent* raw_event = NativeValueConverter<NativeTypePointer<RawEvent>>::FromNativeValue(argv[1]);
 
-  Event* event = EventFactory::Create(GetExecutingContext(), event_type, raw_event);
+  Event* event = EventFactory::Create(executingContext(), event_type, raw_event);
   assert(event->target() != nullptr);
   assert(event->currentTarget() != nullptr);
+
+  auto* global = DynamicTo<Global>(event->target());
+  if (global != nullptr && (event->type() == event_type_names::kload || event->type() == event_type_names::kgcopen)) {
+    global->OnLoadEventFired();
+  }
+
   ExceptionState exception_state;
   event->SetTrusted(false);
   event->SetEventPhase(Event::kAtTarget);
@@ -404,23 +413,42 @@ NativeValue EventTarget::HandleDispatchEventFromDart(int32_t argc, const NativeV
 
   auto* wire = new DartWireContext();
   wire->jsObject = event->ToValue();
+  wire->is_dedicated = executingContext()->isDedicated();
+  wire->context_id = executingContext()->contextId();
+  wire->dispatcher = GetDispatcher();
+  wire->disposed = false;
 
   auto dart_object_finalize_callback = [](void* isolate_callback_data, void* peer) {
     auto* wire = (DartWireContext*)(peer);
-    if (IsDartWireAlive(wire)) {
-      DeleteDartWire(wire);
-    }
+
+    if (wire->disposed)
+      return;
+
+    wire->dispatcher->PostToJs(
+        wire->is_dedicated, wire->context_id,
+        [](DartWireContext* wire) -> void {
+          if (IsDartWireAlive(wire)) {
+            DeleteDartWire(wire);
+          }
+        },
+        wire);
   };
 
   WatchDartWire(wire);
-  Dart_NewFinalizableHandle_DL(dart_object, reinterpret_cast<void*>(wire), sizeof(DartWireContext),
-                               dart_object_finalize_callback);
+  GetDispatcher()->PostToDart(
+      executingContext()->isDedicated(),
+      [](Dart_Handle object, void* peer, intptr_t external_allocation_size, Dart_HandleFinalizer callback) {
+        Dart_NewFinalizableHandle_DL(object, peer, external_allocation_size, callback);
+      },
+      dart_object, reinterpret_cast<void*>(wire), sizeof(DartWireContext), dart_object_finalize_callback);
 
   if (exception_state.HasException()) {
     JSValue error = JS_GetException(ctx());
-    GetExecutingContext()->ReportError(error);
+    executingContext()->ReportError(error);
     JS_FreeValue(ctx(), error);
   }
+
+  // prof: executingContext()->dartIsolateContext()->profiler()->FinishTrackSteps();
 
   auto* result = new EventDispatchResult{.canceled = dispatch_result == DispatchEventResult::kCanceledByEventHandler,
                                          .propagationStopped = event->propagationStopped()};
@@ -434,7 +462,7 @@ RegisteredEventListener* EventTarget::GetAttributeRegisteredEventListener(const 
 
   for (auto& event_listener : *listener_vector) {
     auto listener = event_listener.Callback();
-    if (GetExecutingContext() && listener->IsEventHandler())
+    if (executingContext() && listener->IsEventHandler())
       return &event_listener;
   }
   return nullptr;
@@ -449,7 +477,7 @@ bool EventTarget::FireEventListeners(Event& event,
   // dispatch. Conveniently, all new event listeners will be added after or at
   // index |size|, so iterating up to (but not including) |size| naturally
   // excludes new event listeners.
-  ExecutingContext* context = GetExecutingContext();
+  ExecutingContext* context = executingContext();
   if (!context)
     return false;
 
@@ -505,7 +533,7 @@ void EventTargetWithInlineData::Trace(GCVisitor* visitor) const {
 }
 
 bool EventTarget::NamedPropertyQuery(const AtomicString& key, ExceptionState& exception_state) {
-  return GetExecutingContext()->dartIsolateContext()->EnsureData()->HasWidgetElementShape(key);
+  return executingContext()->dartIsolateContext()->EnsureData()->HasWidgetElementShape(key);
 }
 
 void EventTarget::NamedPropertyEnumerator(std::vector<AtomicString>& names, ExceptionState& exception_state) {
@@ -524,15 +552,15 @@ ScriptValue EventTarget::item(const AtomicString& key, ExceptionState& exception
     return unimplemented_properties_[key];
   }
 
-  if (!GetExecutingContext()->dartIsolateContext()->EnsureData()->HasWidgetElementShape(className())) {
-    GetExecutingContext()->FlushIsolateCommand();
+  if (!executingContext()->dartIsolateContext()->EnsureData()->HasWidgetElementShape(className())) {
+    executingContext()->FlushIsolateCommand();
   }
 
   if (key == built_in_string::kSymbol_toStringTag) {
     return ScriptValue(ctx(), className().ToNativeString(ctx()).release());
   }
 
-  auto shape = GetExecutingContext()->dartIsolateContext()->EnsureData()->GetWidgetElementShape(className());
+  auto shape = executingContext()->dartIsolateContext()->EnsureData()->GetWidgetElementShape(className());
   if (shape != nullptr) {
     if (shape->built_in_properties_.find(key) != shape->built_in_properties_.end()) {
       return ScriptValue(ctx(), GetBindingProperty(key, exception_state));
@@ -563,11 +591,11 @@ ScriptValue EventTarget::item(const AtomicString& key, ExceptionState& exception
 }
 
 bool EventTarget::SetItem(const AtomicString& key, const ScriptValue& value, ExceptionState& exception_state) {
-  if (!GetExecutingContext()->dartIsolateContext()->EnsureData()->HasWidgetElementShape(className())) {
-    GetExecutingContext()->FlushIsolateCommand();
+  if (!executingContext()->dartIsolateContext()->EnsureData()->HasWidgetElementShape(className())) {
+    executingContext()->FlushIsolateCommand();
   }
 
-  auto shape = GetExecutingContext()->dartIsolateContext()->EnsureData()->GetWidgetElementShape(className());
+  auto shape = executingContext()->dartIsolateContext()->EnsureData()->GetWidgetElementShape(className());
   // This property is defined in the Dart side
   if (shape != nullptr && shape->built_in_properties_.count(key) > 0) {
     NativeValue result = SetBindingProperty(key, value.ToNative(ctx(), exception_state), exception_state);
@@ -576,7 +604,7 @@ bool EventTarget::SetItem(const AtomicString& key, const ScriptValue& value, Exc
 
   // This property is defined in WidgetElement.prototype, should return false to let it handled in the prototype
   // methods.
-  JSValue prototypeObject = GetExecutingContext()->contextData()->prototypeForType(GetWrapperTypeInfo());
+  JSValue prototypeObject = executingContext()->contextData()->prototypeForType(GetWrapperTypeInfo());
   if (JS_HasProperty(ctx(), prototypeObject, key.Impl())) {
     return false;
   }
@@ -593,7 +621,7 @@ bool EventTarget::DeleteItem(const AtomicString& key, ExceptionState& exception_
 NativeValue EventTarget::HandleSyncPropertiesAndMethodsFromDart(int32_t argc, const NativeValue* argv) {
   assert(argc == 3);
   AtomicString key = className();
-  assert(!GetExecutingContext()->dartIsolateContext()->EnsureData()->HasWidgetElementShape(key));
+  assert(!executingContext()->dartIsolateContext()->EnsureData()->HasWidgetElementShape(key));
 
   auto shape = std::make_shared<WidgetElementShape>();
 
@@ -613,7 +641,7 @@ NativeValue EventTarget::HandleSyncPropertiesAndMethodsFromDart(int32_t argc, co
     shape->built_in_async_methods_.emplace(method);
   }
 
-  GetExecutingContext()->dartIsolateContext()->EnsureData()->SetWidgetElementShape(key, shape);
+  executingContext()->dartIsolateContext()->EnsureData()->SetWidgetElementShape(key, shape);
 
   return Native_NewBool(true);
 }

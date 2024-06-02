@@ -36,6 +36,7 @@ ScriptPromise ScriptPromiseResolver::Promise() {
 }
 
 void ScriptPromiseResolver::ResolveOrRejectImmediately(JSValue value) {
+  // prof: context_->dartIsolateContext()->profiler()->StartTrackAsyncEvaluation();
   {
     if (state_ == kResolving) {
       JSValue arguments[] = {value};
@@ -54,7 +55,8 @@ void ScriptPromiseResolver::ResolveOrRejectImmediately(JSValue value) {
       JS_FreeValue(context_->ctx(), return_value);
     }
   }
-  context_->DrainPendingPromiseJobs();
+  context_->DrainMicrotasks();
+  // prof: context_->dartIsolateContext()->profiler()->FinishTrackAsyncEvaluation();
 }
 
 }  // namespace mercury

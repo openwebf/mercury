@@ -13,11 +13,14 @@ JSValue QJS<%= className %>::ConstructorCallback(JSContext* ctx, JSValue func_ob
     auto* self = toScriptWrappable<<%= className %>>(obj);
     ExceptionState exception_state;
     ExecutingContext* context = ExecutingContext::From(ctx);
+    if (!context->IsContextValid()) return false;
+    // prof: context->dartIsolateContext()->profiler()->StartTrackSteps("QJS<%= className %>::PropertyCheckerCallback");
     auto* wrapper_type_info = <%= className %>::GetStaticWrapperTypeInfo();
     MemberMutationScope scope{context};
     JSValue prototype = context->contextData()->prototypeForType(wrapper_type_info);
     if (JS_HasProperty(ctx, prototype, key)) return true;
     bool result = self->NamedPropertyQuery(AtomicString(ctx, key), exception_state);
+    // prof: context->dartIsolateContext()->profiler()->FinishTrackSteps();
     if (UNLIKELY(exception_state.HasException())) {
       return false;
     }
@@ -26,7 +29,10 @@ JSValue QJS<%= className %>::ConstructorCallback(JSContext* ctx, JSValue func_ob
   int QJS<%= className %>::PropertyEnumerateCallback(JSContext* ctx, JSPropertyEnum** ptab, uint32_t* plen, JSValue obj) {
     auto* self = toScriptWrappable<<%= className %>>(obj);
     ExceptionState exception_state;
-    MemberMutationScope scope{ExecutingContext::From(ctx)};
+    ExecutingContext* context = ExecutingContext::From(ctx);
+    if (!context->IsContextValid()) return 0;
+    MemberMutationScope scope{context};
+    // prof: context->dartIsolateContext()->profiler()->StartTrackSteps("QJS<%= className %>::PropertyEnumerateCallback");
     std::vector<AtomicString> props;
     self->NamedPropertyEnumerator(props, exception_state);
     auto size = props.size() == 0 ? 1 : props.size();
@@ -38,18 +44,23 @@ JSValue QJS<%= className %>::ConstructorCallback(JSContext* ctx, JSValue func_ob
 
     *plen = props.size();
     *ptab = tabs;
+    // prof: context->dartIsolateContext()->profiler()->FinishTrackSteps();
     return 0;
   }
 
   <% if (object.indexedProp.indexKeyType == 'number') { %>
   JSValue QJS<%= className %>::IndexedPropertyGetterCallback(JSContext* ctx, JSValue obj, uint32_t index) {
     ExceptionState exception_state;
-    MemberMutationScope scope{ExecutingContext::From(ctx)};
+    ExecutingContext* context = ExecutingContext::From(ctx);
+    if (!context->IsContextValid()) return JS_NULL;
+    MemberMutationScope scope{context};
     auto* self = toScriptWrappable<<%= className %>>(obj);
     if (index >= self->length()) {
       return JS_UNDEFINED;
     }
+    // prof: context->dartIsolateContext()->profiler()->StartTrackSteps("QJS<%= className %>::IndexedPropertyGetterCallback");
     <%= generateCoreTypeValue(object.indexedProp.type) %> result = self->item(index, exception_state);
+    // prof: context->dartIsolateContext()->profiler()->FinishTrackSteps();
     if (UNLIKELY(exception_state.HasException())) {
       return exception_state.ToQuickJS();
     }
@@ -60,8 +71,12 @@ JSValue QJS<%= className %>::ConstructorCallback(JSContext* ctx, JSValue func_ob
   JSValue QJS<%= className %>::StringPropertyGetterCallback(JSContext* ctx, JSValue obj, JSAtom key) {
     auto* self = toScriptWrappable<<%= className %>>(obj);
     ExceptionState exception_state;
-    MemberMutationScope scope{ExecutingContext::From(ctx)};
+    ExecutingContext* context = ExecutingContext::From(ctx);
+    if (!context->IsContextValid()) return JS_NULL;
+    // prof: context->dartIsolateContext()->profiler()->StartTrackSteps("QJS<%= className %>::StringPropertyGetterCallback");
+    MemberMutationScope scope{context};
     ${generateCoreTypeValue(object.indexedProp.type)} result = self->item(AtomicString(ctx, key), exception_state);
+    // prof: context->dartIsolateContext()->profiler()->FinishTrackSteps();
     if (UNLIKELY(exception_state.HasException())) {
       return exception_state.ToQuickJS();
     }
@@ -73,12 +88,16 @@ JSValue QJS<%= className %>::ConstructorCallback(JSContext* ctx, JSValue func_ob
   bool QJS<%= className %>::IndexedPropertySetterCallback(JSContext* ctx, JSValueConst obj, uint32_t index, JSValueConst value) {
     auto* self = toScriptWrappable<<%= className %>>(obj);
     ExceptionState exception_state;
-    MemberMutationScope scope{ExecutingContext::From(ctx)};
+    ExecutingContext* context = ExecutingContext::From(ctx);
+    if (!context->IsContextValid()) return false;
+    MemberMutationScope scope{context};
     auto&& v = Converter<<%= generateIDLTypeConverter(object.indexedProp.type, object.indexedProp.optional) %>>::FromValue(ctx, value, exception_state);
     if (UNLIKELY(exception_state.HasException())) {
       return false;
     }
+    // prof: context->dartIsolateContext()->profiler()->StartTrackSteps("QJS<%= className %>::IndexedPropertySetterCallback");
     bool success = self->SetItem(index, v, exception_state);
+    // prof: context->dartIsolateContext()->profiler()->FinishTrackSteps();
     if (UNLIKELY(exception_state.HasException())) {
       return false;
     }
@@ -88,12 +107,16 @@ JSValue QJS<%= className %>::ConstructorCallback(JSContext* ctx, JSValue func_ob
   bool QJS<%= className %>::StringPropertySetterCallback(JSContext* ctx, JSValueConst obj, JSAtom key, JSValueConst value) {
     auto* self = toScriptWrappable<<%= className %>>(obj);
     ExceptionState exception_state;
-    MemberMutationScope scope{ExecutingContext::From(ctx)};
+    ExecutingContext* context = ExecutingContext::From(ctx);
+    if (!context->IsContextValid()) return false;
+    MemberMutationScope scope{context};
     auto&& v = Converter<<%= generateIDLTypeConverter(object.indexedProp.type, object.indexedProp.optional) %>>::FromValue(ctx, value, exception_state);
     if (UNLIKELY(exception_state.HasException())) {
       return false;
     }
+    // prof: context->dartIsolateContext()->profiler()->StartTrackSteps("QJS<%= className %>::StringPropertySetterCallback");
     bool success = self->SetItem(AtomicString(ctx, key), v, exception_state);
+    // prof: context->dartIsolateContext()->profiler()->FinishTrackSteps();
     if (UNLIKELY(exception_state.HasException())) {
       return false;
     }
@@ -103,11 +126,15 @@ JSValue QJS<%= className %>::ConstructorCallback(JSContext* ctx, JSValue func_ob
      bool QJS<%= className %>::StringPropertyDeleterCallback(JSContext* ctx, JSValueConst obj, JSAtom key) {
       auto* self = toScriptWrappable<<%= className %>>(obj);
       ExceptionState exception_state;
-      MemberMutationScope scope{ExecutingContext::From(ctx)};
+      ExecutingContext* context = ExecutingContext::From(ctx);
+      if (!context->IsContextValid()) return false;
+      MemberMutationScope scope{context};
       if (UNLIKELY(exception_state.HasException())) {
         return false;
       }
+      // prof: context->dartIsolateContext()->profiler()->StartTrackSteps("QJS<%= className %>::StringPropertyDeleterCallback");
       bool success = self->DeleteItem(AtomicString(ctx, key), exception_state);
+      // prof: context->dartIsolateContext()->profiler()->FinishTrackSteps();
       if (UNLIKELY(exception_state.HasException())) {
         return false;
       }
@@ -154,7 +181,11 @@ static JSValue <%= prop.name %>AttributeGetCallback(JSContext* ctx, JSValueConst
 
   auto* <%= blob.filename %> = toScriptWrappable<<%= className %>>(this_val);
   assert(<%= blob.filename %> != nullptr);
-  MemberMutationScope scope{ExecutingContext::From(ctx)};
+  ExecutingContext* context = ExecutingContext::From(ctx);
+  if (!context->IsContextValid()) return JS_NULL;
+  MemberMutationScope scope{context};
+
+  // TODO: The rest of this needs to be finished
 
   <% if (prop.typeMode && prop.typeMode.dartImpl) { %>
   ExceptionState exception_state;

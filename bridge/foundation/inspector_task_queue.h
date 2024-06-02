@@ -15,7 +15,7 @@ using Task = void (*)(void*);
 
 class InspectorTaskQueue : public TaskQueue {
  public:
-  static fml::RefPtr<InspectorTaskQueue> instance(int32_t contextId) {
+  static fml::RefPtr<InspectorTaskQueue> instance(double contextId) {
     std::lock_guard<std::mutex> guard(inspector_task_creation_mutex_);
     if (!instance_) {
       instance_ = fml::MakeRefCounted<InspectorTaskQueue>();

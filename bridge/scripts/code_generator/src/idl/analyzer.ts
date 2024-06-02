@@ -127,7 +127,8 @@ function getParameterBaseType(type: ts.TypeNode, mode?: ParameterMode): Paramete
       return argument.typeName.text;
     } else if (identifier === 'DartImpl') {
       if (mode) mode.dartImpl = true;
-      let argument = typeReference.typeArguments![0];
+      let argument: ts.TypeNode = typeReference.typeArguments![0] as unknown as ts.TypeNode;
+
       // @ts-ignore
       return getParameterBaseType(argument);
     } else if (identifier === 'StaticMember') {

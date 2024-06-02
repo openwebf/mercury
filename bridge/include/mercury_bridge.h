@@ -7,6 +7,7 @@
 #define MERCURY_BRIDGE_EXPORT_H
 
 #include <include/dart_api_dl.h>
+#include <functional>
 #include <thread>
 
 #if defined(_WIN32)
@@ -30,41 +31,95 @@ struct MercuryInfo {
 };
 
 typedef void (*Task)(void*);
-MERCURY_EXPORT_C
-void* initDartIsolateContext(uint64_t* dart_methods, int32_t dart_methods_len);
-MERCURY_EXPORT_C
-void* allocateNewMercuryIsolate(void* dart_isolate_context, int32_t target_mercury_isolate_id);
+typedef std::function<void(bool)> DartWork;
+typedef void (*AllocateNewIsolateCallback)(Dart_Handle dart_handle, void*);
+typedef void (*DisposeIsolateCallback)(Dart_Handle dart_handle);
+typedef void (*InvokeModuleEventCallback)(Dart_Handle dart_handle, void*);
+typedef void (*EvaluateQuickjsByteCodeCallback)(Dart_Handle dart_handle, int8_t);
+typedef void (*DumpQuickjsByteCodeCallback)(Dart_Handle);
+typedef void (*ParseHTMLCallback)(Dart_Handle);
+typedef void (*EvaluateScriptsCallback)(Dart_Handle dart_handle, int8_t);
 
 MERCURY_EXPORT_C
-int64_t newMercuryIsolateId();
+void* initDartIsolateContextSync(int64_t dart_port,
+                                 uint64_t* dart_methods,
+                                 int32_t dart_methods_len,
+                                 int8_t enable_profile);
 
 MERCURY_EXPORT_C
-void disposeMercuryIsolate(void* dart_isolate_context, void* ptr);
+void allocateNewIsolate(double thread_identity,
+                     int32_t sync_buffer_size,
+                     void* dart_isolate_context,
+                     Dart_Handle dart_handle,
+                     AllocateNewIsolateCallback result_callback);
+
 MERCURY_EXPORT_C
-int8_t evaluateScripts(void* ptr,
-                       SharedNativeString* code,
-                       uint8_t** parsed_bytecodes,
-                       uint64_t* bytecode_len,
-                       const char* bundleFilename,
-                       int32_t startLine);
+void* allocateNewIsolateSync(uint64_t* dart_methods, int32_t dart_methods_len);
 MERCURY_EXPORT_C
-int8_t evaluateQuickjsByteCode(void* ptr, uint8_t* bytes, int32_t byteLen);
+int64_t newMercuryIsolateIdSync();
+
 MERCURY_EXPORT_C
-NativeValue* invokeModuleEvent(void* ptr,
-                               SharedNativeString* module,
-                               const char* eventType,
-                               void* event,
-                               NativeValue* extra);
+void disposeMercuryIsolate(double dedicated_thread,
+                 void* dart_isolate_context,
+                 void* isolate,
+                 Dart_Handle dart_handle,
+                 DisposePageCallback result_callback);
+
+MERCURY_EXPORT_C
+void evaluateScripts(void* isolate,
+                     const char* code,
+                     uint64_t code_len,
+                     uint8_t** parsed_bytecodes,
+                     uint64_t* bytecode_len,
+                     const char* bundleFilename,
+                     int32_t start_line,
+                     int64_t profile_id,
+                     Dart_Handle dart_handle,
+                     EvaluateQuickjsByteCodeCallback result_callback);
+MERCURY_EXPORT_C
+void evaluateQuickjsByteCode(void* isolate,
+                             uint8_t* bytes,
+                             int32_t byteLen,
+                             int64_t profile_id,
+                             Dart_Handle dart_handle,
+                             EvaluateQuickjsByteCodeCallback result_callback);
+
+MERCURY_EXPORT_C
+void dumpQuickjsByteCode(void* isolate,
+                         int64_t profile_id,
+                         const char* code,
+                         int32_t code_len,
+                         uint8_t** parsed_bytecodes,
+                         uint64_t* bytecode_len,
+                         const char* url,
+                         Dart_Handle dart_handle,
+                         DumpQuickjsByteCodeCallback result_callback);
+MERCURY_EXPORT_C
+void invokeModuleEvent(void* isolate,
+                       SharedNativeString* module,
+                       const char* eventType,
+                       void* event,
+                       NativeValue* extra,
+                       Dart_Handle dart_handle,
+                       InvokeModuleEventCallback result_callback);
+// prof: WEBF_EXPORT_C
+// prof: void collectNativeProfileData(void* ptr, const char** data, uint32_t* len);
+// prof: WEBF_EXPORT_C
+// prof: void clearNativeProfileData(void* ptr);
 MERCURY_EXPORT_C
 MercuryInfo* getMercuryInfo();
 
 MERCURY_EXPORT_C
-void* getIsolateCommandItems(void* page);
+void* getIsolateCommandItems(void* isolate);
+WEBF_EXPORT_C
+uint32_t getIsolateCommandKindFlag(void* isolate);
 MERCURY_EXPORT_C
-int64_t getIsolateCommandItemSize(void* page);
+int64_t getIsolateCommandItemSize(void* isolate);
 MERCURY_EXPORT_C
-void clearIsolateCommandItems(void* page);
+void clearIsolateCommandItems(void* isolate);
+WEBF_EXPORT_C int8_t isJSThreadBlocked(void* dart_isolate_context, double context_id);
 
+WEBF_EXPORT_C void executeNativeCallback(DartWork* work_ptr);
 MERCURY_EXPORT_C
 void init_dart_dynamic_linking(void* data);
 MERCURY_EXPORT_C

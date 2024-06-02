@@ -19,8 +19,12 @@ namespace mercury {
 
 ConsoleMessageHandler MercuryIsolate::consoleMessageHandler{nullptr};
 
-MercuryIsolate::MercuryIsolate(DartIsolateContext* dart_isolate_context, int32_t contextId, const JSExceptionHandler& handler)
-    : contextId(contextId), ownerThreadId(std::this_thread::get_id()) {
+MercuryIsolate::MercuryIsolate(DartIsolateContext* dart_isolate_context,
+                   bool is_dedicated,
+                   size_t sync_buffer_size,
+                   double context_id,
+                   const JSExceptionHandler& handler)
+    : ownerThreadId(std::this_thread::get_id()), dart_isolate_context_(dart_isolate_context) {
   context_ = new ExecutingContext(
       dart_isolate_context, contextId,
       [](ExecutingContext* context, const char* message) {
@@ -78,7 +82,8 @@ NativeValue* MercuryIsolate::invokeModuleEvent(SharedNativeString* native_module
   return return_value;
 }
 
-bool MercuryIsolate::evaluateScript(const SharedNativeString* script,
+bool MercuryIsolate::evaluateScript(const char* script,
+                              uint64_t script_len,
                               uint8_t** parsed_bytecodes,
                               uint64_t* bytecode_len,
                               const char* url,
@@ -97,7 +102,7 @@ bool MercuryIsolate::evaluateScript(const uint16_t* script,
                               int startLine) {
   if (!context_->IsContextValid())
     return false;
-  return context_->EvaluateJavaScript(script, length, parsed_bytecodes, bytecode_len, url, startLine);
+  return context_->EvaluateJavaScript(script, script_len, parsed_bytecodes, bytecode_len, url, startLine);
 }
 
 void MercuryIsolate::evaluateScript(const char* script, size_t length, const char* url, int startLine) {
@@ -106,7 +111,7 @@ void MercuryIsolate::evaluateScript(const char* script, size_t length, const cha
   context_->EvaluateJavaScript(script, length, url, startLine);
 }
 
-uint8_t* MercuryIsolate::dumpByteCode(const char* script, size_t length, const char* url, size_t* byteLength) {
+uint8_t* MercuryIsolate::dumpByteCode(const char* script, size_t length, const char* url, uint64_t* byteLength) {
   if (!context_->IsContextValid())
     return nullptr;
   return context_->DumpByteCode(script, length, url, byteLength);

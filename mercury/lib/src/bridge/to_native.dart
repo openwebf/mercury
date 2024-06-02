@@ -219,11 +219,11 @@ typedef DartInitDartIsolateContext = Pointer<Void> Function(Pointer<Uint64> dart
 final DartInitDartIsolateContext _initDartIsolateContext =
     MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeInitDartIsolateContext>>('initDartIsolateContext').asFunction();
 
-Pointer<Void> initDartIsolateContext(List<int> dartMethods) {
+Pointer<Void> allocateNewIsolateSync(List<int> dartMethods) {
   Pointer<Uint64> bytes = malloc.allocate<Uint64>(sizeOf<Uint64>() * dartMethods.length);
   Uint64List nativeMethodList = bytes.asTypedList(dartMethods.length);
   nativeMethodList.setAll(0, dartMethods);
-  return _initDartIsolateContext(bytes, dartMethods.length);
+  return _allocateNewIsolateSync(bytes, dartMethods.length);
 }
 
 typedef NativeDisposeMercuryIsolate = Void Function(Pointer<Void>, Pointer<Void> mercuryIsolate);

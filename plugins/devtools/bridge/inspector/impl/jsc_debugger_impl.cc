@@ -9,7 +9,7 @@
 
 namespace kraken::debugger {
 using namespace JSC;
-JSCDebuggerImpl::JSCDebuggerImpl(int32_t contextId, JSGlobalObject *globalObject)
+JSCDebuggerImpl::JSCDebuggerImpl(double contextId, JSGlobalObject *globalObject)
   : Inspector::ScriptDebugServer(globalObject->globalExec()->vm()), m_globalObject(globalObject), m_contextId(contextId) {}
 
 void JSCDebuggerImpl::recompileAllJSFunctions() {

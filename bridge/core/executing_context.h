@@ -16,6 +16,7 @@
 #include <mutex>
 #include <set>
 #include <unordered_map>
+#include <vector>
 #include "bindings/qjs/rejected_promises.h"
 #include "bindings/qjs/script_value.h"
 #include "dart_isolate_context.h"
@@ -30,6 +31,8 @@
 #include "script_state.h"
 #include "defined_properties.h"
 
+#include "shared_isolate_command.h"
+
 namespace mercury {
 
 struct NativeByteCode {
@@ -42,11 +45,14 @@ class Global;
 class MemberMutationScope;
 class ErrorEvent;
 class DartContext;
+class BindingObject;
+struct NativeBindingObject;
 class ScriptWrappable;
 
 using JSExceptionHandler = std::function<void(ExecutingContext* context, const char* message)>;
+using MicrotaskCallback = void (*)(void* data);
 
-bool isContextValid(int32_t contextId);
+bool isContextValid(double contextId);
 
 // An environment in which script can execute. This class exposes the common
 // properties of script execution environments on the mercury.
@@ -55,14 +61,16 @@ class ExecutingContext {
  public:
   ExecutingContext() = delete;
   ExecutingContext(DartIsolateContext* dart_isolate_context,
-                   int32_t contextId,
+                   bool is_dedicated,
+                   size_t sync_buffer_size,
+                   double context_id,
                    JSExceptionHandler handler,
                    void* owner);
   ~ExecutingContext();
 
   static ExecutingContext* From(JSContext* ctx);
 
-  bool EvaluateJavaScript(const uint16_t* code,
+  bool EvaluateJavaScript(const char* code,
                           size_t codeLength,
                           uint8_t** parsed_bytecodes,
                           uint64_t* bytecode_len,
@@ -72,20 +80,22 @@ class ExecutingContext {
   bool EvaluateJavaScript(const char* code, size_t codeLength, const char* sourceURL, int startLine);
   bool EvaluateByteCode(uint8_t* bytes, size_t byteLength);
   bool IsContextValid() const;
+  void SetContextInValid();
   bool IsCtxValid() const;
   JSValue GlobalObject();
   JSContext* ctx();
-  FORCE_INLINE int32_t contextId() const { return context_id_; };
+  FORCE_INLINE double contextId() const { return context_id_; };
   FORCE_INLINE int32_t uniqueId() const { return unique_id_; }
   void* owner();
   bool HandleException(JSValue* exc);
   bool HandleException(ScriptValue* exc);
   bool HandleException(ExceptionState& exception_state);
   void ReportError(JSValueConst error);
-  void DrainPendingPromiseJobs();
+  void DrainMicrotasks();
+  void EnqueueMicrotask(MicrotaskCallback callback, void* data = nullptr);
   void DefineGlobalProperty(const char* prop, JSValueConst value);
   ExecutionContextData* contextData();
-  uint8_t* DumpByteCode(const char* code, uint32_t codeLength, const char* sourceURL, size_t* bytecodeLength);
+  uint8_t* DumpByteCode(const char* code, uint32_t codeLength, const char* sourceURL, uint64_t* bytecodeLength);
 
   // Make global object inherit from GlobalProperties.
   void InstallGlobal();
@@ -115,17 +125,23 @@ class ExecutingContext {
   void ClearMutationScope();
 
   FORCE_INLINE Global* global() const { return global_; }
-  IsolateCommandBuffer isolate_command_buffer_{this};
   FORCE_INLINE DartIsolateContext* dartIsolateContext() const { return dart_isolate_context_; };
-  FORCE_INLINE const std::unique_ptr<DartMethodPointer>& dartMethodPtr() {
+  // prof: FORCE_INLINE Performance* performance() const { return performance_; }
+  FORCE_INLINE SharedIsolateCommand* isolateCommandBuffer() { return &isolate_command_buffer_; };
+  FORCE_INLINE DartMethodPointer* dartMethodPtr() const {
     assert(dart_isolate_context_->valid());
     return dart_isolate_context_->dartMethodPtr();
   }
+  FORCE_INLINE bool isDedicated() { return is_dedicated_; }
   FORCE_INLINE std::chrono::time_point<std::chrono::system_clock> timeOrigin() const { return time_origin_; }
 
-  FORCE_INLINE IsolateCommandBuffer* isolateCommandBuffer() { return &isolate_command_buffer_; };
+  FORCE_INLINE SharedIsolateCommand* isolateCommandBuffer() { return &isolate_command_buffer_; };
 
-  void FlushIsolateCommand();
+  void FlushIsolateCommand(const BindingObject* self, uint32_t reason);
+  void FlushIsolateCommand(const BindingObject* self, uint32_t reason, std::vector<NativeBindingObject*>& deps);
+
+  void TurnOnJavaScriptGC();
+  void TurnOffJavaScriptGC();
 
   void DispatchErrorEvent(ErrorEvent* error_event);
   void DispatchErrorEventInterval(ErrorEvent* error_event);
@@ -146,6 +162,9 @@ class ExecutingContext {
   std::chrono::time_point<std::chrono::system_clock> time_origin_;
   int32_t unique_id_;
 
+  void DrainPendingPromiseJobs();
+  void EnsureEnqueueMicrotask();
+
   static void promiseRejectTracker(JSContext* ctx,
                                    JSValueConst promise,
                                    JSValueConst reason,
@@ -162,8 +181,8 @@ class ExecutingContext {
   // ----------------------------------------------------------------------
   // All members below will be free before ScriptState freed.
   // ----------------------------------------------------------------------
-  bool is_context_valid_{false};
-  int32_t context_id_;
+  std::atomic<bool> is_context_valid_{false};
+  double context_id_;
   JSExceptionHandler handler_;
   void* owner_;
   JSValue global_object_{JS_NULL};
@@ -175,7 +194,8 @@ class ExecutingContext {
   bool in_dispatch_error_event_{false};
   RejectedPromises rejected_promises_;
   MemberMutationScope* active_mutation_scope{nullptr};
-  std::set<ScriptWrappable*> active_wrappers_;
+  std::unordered_set<ScriptWrappable*> active_wrappers_;
+  bool is_dedicated_;
 };
 
 class ObjectProperty {

@@ -10,6 +10,7 @@ import { URLSearchParams } from './url-search-params';
 import { URL } from './url';
 import { mercury } from './mercury';
 import { WebSocket } from './websocket'
+import { _AbortController, _AbortSignal } from './abort-signal';
 
 defineGlobalProperty('console', console);
 defineGlobalProperty('Request', Request);
@@ -21,6 +22,8 @@ defineGlobalProperty('URLSearchParams', URLSearchParams);
 defineGlobalProperty('URL', URL);
 defineGlobalProperty('mercury', mercury);
 defineGlobalProperty('WebSocket', WebSocket);
+defineGlobalProperty('AbortSignal', _AbortSignal);
+defineGlobalProperty('AbortController', _AbortController);
 
 function defineGlobalProperty(key: string, value: any, isEnumerable: boolean = true) {
   Object.defineProperty(globalThis, key, {

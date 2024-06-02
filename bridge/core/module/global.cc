@@ -17,7 +17,7 @@
 namespace mercury {
 
 Global::Global(ExecutingContext* context) : EventTargetWithInlineData(context, built_in_string::kglobalThis) {
-  context->isolateCommandBuffer()->addCommand(IsolateCommand::kCreateGlobal, nullptr, (void*)bindingObject(), nullptr);
+  context->isolateCommandBuffer()->AddCommand(IsolateCommand::kCreateGlobal, nullptr, bindingObject(), nullptr);
 }
 
 // https://infra.spec.whatwg.org/#ascii-whitespace
@@ -116,7 +116,7 @@ void Global::postMessage(const ScriptValue& message, ExceptionState& exception_s
   auto event_init = MessageEventInit::Create();
   event_init->setData(message);
   auto* message_event =
-      MessageEvent::Create(GetExecutingContext(), event_type_names::kmessage, event_init, exception_state);
+      MessageEvent::Create(executingContext(), event_type_names::kmessage, event_init, exception_state);
   dispatchEvent(message_event, exception_state);
 }
 
@@ -127,8 +127,12 @@ void Global::postMessage(const ScriptValue& message,
   event_init->setData(message);
   event_init->setOrigin(target_origin);
   auto* message_event =
-      MessageEvent::Create(GetExecutingContext(), event_type_names::kmessage, event_init, exception_state);
+      MessageEvent::Create(executingContext(), event_type_names::kmessage, event_init, exception_state);
   dispatchEvent(message_event, exception_state);
+}
+
+void Global::OnLoadEventFired() {
+  executingContext()->TurnOnJavaScriptGC();
 }
 
 bool Global::IsGlobalOrWorkerScope() const {

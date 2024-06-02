@@ -23,7 +23,7 @@ private:
   KRAKEN_DISALLOW_COPY_AND_ASSIGN(JSCDebuggerImpl);
 
 public:
-  explicit JSCDebuggerImpl(int32_t contextId, JSC::JSGlobalObject *);
+  explicit JSCDebuggerImpl(double contextId, JSC::JSGlobalObject *);
   virtual ~JSCDebuggerImpl() {}
 
   JSC::JSGlobalObject *globalObject() const {

@@ -19,6 +19,9 @@ local.properties
 .idea/caches
 .idea
 
+# Visual Studio
+.vs/
+
 # External native build folder generated in Android Studio 2.2 and later
 .externalNativeBuild
 

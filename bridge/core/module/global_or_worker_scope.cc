@@ -14,17 +14,24 @@ static void handleTimerCallback(Timer* timer, const char* errmsg) {
     JSValue exception = JS_ThrowTypeError(context->ctx(), "%s", errmsg);
     context->HandleException(&exception);
     context->Timers()->forceStopTimeoutById(timer->timerId());
+    dart_free(errmsg);
     return;
   }
 
   if (context->Timers()->getTimerById(timer->timerId()) == nullptr)
     return;
 
+  // prof: context->dartIsolateContext()->profiler()->StartTrackAsyncEvaluation();
+  // prof: context->dartIsolateContext()->profiler()->StartTrackSteps("handleTimerCallback");
+
   // Trigger timer callbacks.
   timer->Fire();
+
+  // prof: context->dartIsolateContext()->profiler()->FinishTrackSteps();
+  // prof: context->dartIsolateContext()->profiler()->FinishTrackAsyncEvaluation();
 }
 
-static void handleTransientCallback(void* ptr, int32_t contextId, const char* errmsg) {
+static void handleTransientCallback(void* ptr, double contextId, char* errmsg) {
   if (!isContextValid(contextId))
     return;
 
@@ -45,7 +52,7 @@ static void handleTransientCallback(void* ptr, int32_t contextId, const char* er
   context->Timers()->removeTimeoutById(timer->timerId());
 }
 
-static void handlePersistentCallback(void* ptr, int32_t contextId, const char* errmsg) {
+static void handlePersistentCallback(void* ptr, double contextId, char* errmsg) {
   if (!isContextValid(contextId))
     return;
 
@@ -75,28 +82,48 @@ static void handlePersistentCallback(void* ptr, int32_t contextId, const char* e
   timer->SetStatus(Timer::TimerStatus::kFinished);
 }
 
+static void handleTransientCallbackWrapper(void* ptr, double contextId, char* errmsg) {
+  auto* timer = static_cast<Timer*>(ptr);
+  auto* context = timer->context();
+
+  if (!context->IsContextValid())
+    return;
+
+  context->dartIsolateContext()->dispatcher()->PostToJs(context->isDedicated(), contextId,
+                                                        mercury::handleTransientCallback, ptr, contextId, errmsg);
+}
+
+static void handlePersistentCallbackWrapper(void* ptr, double contextId, char* errmsg) {
+  auto* timer = static_cast<Timer*>(ptr);
+  auto* context = timer->context();
+
+  if (!context->IsContextValid())
+    return;
+
+  context->dartIsolateContext()->dispatcher()->PostToJs(context->isDedicated(), contextId,
+                                                        mercury::handlePersistentCallback, ptr, contextId, errmsg);
+}
+
 int GlobalOrWorkerScope::setTimeout(ExecutingContext* context,
-                                          std::shared_ptr<QJSFunction> handler,
+                                          const std::shared_ptr<QJSFunction>& handler,
                                           ExceptionState& exception) {
   return setTimeout(context, handler, 0.0, exception);
 }
 
 int GlobalOrWorkerScope::setTimeout(ExecutingContext* context,
-                                          std::shared_ptr<QJSFunction> handler,
+                                          const std::shared_ptr<QJSFunction>& handler,
                                           int32_t timeout,
                                           ExceptionState& exception) {
-#if FLUTTER_BACKEND
-  if (context->dartMethodPtr()->setTimeout == nullptr) {
-    exception.ThrowException(context->ctx(), ErrorType::InternalError,
-                             "Failed to execute 'setTimeout': dart method (setTimeout) is not registered.");
+
+  if (handler == nullptr) {
+    exception.ThrowException(context->ctx(), ErrorType::InternalError, "Timeout callback is null");
     return -1;
   }
-#endif
 
   // Create a timer object to keep track timer callback.
   auto timer = Timer::create(context, handler, Timer::TimerKind::kOnce);
-  auto timerId =
-      context->dartMethodPtr()->setTimeout(timer.get(), context->contextId(), handleTransientCallback, timeout);
+  int32_t timerId = context->dartMethodPtr()->setInterval(context->isDedicated(), timer.get(), context->contextId(),
+                                                          handlePersistentCallbackWrapper, timeout);
 
   // Register timerId.
   timer->setTimerId(timerId);
@@ -113,47 +140,35 @@ int GlobalOrWorkerScope::setInterval(ExecutingContext* context,
 }
 
 int GlobalOrWorkerScope::setInterval(ExecutingContext* context,
-                                           std::shared_ptr<QJSFunction> handler,
+                                           const std::shared_ptr<QJSFunction>& handler,
                                            int32_t timeout,
                                            ExceptionState& exception) {
-  if (context->dartMethodPtr()->setInterval == nullptr) {
-    exception.ThrowException(context->ctx(), ErrorType::InternalError,
-                             "Failed to execute 'setInterval': dart method (setInterval) is not registered.");
+  if (handler == nullptr) {
+    exception.ThrowException(context->ctx(), ErrorType::InternalError, "Timeout callback is null");
     return -1;
   }
 
   // Create a timer object to keep track timer callback.
-  auto timer = Timer::create(context, handler, Timer::TimerKind::kMultiple);
+  auto timer_id = context->dartMethodPtr()->setTimeout(context->isDedicated(), timer.get(), context->contextId(),
+                                                       handleTransientCallbackWrapper, timeout);
 
-  int32_t timerId =
+  int32_t timer_id =
       context->dartMethodPtr()->setInterval(timer.get(), context->contextId(), handlePersistentCallback, timeout);
 
   // Register timerId.
-  timer->setTimerId(timerId);
-  context->Timers()->installNewTimer(context, timerId, timer);
+  timer->setTimerId(timer_id);
+  context->Timers()->installNewTimer(context, timer_id, timer);
 
-  return timerId;
+  return timer_id;
 }
 
 void GlobalOrWorkerScope::clearTimeout(ExecutingContext* context, int32_t timerId, ExceptionState& exception) {
-  if (context->dartMethodPtr()->clearTimeout == nullptr) {
-    exception.ThrowException(context->ctx(), ErrorType::InternalError,
-                             "Failed to execute 'clearTimeout': dart method (clearTimeout) is not registered.");
-    return;
-  }
-
-  context->dartMethodPtr()->clearTimeout(context->contextId(), timerId);
+  context->dartMethodPtr()->clearTimeout(context->isDedicated(), context->contextId(), timerId);
   context->Timers()->forceStopTimeoutById(timerId);
 }
 
 void GlobalOrWorkerScope::clearInterval(ExecutingContext* context, int32_t timerId, ExceptionState& exception) {
-  if (context->dartMethodPtr()->clearTimeout == nullptr) {
-    exception.ThrowException(context->ctx(), ErrorType::InternalError,
-                             "Failed to execute 'clearTimeout': dart method (clearTimeout) is not registered.");
-    return;
-  }
-
-  context->dartMethodPtr()->clearTimeout(context->contextId(), timerId);
+  context->dartMethodPtr()->clearTimeout(context->isDedicated(), context->contextId(), timerId);
   context->Timers()->forceStopTimeoutById(timerId);
 }
 
@@ -168,7 +183,7 @@ ScriptValue GlobalOrWorkerScope::__memory_usage__(ExecutingContext* context, Exc
 
   char buff[2048];
   snprintf(buff, 2048,
-           R"({"malloc_size": %ld, "malloc_limit": %ld, "memory_used_size": %ld, "memory_used_count": %ld})",
+           R"({"malloc_size": %lld, "malloc_limit": %lld, "memory_used_size": %lld, "memory_used_count": %lld})",
            memory_usage.malloc_size, memory_usage.malloc_limit, memory_usage.memory_used_size,
            memory_usage.memory_used_count);
 

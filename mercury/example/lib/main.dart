@@ -56,8 +56,11 @@ class _MyHomePageState extends State<MyBrowser> {
 
   @override
   Widget build(BuildContext context) {
+    final javaScriptChannel = MercuryJavaScriptChannel();
+
     mercuryjs ??= Mercury(
       devToolsService: ChromeDevToolsService(),
+      javaScriptChannel: javaScriptChannel,
       bundle: MercuryBundle.fromUrl('assets:assets/bundle.js'),
       onControllerCreated: (controller) {
         setState(() {
@@ -67,13 +70,16 @@ class _MyHomePageState extends State<MyBrowser> {
           setState(() {
             message = 'Context loading...';
           });
-          controller.context.dispatcher?.subscribe('example', (args) {
-            print('bar');
-            setState(() {
-              message = args[0]['message'];
-            });
+          javaScriptChannel.invokeMethod('test', {'state': 'bar', 'test': 472 }).then((value) {
+            print(value);
           });
-          controller.context.evaluateJavaScripts('hello();');
+          // controller.context.dispatcher?.subscribe('example', (args) {
+          //   print('bar');
+          //   setState(() {
+          //     message = args[0]['message'];
+          //   });
+          // });
+          // controller.context.evaluateJavaScripts('hello();');
         };
       }
     );

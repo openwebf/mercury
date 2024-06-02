@@ -8,7 +8,7 @@
 #include "dart_methods.h"
 #include <memory>
 
-void attachInspector(int32_t contextId) {
+void attachInspector(double contextId) {
   JSGlobalContextRef ctx = getGlobalContextRef(contextId);
   std::shared_ptr<kraken::debugger::BridgeProtocolHandler> handler = std::make_shared<kraken::debugger::BridgeProtocolHandler>();
   JSC::ExecState* exec = toJS(ctx);
@@ -23,7 +23,7 @@ void attachInspector(int32_t contextId) {
   setConsoleMessageHandler(kraken::debugger::FrontDoor::handleConsoleMessage);
 }
 
-void dispatchInspectorTask(int32_t contextId, void *context, void *callback) {
+void dispatchInspectorTask(double contextId, void *context, void *callback) {
   assert(std::this_thread::get_id() != getUIThreadId());
   reinterpret_cast<void(*)(void*)>(callback)(context);
 }

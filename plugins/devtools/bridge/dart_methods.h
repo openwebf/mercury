@@ -13,12 +13,12 @@
 struct NativeString;
 struct Screen;
 
-typedef void (*InspectorMessage)(int32_t contextId, const char *message);
+typedef void (*InspectorMessage)(double contextId, const char *message);
 typedef void (*InspectorMessageCallback)(void *rpcSession, const char *message);
-typedef void (*RegisterInspectorMessageCallback)(int32_t contextId, void *rpcSession,
+typedef void (*RegisterInspectorMessageCallback)(double contextId, void *rpcSession,
                                                  InspectorMessageCallback inspectorMessageCallback);
-typedef void (*PostTaskToInspectorThread)(int32_t contextId, void *context, void (*)(void *));
-typedef void (*PostTaskToUIThread)(int32_t contextId, void *context, void (*)(void *));
+typedef void (*PostTaskToInspectorThread)(double contextId, void *context, void (*)(void *));
+typedef void (*PostTaskToUIThread)(double contextId, void *context, void (*)(void *));
 
 namespace kraken {
 

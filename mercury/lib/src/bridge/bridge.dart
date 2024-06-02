@@ -11,7 +11,7 @@ import 'from_native.dart';
 import 'to_native.dart';
 
 class DartContext {
-  DartContext() : pointer = initDartIsolateContext(makeDartMethodsData()) {
+  DartContext() : pointer = allocateNewIsolateSync(makeDartMethodsData()) {
     initDartDynamicLinking();
     registerDartContextFinalizer(this);
   }

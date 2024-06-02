@@ -14,12 +14,20 @@ namespace mercury {
 
 class ExecutingContext;
 
+enum UICommandKind : uint32_t {
+  kEvent = 1,
+  kDisposeBindingObject = 1 << 2,
+  // prof: kOperation = 1 << 3
+};
+
 enum class IsolateCommand {
+  // prof: kStartRecordingCommand,
   kCreateGlobal,
   kCreateEventTarget,
   kDisposeBindingObject,
   kAddEvent,
   kRemoveEvent,
+  // prof: kFinishRecordingCommand,
 };
 
 #define MAXIMUM_ISOLATE_COMMAND_SIZE 2048
@@ -39,6 +47,8 @@ struct IsolateCommandItem {
   int64_t nativePtr2{0};
 };
 
+UICommandKind GetKindFromIsolateCommand(IsolateCommand type);
+
 class IsolateCommandBuffer {
  public:
   IsolateCommandBuffer() = delete;
@@ -50,20 +60,24 @@ class IsolateCommandBuffer {
                   void* nativePtr2,
                   bool request_isolate_update = true);
   IsolateCommandItem* data();
+  uint32_t kindFlag();
   int64_t size();
   bool empty();
   void clear();
 
  private:
   void addCommand(const IsolateCommandItem& item, bool request_isolate_update = true);
+  void addCommands(const IsolateCommandItem* items, int64_t item_size, bool request_isolate_update = true);
+  void updateFlags(IsolateCommand command);
 
   ExecutingContext* context_{nullptr};
   IsolateCommandItem* buffer_{nullptr};
   bool update_batched_{false};
   int64_t size_{0};
   int64_t max_size_{MAXIMUM_ISOLATE_COMMAND_SIZE};
+  friend class SharedIsolateCommand;
 };
 
 }  // namespace mercury
 
-#endif  // BRIDGE_FOUNDATION_Isolate_COMMAND_BUFFER_H_
+#endif  // BRIDGE_FOUNDATION_ISOLATE_COMMAND_BUFFER_H_

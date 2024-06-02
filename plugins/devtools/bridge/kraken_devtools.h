@@ -26,7 +26,7 @@ private:
 }
 
 KRAKEN_EXPORT_C
-void attachInspector(int32_t contextId);
+void attachInspector(double contextId);
 KRAKEN_EXPORT_C
 void registerInspectorDartMethods(uint64_t *methodBytes, int32_t length);
 
@@ -34,6 +34,6 @@ KRAKEN_EXPORT_C
 void registerUIDartMethods(uint64_t *methodBytes, int32_t length);
 
 KRAKEN_EXPORT_C
-void dispatchInspectorTask(int32_t contextId, void *context, void *callback);
+void dispatchInspectorTask(double contextId, void *context, void *callback);
 
 #endif //KRAKEN_DEVTOOLS_KRAKEN_DEVTOOLS_H

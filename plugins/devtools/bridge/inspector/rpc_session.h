@@ -20,11 +20,11 @@ class InspectorSession;
 
 class DartRPC {
 public:
-  void send(int32_t contextId, const std::string &msg);
-  void setOnMessageCallback(int32_t contextId, void* rpcSession, InspectorMessageCallback callback);
+  void send(double contextId, const std::string &msg);
+  void setOnMessageCallback(double contextId, void* rpcSession, InspectorMessageCallback callback);
 private:
   struct RPCContext {
-    int32_t contextId;
+    double contextId;
     std::string message;
   };
 };

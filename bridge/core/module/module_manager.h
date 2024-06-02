@@ -12,6 +12,13 @@
 
 namespace mercury {
 
+struct ModuleContext {
+  ModuleContext(ExecutingContext* context, const std::shared_ptr<ModuleCallback>& callback)
+      : context(context), callback(callback) {}
+  ExecutingContext* context;
+  std::shared_ptr<ModuleCallback> callback;
+};
+
 class ModuleManager {
  public:
   static ScriptValue __mercury_invoke_module__(ExecutingContext* context,

@@ -1,13 +1,14 @@
 /*
-* Copyright (C) 2022-present The WebF authors. All rights reserved.
-*/
+ * Copyright (C) 2022-present The WebF authors. All rights reserved.
+ */
 
 #include "dart_readable.h"
+#include <cstdlib>
+#include <memory>
 
 #if WIN32
 #include <Windows.h>
 #endif
-
 
 namespace mercury {
 
@@ -35,5 +36,4 @@ void DartReadable::operator delete(void* memory) noexcept {
   dart_free(memory);
 }
 
-
-}
+}  // namespace mercury

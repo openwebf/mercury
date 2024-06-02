@@ -9,6 +9,7 @@
 #include <quickjs/quickjs.h>
 #include "bindings/qjs/cppgc/garbage_collected.h"
 #include "foundation/macros.h"
+#include "multiple_threading/dispatcher.h"
 #include "wrapper_type_info.h"
 
 namespace mercury {
@@ -51,7 +52,8 @@ class ScriptWrappable : public GarbageCollected<ScriptWrappable> {
   JSValue ToQuickJSUnsafe() const;
 
   ScriptValue ToValue();
-  FORCE_INLINE ExecutingContext* GetExecutingContext() const { return context_; };
+  FORCE_INLINE ExecutingContext* executingContext() const { return context_; };
+  multi_threading::Dispatcher* GetDispatcher() const;
   FORCE_INLINE JSContext* ctx() const { return ctx_; }
   FORCE_INLINE JSRuntime* runtime() const { return runtime_; }
   FORCE_INLINE int64_t contextId() const { return context_id_; }
@@ -91,8 +93,8 @@ Local<T>::~Local<T>() {
     return;
   auto* wrappable = To<ScriptWrappable>(raw_);
   // Record the free operation to avoid JSObject had been freed immediately.
-  if (LIKELY(wrappable->GetExecutingContext()->HasMutationScope())) {
-    wrappable->GetExecutingContext()->mutationScope()->RecordFree(wrappable);
+  if (LIKELY(wrappable->executingContext()->HasMutationScope())) {
+    wrappable->executingContext()->mutationScope()->RecordFree(wrappable);
   } else {
     assert_m(false, "LocalHandle must be used after MemberMutationScope allcated.");
   }

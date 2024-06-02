@@ -352,6 +352,7 @@ int JS_SetPrototypeInternal(JSContext* ctx, JSValueConst obj, JSValueConst proto
   if (js_shape_prepare_update(ctx, p, NULL))
     return -1;
   sh = p->shape;
+  ic_free_shape_proto_watchpoints(ctx->rt, p->shape);
   if (sh->proto)
     JS_FreeValue(ctx, JS_MKPTR(JS_TAG_OBJECT, sh->proto));
   sh->proto = proto;
@@ -3005,7 +3006,8 @@ JSRuntime* JS_NewRuntime2(const JSMallocFunctions* mf, void* opaque) {
     rt->mf.js_malloc_usable_size = js_malloc_usable_size_unknown;
   }
   rt->malloc_state = ms;
-  rt->malloc_gc_threshold = 256 * 1024;
+  rt->malloc_gc_threshold = 2 * 1024 * 1024; // 2 MB as a start
+  rt->gc_off = FALSE;
 
 #ifdef CONFIG_BIGNUM
   bf_context_init(&rt->bf_ctx, js_bf_realloc, rt);

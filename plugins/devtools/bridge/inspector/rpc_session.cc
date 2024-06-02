@@ -60,7 +60,7 @@ void RPCSession::_on_message(const std::string &message) {
   }
 }
 
-void DartRPC::send(int32_t contextId, const std::string &msg) {
+void DartRPC::send(double contextId, const std::string &msg) {
   if (std::this_thread::get_id() == getUIThreadId()) {
     auto ctx = new RPCContext{contextId, msg};
     kraken::getUIDartMethod()->postTaskToInspectorThread(contextId, reinterpret_cast<void*>(ctx), [](void *ptr) {
@@ -73,7 +73,7 @@ void DartRPC::send(int32_t contextId, const std::string &msg) {
   }
 }
 
-void DartRPC::setOnMessageCallback(int32_t contextId, void *rpcSession, InspectorMessageCallback callback) {
+void DartRPC::setOnMessageCallback(double contextId, void *rpcSession, InspectorMessageCallback callback) {
   getInspectorDartMethod()->registerInspectorMessageCallback(contextId, rpcSession, callback);
 }
 

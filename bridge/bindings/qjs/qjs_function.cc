@@ -56,11 +56,14 @@ ScriptValue QJSFunction::Invoke(JSContext* ctx, const ScriptValue& this_val, int
   for (int i = 0; i < argc; i++) {
     argv[0 + i] = arguments[i].QJSValue();
   }
-
-  JSValue returnValue = JS_Call(ctx, function_, this_val.QJSValue(), argc, argv);
-
   ExecutingContext* context = ExecutingContext::From(ctx);
-  context->DrainPendingPromiseJobs();
+  // prof: context->dartIsolateContext()->profiler()->StartTrackSteps("JS_Call");
+
+  JSValue returnValue = JS_Call(ctx, function_, JS_IsNull(this_val_) ? this_val.QJSValue() : this_val_, argc, argv);
+
+  // prof: context->dartIsolateContext()->profiler()->FinishTrackSteps();
+
+  context->DrainMicrotasks();
 
   // Free the previous duplicated function.
   JS_FreeValue(ctx, function_);
@@ -72,6 +75,7 @@ ScriptValue QJSFunction::Invoke(JSContext* ctx, const ScriptValue& this_val, int
 
 void QJSFunction::Trace(GCVisitor* visitor) const {
   visitor->TraceValue(function_);
+  visitor->TraceValue(this_val_);
 }
 
 }  // namespace mercury

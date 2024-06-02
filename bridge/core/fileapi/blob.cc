@@ -127,20 +127,20 @@ void Blob::SetMineType(const std::string& mine_type) {
 }
 
 ScriptPromise Blob::arrayBuffer(ExceptionState& exception_state) {
-  auto resolver = ScriptPromiseResolver::Create(GetExecutingContext());
-  new BlobReaderClient(GetExecutingContext(), this, resolver, BlobReaderClient::ReadType::kReadAsArrayBuffer);
+  auto resolver = ScriptPromiseResolver::Create(executingContext());
+  new BlobReaderClient(executingContext(), this, resolver, BlobReaderClient::ReadType::kReadAsArrayBuffer);
   return resolver->Promise();
 }
 
 ScriptPromise Blob::text(ExceptionState& exception_state) {
-  auto resolver = ScriptPromiseResolver::Create(GetExecutingContext());
-  new BlobReaderClient(GetExecutingContext(), this, resolver, BlobReaderClient::ReadType::kReadAsText);
+  auto resolver = ScriptPromiseResolver::Create(executingContext());
+  new BlobReaderClient(executingContext(), this, resolver, BlobReaderClient::ReadType::kReadAsText);
   return resolver->Promise();
 }
 
 ScriptPromise Blob::base64(ExceptionState& exception_state) {
-  auto resolver = ScriptPromiseResolver::Create(GetExecutingContext());
-  new BlobReaderClient(GetExecutingContext(), this, resolver, BlobReaderClient::ReadType::kReadAsBase64);
+  auto resolver = ScriptPromiseResolver::Create(executingContext());
+  new BlobReaderClient(executingContext(), this, resolver, BlobReaderClient::ReadType::kReadAsBase64);
   return resolver->Promise();
 }
 
