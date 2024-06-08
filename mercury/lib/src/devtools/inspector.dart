@@ -55,7 +55,7 @@ class InspectorMethodResult {
 }
 
 class InspectorReload {
-  int contextId;
+  double contextId;
   InspectorReload(this.contextId);
 }
 

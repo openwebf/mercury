@@ -7,7 +7,7 @@
 
  // Run tasks
  series(
-   'clean',
+   // 'clean',
    'git-submodule',
    'compile-polyfill',
    'generate-bindings-code',

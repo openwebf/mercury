@@ -8,11 +8,11 @@ require('./tasks');
 
 // Run tasks
 series(
-  'git-submodule',
-  // 'macos-dylib-clean',
-  'compile-polyfill',
-  'generate-bindings-code',
-  'build-darwin-mercury-lib',
+  'android-so-clean',
+  'ios-framework-clean',
+  'macos-dylib-clean',
+  'android-so-clean',
+  'clean',
 )((err) => {
   if (err) {
     console.log(err);

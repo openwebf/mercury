@@ -19,13 +19,13 @@ class MyApp extends StatelessWidget {
       title: 'Mercury Example',
       // theme: ThemeData.dark(),
       debugShowCheckedModeBanner: false,
-      home: MyBrowser(),
+      home: HomePage(title: 'Landing Page'),
     );
   }
 }
 
-class MyBrowser extends StatefulWidget {
-  MyBrowser({Key? key, this.title}) : super(key: key);
+class HomePage extends StatefulWidget {
+  HomePage({Key? key, this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -39,10 +39,10 @@ class MyBrowser extends StatefulWidget {
   final String? title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyBrowser> {
+class _HomePageState extends State<HomePage> {
   OutlineInputBorder outlineBorder = OutlineInputBorder(
     borderSide: BorderSide(color: Colors.transparent, width: 0.0),
     borderRadius: const BorderRadius.all(

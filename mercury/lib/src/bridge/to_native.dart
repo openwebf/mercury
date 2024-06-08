@@ -1,11 +1,12 @@
 /*
  * Copyright (C) 2019-2022 The Kraken authors. All rights reserved.
- * Copyright (C) 2022-present The WebF authors. All rights reserved.
+ * Copyright (C) 2022-present The Mercury authors. All rights reserved.
  */
 
+import 'dart:async';
 import 'dart:collection';
 import 'dart:ffi';
-import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
@@ -47,55 +48,119 @@ class MercuryInfo {
   }
 }
 
-typedef NativeGetMercuryInfo = Pointer<NativeMercuryInfo> Function();
-typedef DartGetMercuryInfo = Pointer<NativeMercuryInfo> Function();
 
-final DartGetMercuryInfo _getMercuryInfo =
-    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeGetMercuryInfo>>('getMercuryInfo').asFunction();
+// Register Native Callback Port
+final interactiveCppRequests = RawReceivePort((message) {
+  requestExecuteCallback(message);
+});
 
-final MercuryInfo _cachedInfo = MercuryInfo(_getMercuryInfo());
+final int nativePort = interactiveCppRequests.sendPort.nativePort;
 
-final HashMap<int, Pointer<Void>> _allocatedMercuryIsolates = HashMap();
+class NativeWork extends Opaque {}
 
-Pointer<Void>? getAllocatedMercuryIsolate(int contextId) {
-  return _allocatedMercuryIsolates[contextId];
+final _executeNativeCallback = MercuryDynamicLibrary.ref
+    .lookupFunction<Void Function(Pointer<NativeWork>), void Function(Pointer<NativeWork>)>('executeNativeCallback');
+
+Completer? _working_completer;
+
+FutureOr<void> waitingSyncTaskComplete(double contextId) async {
+  if (_working_completer != null) {
+    return _working_completer!.future;
+  }
 }
 
-MercuryInfo getMercuryInfo() {
-  return _cachedInfo;
+void requestExecuteCallback(message) {
+  try {
+    final List<dynamic> data = message;
+    final bool isSync = data[0] == 1;
+    if (isSync) {
+      _working_completer = Completer();
+    }
+
+    final int workAddress = data[1];
+    final work = Pointer<NativeWork>.fromAddress(workAddress);
+    _executeNativeCallback(work);
+    _working_completer?.complete();
+    _working_completer = null;
+  } catch (e, stack) {
+    print('requestExecuteCallback error: $e\n$stack');
+  }
 }
 
 // Register invokeEventListener
-typedef NativeInvokeEventListener = Pointer<NativeValue> Function(
-    Pointer<Void>, Pointer<NativeString>, Pointer<Utf8> eventType, Pointer<Void> nativeEvent, Pointer<NativeValue>);
-typedef DartInvokeEventListener = Pointer<NativeValue> Function(
-    Pointer<Void>, Pointer<NativeString>, Pointer<Utf8> eventType, Pointer<Void> nativeEvent, Pointer<NativeValue>);
+typedef NativeInvokeEventListener = Void Function(
+    Pointer<Void>,
+    Pointer<NativeString>,
+    Pointer<Utf8> eventType,
+    Pointer<Void> nativeEvent,
+    Pointer<NativeValue>,
+    Handle object,
+    Pointer<NativeFunction<NativeInvokeModuleCallback>> returnCallback);
+typedef DartInvokeEventListener = void Function(
+    Pointer<Void>,
+    Pointer<NativeString>,
+    Pointer<Utf8> eventType,
+    Pointer<Void> nativeEvent,
+    Pointer<NativeValue>,
+    Object object,
+    Pointer<NativeFunction<NativeInvokeModuleCallback>> returnCallback);
+typedef NativeInvokeModuleCallback = Void Function(Handle object, Pointer<NativeValue> result);
 
 final DartInvokeEventListener _invokeModuleEvent =
     MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeInvokeEventListener>>('invokeModuleEvent').asFunction();
 
-dynamic invokeModuleEvent(int contextId, String moduleName, Event? event, extra) {
+void _invokeModuleCallback(_InvokeModuleCallbackContext context, Pointer<NativeValue> dispatchResult) {
+  dynamic result = fromNativeValue(context.controller.context, dispatchResult);
+  malloc.free(dispatchResult);
+  malloc.free(context.extraData);
+  context.completer.complete(result);
+}
+
+class _InvokeModuleCallbackContext {
+  Completer completer;
+  MercuryController controller;
+  Pointer<NativeValue> extraData;
+
+  _InvokeModuleCallbackContext(this.completer, this.controller, this.extraData);
+}
+
+dynamic invokeModuleEvent(double contextId, String moduleName, Event? event, extra) {
   if (MercuryController.getControllerOfJSContextId(contextId) == null) {
     return null;
   }
+  Completer<dynamic> completer = Completer();
   MercuryController controller = MercuryController.getControllerOfJSContextId(contextId)!;
+
+  if (controller.context.disposed) return null;
+
   Pointer<NativeString> nativeModuleName = stringToNativeString(moduleName);
   Pointer<Void> rawEvent = event == null ? nullptr : event.toRaw().cast<Void>();
   Pointer<NativeValue> extraData = malloc.allocate(sizeOf<NativeValue>());
   toNativeValue(extraData, extra);
   assert(_allocatedMercuryIsolates.containsKey(contextId));
-  Pointer<NativeValue> dispatchResult = _invokeModuleEvent(
-      _allocatedMercuryIsolates[contextId]!, nativeModuleName, event == null ? nullptr : event.type.toNativeUtf8(), rawEvent, extraData);
-  dynamic result = fromNativeValue(controller.context, dispatchResult);
-  malloc.free(dispatchResult);
-  malloc.free(extraData);
-  return result;
+
+  Pointer<NativeFunction<NativeInvokeModuleCallback>> callback =
+      Pointer.fromFunction<NativeInvokeModuleCallback>(_invokeModuleCallback);
+
+  _InvokeModuleCallbackContext callbackContext = _InvokeModuleCallbackContext(completer, controller, extraData);
+
+  scheduleMicrotask(() {
+    if (controller.context.disposed) {
+      callbackContext.completer.complete(null);
+      return;
+    }
+
+    _invokeModuleEvent(_allocatedMercuryIsolates[contextId]!, nativeModuleName,
+        event == null ? nullptr : event.type.toNativeUtf8(), rawEvent, extraData, callbackContext, callback);
+  });
+
+  return completer.future;
 }
 
-typedef DartDispatchEvent = int Function(int contextId, Pointer<NativeBindingObject> nativeBindingObject,
+typedef DartDispatchEvent = int Function(double contextId, Pointer<NativeBindingObject> nativeBindingObject,
     Pointer<NativeString> eventType, Pointer<Void> nativeEvent, int isCustomEvent);
 
-dynamic emitModuleEvent(int contextId, String moduleName, Event? event, extra) {
+dynamic emitModuleEvent(double contextId, String moduleName, Event? event, extra) {
   return invokeModuleEvent(contextId, moduleName, event, extra);
 }
 
@@ -111,29 +176,72 @@ Pointer<Void> createScreen(double width, double height) {
 }
 
 // Register evaluateScripts
-typedef NativeEvaluateScripts = Int8 Function(
-    Pointer<Void>, Pointer<NativeString> code, Pointer<Pointer<Uint8>> parsedBytecodes, Pointer<Uint64> bytecodeLen, Pointer<Utf8> url, Int32 startLine);
-typedef DartEvaluateScripts = int Function(
-    Pointer<Void>, Pointer<NativeString> code, Pointer<Pointer<Uint8>> parsedBytecodes, Pointer<Uint64> bytecodeLen, Pointer<Utf8> url, int startLine);
+typedef NativeEvaluateScripts = Void Function(
+    Pointer<Void>,
+    Pointer<Uint8> code,
+    Uint64 code_len,
+    Pointer<Pointer<Uint8>> parsedBytecodes,
+    Pointer<Uint64> bytecodeLen,
+    Pointer<Utf8> url,
+    Int32 startLine,
+    // prof: Int64 profileId,
+    Handle object,
+    Pointer<NativeFunction<NativeEvaluateJavaScriptCallback>> resultCallback);
+typedef DartEvaluateScripts = void Function(
+    Pointer<Void>,
+    Pointer<Uint8> code,
+    int code_len,
+    Pointer<Pointer<Uint8>> parsedBytecodes,
+    Pointer<Uint64> bytecodeLen,
+    Pointer<Utf8> url,
+    int startLine,
+    // prof: int profileId,
+    Object object,
+    Pointer<NativeFunction<NativeEvaluateJavaScriptCallback>> resultCallback);
 
-// Register parseHTML
-typedef NativeParseHTML = Void Function(Pointer<Void>, Pointer<Utf8> code, Int32 length);
-typedef DartParseHTML = void Function(Pointer<Void>, Pointer<Utf8> code, int length);
+typedef NativeEvaluateJavaScriptCallback = Void Function(Handle object, Int8 result);
 
 final DartEvaluateScripts _evaluateScripts =
     MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeEvaluateScripts>>('evaluateScripts').asFunction();
-
-final DartParseHTML _parseHTML =
-    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeParseHTML>>('parseHTML').asFunction();
 
 int _anonymousScriptEvaluationId = 0;
 
 class ScriptByteCode {
   ScriptByteCode();
+
   late Uint8List bytes;
 }
 
-Future<bool> evaluateScripts(int contextId, String code, {String? url, int line = 0}) async {
+class _EvaluateScriptsContext {
+  Completer completer;
+  String? cacheKey;
+  Pointer<Uint8> codePtr;
+  Pointer<Utf8> url;
+  Pointer<Pointer<Uint8>>? bytecodes;
+  Pointer<Uint64>? bytecodeLen;
+  Uint8List originalCodeBytes;
+
+  _EvaluateScriptsContext(this.completer, this.originalCodeBytes, this.codePtr, this.url, this.cacheKey);
+}
+
+void handleEvaluateScriptsResult(_EvaluateScriptsContext context, int result) {
+  if (context.bytecodes != null) {
+    Uint8List bytes = context.bytecodes!.value.asTypedList(context.bytecodeLen!.value);
+    // Save to disk cache
+    QuickJSByteCodeCache.putObject(context.originalCodeBytes, bytes, cacheKey: context.cacheKey).then((_) {
+      malloc.free(context.codePtr);
+      malloc.free(context.url);
+      context.completer.complete(result == 1);
+    });
+  } else {
+    malloc.free(context.codePtr);
+    malloc.free(context.url);
+    context.completer.complete(result == 1);
+  }
+}
+
+// prof:
+Future<bool> evaluateScripts(double contextId, Uint8List codeBytes, {String? url, String? cacheKey, int line = 0 }) async { // EvaluateOpItem? profileOp
   if (MercuryController.getControllerOfJSContextId(contextId) == null) {
     return false;
   }
@@ -143,9 +251,12 @@ Future<bool> evaluateScripts(int contextId, String code, {String? url, int line 
     _anonymousScriptEvaluationId++;
   }
 
-  QuickJSByteCodeCacheObject cacheObject = await QuickJSByteCodeCache.getCacheObject(code);
-  if (QuickJSByteCodeCacheObject.cacheMode == ByteCodeCacheMode.DEFAULT && cacheObject.valid && cacheObject.bytes != null) {
-    bool result = evaluateQuickjsByteCode(contextId, cacheObject.bytes!);
+  QuickJSByteCodeCacheObject cacheObject = await QuickJSByteCodeCache.getCacheObject(codeBytes, cacheKey: cacheKey);
+  if (QuickJSByteCodeCacheObject.cacheMode == ByteCodeCacheMode.DEFAULT &&
+      cacheObject.valid &&
+      cacheObject.bytes != null) {
+    // prof:
+    bool result = await evaluateQuickjsByteCode(contextId, cacheObject.bytes!); // profileOp: profileOp
     // If the bytecode evaluate failed, remove the cached file and fallback to raw javascript mode.
     if (!result) {
       await cacheObject.remove();
@@ -153,117 +264,267 @@ Future<bool> evaluateScripts(int contextId, String code, {String? url, int line 
 
     return result;
   } else {
-    Pointer<NativeString> nativeString = stringToNativeString(code);
     Pointer<Utf8> _url = url.toNativeUtf8();
+    Pointer<Uint8> codePtr = uint8ListToPointer(codeBytes);
+    Completer<bool> completer = Completer();
+
+    _EvaluateScriptsContext context = _EvaluateScriptsContext(completer, codeBytes, codePtr, _url, cacheKey);
+    Pointer<NativeFunction<NativeEvaluateJavaScriptCallback>> resultCallback =
+        Pointer.fromFunction(handleEvaluateScriptsResult);
+
     try {
       assert(_allocatedMercuryIsolates.containsKey(contextId));
-      int result;
-      if (QuickJSByteCodeCache.isCodeNeedCache(code)) {
+      if (QuickJSByteCodeCache.isCodeNeedCache(codeBytes)) {
         // Export the bytecode from scripts
         Pointer<Pointer<Uint8>> bytecodes = malloc.allocate(sizeOf<Pointer<Uint8>>());
         Pointer<Uint64> bytecodeLen = malloc.allocate(sizeOf<Uint64>());
-        result = _evaluateScripts(_allocatedMercuryIsolates[contextId]!, nativeString, bytecodes, bytecodeLen, _url, line);
-        Uint8List bytes = bytecodes.value.asTypedList(bytecodeLen.value);
-        // Save to disk cache
-        QuickJSByteCodeCache.putObject(code, bytes);
+
+        context.bytecodes = bytecodes;
+        context.bytecodeLen = bytecodeLen;
+
+        // prof:
+        _evaluateScripts(_allocatedMercuryIsolates[contextId]!, codePtr, codeBytes.length, bytecodes, bytecodeLen, _url, line, context, resultCallback); // profileOp?.hashCode ?? 0
       } else {
-        result = _evaluateScripts(_allocatedMercuryIsolates[contextId]!, nativeString, nullptr, nullptr, _url, line);
+        // prof:
+        _evaluateScripts(_allocatedMercuryIsolates[contextId]!, codePtr, codeBytes.length, nullptr, nullptr, _url, line, context, resultCallback); // profileOp?.hashCode ?? 0
       }
-      return result == 1;
+      return completer.future;
     } catch (e, stack) {
       print('$e\n$stack');
     }
-    freeNativeString(nativeString);
-    malloc.free(_url);
+
+    return completer.future;
   }
-  return false;
 }
 
-typedef NativeEvaluateQuickjsByteCode = Int8 Function(Pointer<Void>, Pointer<Uint8> bytes, Int32 byteLen);
-typedef DartEvaluateQuickjsByteCode = int Function(Pointer<Void>, Pointer<Uint8> bytes, int byteLen);
+// prof:
+typedef NativeEvaluateQuickjsByteCode = Void Function(Pointer<Void>, Pointer<Uint8> bytes, Int32 byteLen, Handle object, // Int64 profileId
+    Pointer<NativeFunction<NativeEvaluateQuickjsByteCodeCallback>> callback);
+typedef DartEvaluateQuickjsByteCode = void Function(Pointer<Void>, Pointer<Uint8> bytes, int byteLen, Object object, // Int64 profileId
+    Pointer<NativeFunction<NativeEvaluateQuickjsByteCodeCallback>> callback);
+
+typedef NativeEvaluateQuickjsByteCodeCallback = Void Function(Handle object, Int8 result);
 
 final DartEvaluateQuickjsByteCode _evaluateQuickjsByteCode = MercuryDynamicLibrary.ref
     .lookup<NativeFunction<NativeEvaluateQuickjsByteCode>>('evaluateQuickjsByteCode')
     .asFunction();
 
-bool evaluateQuickjsByteCode(int contextId, Uint8List bytes) {
+class _EvaluateQuickjsByteCodeContext {
+  Completer<bool> completer;
+  Pointer<Uint8> bytes;
+
+  _EvaluateQuickjsByteCodeContext(this.completer, this.bytes);
+}
+
+void handleEvaluateQuickjsByteCodeResult(_EvaluateQuickjsByteCodeContext context, int result) {
+  malloc.free(context.bytes);
+  context.completer.complete(result == 1);
+}
+
+// prof:
+Future<bool> evaluateQuickjsByteCode(double contextId, Uint8List bytes) async { // { EvaluateOpItem? profileOp }
   if (MercuryController.getControllerOfJSContextId(contextId) == null) {
     return false;
   }
+  Completer<bool> completer = Completer();
   Pointer<Uint8> byteData = malloc.allocate(sizeOf<Uint8>() * bytes.length);
   byteData.asTypedList(bytes.length).setAll(0, bytes);
   assert(_allocatedMercuryIsolates.containsKey(contextId));
-  int result = _evaluateQuickjsByteCode(_allocatedMercuryIsolates[contextId]!, byteData, bytes.length);
-  malloc.free(byteData);
-  return result == 1;
+
+  _EvaluateQuickjsByteCodeContext context = _EvaluateQuickjsByteCodeContext(completer, byteData);
+
+  Pointer<NativeFunction<NativeEvaluateQuickjsByteCodeCallback>> nativeCallback =
+      Pointer.fromFunction(handleEvaluateQuickjsByteCodeResult);
+
+  // prof:
+  _evaluateQuickjsByteCode(_allocatedMercuryIsolates[contextId]!, byteData, bytes.length, context, nativeCallback); // profileOp?.hashCode ?? 0
+
+  return completer.future;
 }
 
-void parseHTML(int contextId, String code) {
-  if (MercuryController.getControllerOfJSContextId(contextId) == null) {
-    return;
+typedef NativeDumpQuickjsByteCodeResultCallback = Void Function(Handle object);
+
+typedef NativeDumpQuickjsByteCode = Void Function(
+    Pointer<Void>,
+    // prof: Int64 profileId,
+    Pointer<Uint8> code,
+    Int32 code_len,
+    Pointer<Pointer<Uint8>> parsedBytecodes,
+    Pointer<Uint64> bytecodeLen,
+    Pointer<Utf8> url,
+    Handle context,
+    Pointer<NativeFunction<NativeDumpQuickjsByteCodeResultCallback>> resultCallback);
+typedef DartDumpQuickjsByteCode = void Function(
+    Pointer<Void>,
+    // prof: int profileId,
+    Pointer<Uint8> code,
+    int code_len,
+    Pointer<Pointer<Uint8>> parsedBytecodes,
+    Pointer<Uint64> bytecodeLen,
+    Pointer<Utf8> url,
+    Object context,
+    Pointer<NativeFunction<NativeDumpQuickjsByteCodeResultCallback>> resultCallback);
+
+final DartDumpQuickjsByteCode _dumpQuickjsByteCode =
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeDumpQuickjsByteCode>>('dumpQuickjsByteCode').asFunction();
+
+class _DumpQuickjsByteCodeContext {
+  Completer<Uint8List> completer;
+  Pointer<Pointer<Uint8>> bytecodes;
+  Pointer<Uint64> bytecodeLen;
+
+  _DumpQuickjsByteCodeContext(this.completer, this.bytecodes, this.bytecodeLen);
+}
+
+void _handleQuickjsByteCodeResults(_DumpQuickjsByteCodeContext context) {
+  Uint8List bytes = context.bytecodes.value.asTypedList(context.bytecodeLen.value);
+  context.completer.complete(bytes);
+}
+
+Future<Uint8List> dumpQuickjsByteCode(double contextId, Uint8List code, {String? url, EvaluateOpItem? profileOp}) async {
+  Completer<Uint8List> completer = Completer();
+  // Assign `vm://$id` for no url (anonymous scripts).
+  if (url == null) {
+    url = 'vm://$_anonymousScriptEvaluationId';
+    _anonymousScriptEvaluationId++;
   }
-  Pointer<Utf8> nativeCode = code.toNativeUtf8();
-  try {
-    assert(_allocatedMercuryIsolates.containsKey(contextId));
-    _parseHTML(_allocatedMercuryIsolates[contextId]!, nativeCode, nativeCode.length);
-  } catch (e, stack) {
-    print('$e\n$stack');
-  }
-  malloc.free(nativeCode);
+
+  Pointer<Uint8> codePtr = uint8ListToPointer(code);
+
+  Pointer<Utf8> _url = url.toNativeUtf8();
+  // Export the bytecode from scripts
+  Pointer<Pointer<Uint8>> bytecodes = malloc.allocate(sizeOf<Pointer<Uint8>>());
+  Pointer<Uint64> bytecodeLen = malloc.allocate(sizeOf<Uint64>());
+
+  _DumpQuickjsByteCodeContext context = _DumpQuickjsByteCodeContext(completer, bytecodes, bytecodeLen);
+  Pointer<NativeFunction<NativeDumpQuickjsByteCodeResultCallback>> resultCallback =
+      Pointer.fromFunction(_handleQuickjsByteCodeResults);
+
+  // prof:
+  _dumpQuickjsByteCode(
+      _allocatedMercuryIsolates[contextId]!, codePtr, code.length, bytecodes, bytecodeLen, _url, context, resultCallback); // profileOp?.hashCode ?? 0
+
+  // return bytes;
+  return completer.future;
 }
 
 // Register initJsEngine
-typedef NativeInitDartIsolateContext = Pointer<Void> Function(Pointer<Uint64> dartMethods, Int32 methodsLength);
-typedef DartInitDartIsolateContext = Pointer<Void> Function(Pointer<Uint64> dartMethods, int methodsLength);
+// prof:
+typedef NativeInitDartIsolateContext = Pointer<Void> Function(
+    Int64 sendPort, Pointer<Uint64> dartMethods, Int32 methodsLength); // , Int8 enableProfile
+typedef DartInitDartIsolateContext = Pointer<Void> Function(
+    int sendPort, Pointer<Uint64> dartMethods, int methodsLength); // , Int8 enableProfile
 
-final DartInitDartIsolateContext _initDartIsolateContext =
-    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeInitDartIsolateContext>>('initDartIsolateContext').asFunction();
+final DartInitDartIsolateContext _initDartIsolateContext = MercuryDynamicLibrary.ref
+    .lookup<NativeFunction<NativeInitDartIsolateContext>>('initDartIsolateContextSync')
+    .asFunction();
 
-Pointer<Void> allocateNewIsolateSync(List<int> dartMethods) {
+Pointer<Void> initDartIsolateContext(List<int> dartMethods) {
   Pointer<Uint64> bytes = malloc.allocate<Uint64>(sizeOf<Uint64>() * dartMethods.length);
   Uint64List nativeMethodList = bytes.asTypedList(dartMethods.length);
-  nativeMethodList.setAll(0, dartMethods);
-  return _allocateNewIsolateSync(bytes, dartMethods.length);
+  nativeMethodList.setAll(0, dartMethods); // prof:
+  return _initDartIsolateContext(nativePort, bytes, dartMethods.length); // , enableMercuryProfileTracking ? 1 : 0
 }
 
-typedef NativeDisposeMercuryIsolate = Void Function(Pointer<Void>, Pointer<Void> mercuryIsolate);
-typedef DartDisposeMercuryIsolate = void Function(Pointer<Void>, Pointer<Void> mercuryIsolate);
+typedef HandleDisposeMercuryIsolateResult = Void Function(Handle context);
+typedef NativeDisposeMercuryIsolate = Void Function(Double contextId, Pointer<Void>, Pointer<Void> mercury_isolate, Handle context,
+    Pointer<NativeFunction<HandleDisposeMercuryIsolateResult>> resultCallback);
+typedef DartDisposeMercuryIsolate = void Function(double, Pointer<Void>, Pointer<Void> mercury_isolate, Object context,
+    Pointer<NativeFunction<HandleDisposeMercuryIsolateResult>> resultCallback);
 
 final DartDisposeMercuryIsolate _disposeMercuryIsolate =
     MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeDisposeMercuryIsolate>>('disposeMercuryIsolate').asFunction();
 
-void disposeMercuryIsolate(int contextId) {
-  Pointer<Void> mercuryIsolate = _allocatedMercuryIsolates[contextId]!;
-  _disposeMercuryIsolate(dartContext.pointer, mercuryIsolate);
-  _allocatedMercuryIsolates.remove(contextId);
+typedef NativeDisposeMercuryIsolateSync = Void Function(Double contextId, Pointer<Void>, Pointer<Void> mercury_isolate);
+typedef DartDisposeMercuryIsolateSync = void Function(double, Pointer<Void>, Pointer<Void> mercury_isolate);
+
+final DartDisposeMercuryIsolateSync _disposeMercuryIsolateSync =
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeDisposeMercuryIsolateSync>>('disposeMercuryIsolateSync').asFunction();
+
+void _handleDisposeMercuryIsolateResult(_DisposeMercuryIsolateContext context) {
+  context.completer.complete();
+}
+
+class _DisposeMercuryIsolateContext {
+  Completer<void> completer;
+
+  _DisposeMercuryIsolateContext(this.completer);
+}
+
+FutureOr<void> disposeMercuryIsolate(bool isSync, double contextId) async {
+  Pointer<Void> mercury_isolate = _allocatedMercuryIsolates[contextId]!;
+
+  if (isSync) {
+    _disposeMercuryIsolateSync(contextId, dartContext!.pointer, mercury_isolate);
+    _allocatedMercuryIsolates.remove(contextId);
+  } else {
+    Completer<void> completer = Completer();
+    _DisposeMercuryIsolateContext context = _DisposeMercuryIsolateContext(completer);
+    Pointer<NativeFunction<HandleDisposeMercuryIsolateResult>> f = Pointer.fromFunction(_handleDisposeMercuryIsolateResult);
+    _disposeMercuryIsolate(contextId, dartContext!.pointer, mercury_isolate, context, f);
+    return completer.future;
+  }
 }
 
 typedef NativeNewMercuryIsolateId = Int64 Function();
 typedef DartNewMercuryIsolateId = int Function();
 
-final DartNewMercuryIsolateId _newMercuryIsolateId = MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeNewMercuryIsolateId>>('newMercuryIsolateId').asFunction();
+final DartNewMercuryIsolateId _newMercuryIsolateId =
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeNewMercuryIsolateId>>('newMercuryIsolateIdSync').asFunction();
 
 int newMercuryIsolateId() {
   return _newMercuryIsolateId();
 }
 
-typedef NativeAllocateNewMercuryIsolate = Pointer<Void> Function(Pointer<Void>, Int32);
-typedef DartAllocateNewMercuryIsolate = Pointer<Void> Function(Pointer<Void>, int);
+typedef NativeAllocateNewMercuryIsolateSync = Pointer<Void> Function(Double, Pointer<Void>);
+typedef DartAllocateNewMercuryIsolateSync = Pointer<Void> Function(double, Pointer<Void>);
+typedef HandleAllocateNewMercuryIsolateResult = Void Function(Handle object, Pointer<Void> mercury_isolate);
+typedef NativeAllocateNewMercuryIsolate = Void Function(
+    Double, Int32, Pointer<Void>, Handle object, Pointer<NativeFunction<HandleAllocateNewMercuryIsolateResult>> handle_result);
+typedef DartAllocateNewMercuryIsolate = void Function(
+    double, int, Pointer<Void>, Object object, Pointer<NativeFunction<HandleAllocateNewMercuryIsolateResult>> handle_result);
+
+final DartAllocateNewMercuryIsolateSync _allocateNewMercuryIsolateSync =
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeAllocateNewMercuryIsolateSync>>('allocateNewMercuryIsolateSync').asFunction();
 
 final DartAllocateNewMercuryIsolate _allocateNewMercuryIsolate =
     MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeAllocateNewMercuryIsolate>>('allocateNewMercuryIsolate').asFunction();
 
-void allocateNewMercuryIsolate(int targetContextId) {
-  Pointer<Void> mercuryIsolate = _allocateNewMercuryIsolate(dartContext.pointer, targetContextId);
-  assert(!_allocatedMercuryIsolates.containsKey(targetContextId));
-  _allocatedMercuryIsolates[targetContextId] = mercuryIsolate;
+void _handleAllocateNewMercuryIsolateResult(_AllocateNewMercuryIsolateContext context, Pointer<Void> mercury_isolate) {
+  assert(!_allocatedMercuryIsolates.containsKey(context.contextId));
+  _allocatedMercuryIsolates[context.contextId] = mercury_isolate;
+  context.completer.complete();
+}
+
+class _AllocateNewMercuryIsolateContext {
+  Completer<void> completer;
+  double contextId;
+
+  _AllocateNewMercuryIsolateContext(this.completer, this.contextId);
+}
+
+Future<void> allocateNewMercuryIsolate(bool sync, double newContextId, int syncBufferSize) async {
+  await waitingSyncTaskComplete(newContextId);
+
+  if (!sync) {
+    Completer<void> completer = Completer();
+    _AllocateNewMercuryIsolateContext context = _AllocateNewMercuryIsolateContext(completer, newContextId);
+    Pointer<NativeFunction<HandleAllocateNewMercuryIsolateResult>> f = Pointer.fromFunction(_handleAllocateNewMercuryIsolateResult);
+    _allocateNewMercuryIsolate(newContextId, syncBufferSize, dartContext!.pointer, context, f);
+    return completer.future;
+  } else {
+    Pointer<Void> mercury_isolate = _allocateNewMercuryIsolateSync(newContextId, dartContext!.pointer);
+    assert(!_allocatedMercuryIsolates.containsKey(newContextId));
+    _allocatedMercuryIsolates[newContextId] = mercury_isolate;
+  }
 }
 
 typedef NativeInitDartDynamicLinking = Void Function(Pointer<Void> data);
 typedef DartInitDartDynamicLinking = void Function(Pointer<Void> data);
 
-final DartInitDartDynamicLinking _initDartDynamicLinking =
-    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeInitDartDynamicLinking>>('init_dart_dynamic_linking').asFunction();
+final DartInitDartDynamicLinking _initDartDynamicLinking = MercuryDynamicLibrary.ref
+    .lookup<NativeFunction<NativeInitDartDynamicLinking>>('init_dart_dynamic_linking')
+    .asFunction();
 
 void initDartDynamicLinking() {
   _initDartDynamicLinking(NativeApi.initializeApiDLData);
@@ -272,8 +533,9 @@ void initDartDynamicLinking() {
 typedef NativeRegisterDartContextFinalizer = Void Function(Handle object, Pointer<Void> dart_context);
 typedef DartRegisterDartContextFinalizer = void Function(Object object, Pointer<Void> dart_context);
 
-final DartRegisterDartContextFinalizer _registerDartContextFinalizer =
-    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeRegisterDartContextFinalizer>>('register_dart_context_finalizer').asFunction();
+final DartRegisterDartContextFinalizer _registerDartContextFinalizer = MercuryDynamicLibrary.ref
+    .lookup<NativeFunction<NativeRegisterDartContextFinalizer>>('register_dart_context_finalizer')
+    .asFunction();
 
 void registerDartContextFinalizer(DartContext dartContext) {
   _registerDartContextFinalizer(dartContext, dartContext.pointer);
@@ -291,22 +553,43 @@ void registerPluginByteCode(Uint8List bytecode, String name) {
   _registerPluginByteCode(bytes, bytecode.length, name.toNativeUtf8());
 }
 
-final bool isEnabledLog = !kReleaseMode && Platform.environment['ENABLE_MERCURYJS_LOG'] == 'true';
+typedef NativeCollectNativeProfileData = Void Function(
+    Pointer<Void> mercury_isolatePtr, Pointer<Pointer<Utf8>> data, Pointer<Uint32> len);
+typedef DartCollectNativeProfileData = void Function(
+    Pointer<Void> mercury_isolatePtr, Pointer<Pointer<Utf8>> data, Pointer<Uint32> len);
 
+final DartCollectNativeProfileData _collectNativeProfileData = MercuryDynamicLibrary.ref
+    .lookup<NativeFunction<NativeCollectNativeProfileData>>('collectNativeProfileData')
+    .asFunction();
 
-typedef NativeDispatchIsolateTask = Void Function(Int32 contextId, Pointer<Void> context, Pointer<Void> callback);
-typedef DartDispatchIsolateTask = void Function(int contextId, Pointer<Void> context, Pointer<Void> callback);
+String collectNativeProfileData() {
+  Pointer<Pointer<Utf8>> string = malloc.allocate(sizeOf<Pointer>());
+  Pointer<Uint32> len = malloc.allocate(sizeOf<Pointer>());
 
-void dispatchIsolateTask(int contextId, Pointer<Void> context, Pointer<Void> callback) {
-  // _dispatchIsolateTask(contextId, context, callback);
+  _collectNativeProfileData(dartContext!.pointer, string, len);
+
+  return string.value.toDartString(length: len.value);
+}
+
+typedef NativeClearNativeProfileData = Void Function(Pointer<Void> mercury_isolatePtr);
+typedef DartClearNativeProfileData = void Function(Pointer<Void> mercury_isolatePtr);
+
+final DartClearNativeProfileData _clearNativeProfileData = MercuryDynamicLibrary.ref
+    .lookup<NativeFunction<NativeClearNativeProfileData>>('clearNativeProfileData')
+    .asFunction();
+
+void clearNativeProfileData() {
+  _clearNativeProfileData(dartContext!.pointer);
 }
 
 enum IsolateCommandType {
+  // prof: startRecordingCommand,
   createGlobal,
-  createEventTarget,
   disposeBindingObject,
   addEvent,
   removeEvent,
+  // perf optimize
+  // prof: finishRecordingCommand,
 }
 
 class IsolateCommandItem extends Struct {
@@ -330,6 +613,12 @@ typedef DartGetIsolateCommandItems = Pointer<Uint64> Function(Pointer<Void>);
 final DartGetIsolateCommandItems _getIsolateCommandItems =
     MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeGetIsolateCommandItems>>('getIsolateCommandItems').asFunction();
 
+typedef NativeGetIsolateCommandKindFlags = Uint32 Function(Pointer<Void>);
+typedef DartGetIsolateCommandKindFlags = int Function(Pointer<Void>);
+
+final DartGetIsolateCommandKindFlags _getIsolateCommandKindFlags =
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeGetIsolateCommandKindFlags>>('getIsolateCommandKindFlag').asFunction();
+
 typedef NativeGetIsolateCommandItemSize = Int64 Function(Pointer<Void>);
 typedef DartGetIsolateCommandItemSize = int Function(Pointer<Void>);
 
@@ -342,133 +631,98 @@ typedef DartClearIsolateCommandItems = void Function(Pointer<Void>);
 final DartClearIsolateCommandItems _clearIsolateCommandItems =
     MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeClearIsolateCommandItems>>('clearIsolateCommandItems').asFunction();
 
-class IsolateCommand {
-  late final IsolateCommandType type;
-  late final String args;
-  late final Pointer nativePtr;
-  late final Pointer nativePtr2;
+typedef NativeIsJSThreadBlocked = Int8 Function(Pointer<Void>, Double);
+typedef DartIsJSThreadBlocked = int Function(Pointer<Void>, double);
 
-  @override
-  String toString() {
-    return 'IsolateCommand(type: $type, args: $args, nativePtr: $nativePtr, nativePtr2: $nativePtr2)';
-  }
+final DartIsJSThreadBlocked _isJSThreadBlocked =
+    MercuryDynamicLibrary.ref.lookup<NativeFunction<NativeIsJSThreadBlocked>>('isJSThreadBlocked').asFunction();
+
+bool isJSThreadBlocked(double contextId) {
+  return _isJSThreadBlocked(dartContext!.pointer, contextId) == 1;
 }
 
-// struct IsolateCommandItem {
-//   int32_t type;             // offset: 0 ~ 0.5
-//   int32_t args_01_length;   // offset: 0.5 ~ 1
-//   const uint16_t *string_01;// offset: 1
-//   void* nativePtr;          // offset: 2
-//   void* nativePtr2;         // offset: 3
-// };
-const int nativeCommandSize = 4;
-const int typeAndArgs01LenMemOffset = 0;
-const int args01StringMemOffset = 1;
-const int nativePtrMemOffset = 2;
-const int native2PtrMemOffset = 3;
-
-// We found there are performance bottleneck of reading native memory with Dart FFI API.
-// So we align all Isolate instructions to a whole block of memory, and then convert them into a dart array at one time,
-// To ensure the fastest subsequent random access.
-List<IsolateCommand> readNativeIsolateCommandToDart(Pointer<Uint64> nativeCommandItems, int commandLength, int contextId) {
-  List<int> rawMemory =
-      nativeCommandItems.cast<Int64>().asTypedList(commandLength * nativeCommandSize).toList(growable: false);
-  List<IsolateCommand> results = List.generate(commandLength, (int _i) {
-    int i = _i * nativeCommandSize;
-    IsolateCommand command = IsolateCommand();
-
-    int typeArgs01Combine = rawMemory[i + typeAndArgs01LenMemOffset];
-
-    //      int32_t        int32_t
-    // +-------------+-----------------+
-    // |      type     | args_01_length  |
-    // +-------------+-----------------+
-    int args01Length = (typeArgs01Combine >> 32).toSigned(32);
-    int type = (typeArgs01Combine ^ (args01Length << 32)).toSigned(32);
-
-    command.type = IsolateCommandType.values[type];
-
-    int args01StringMemory = rawMemory[i + args01StringMemOffset];
-    if (args01StringMemory != 0) {
-      Pointer<Uint16> args_01 = Pointer.fromAddress(args01StringMemory);
-      command.args = uint16ToString(args_01, args01Length);
-      malloc.free(args_01);
-    } else {
-      command.args = '';
-    }
-
-    int nativePtrValue = rawMemory[i + nativePtrMemOffset];
-    command.nativePtr = nativePtrValue != 0 ? Pointer.fromAddress(rawMemory[i + nativePtrMemOffset]) : nullptr;
-
-    int nativePtr2Value = rawMemory[i + native2PtrMemOffset];
-    command.nativePtr2 = nativePtr2Value != 0 ? Pointer.fromAddress(nativePtr2Value) : nullptr;
-
-    if (isEnabledLog) {
-      String printMsg = 'nativePtr: ${command.nativePtr} type: ${command.type} args: ${command.args} nativePtr2: ${command.nativePtr2}';
-      print(printMsg);
-    }
-    return command;
-  }, growable: false);
-
-  // Clear native command.
-  _clearIsolateCommandItems(_allocatedMercuryIsolates[contextId]!);
-
-  return results;
-}
-
-void clearIsolateCommand(int contextId) {
+void clearIsolateCommand(double contextId) {
   assert(_allocatedMercuryIsolates.containsKey(contextId));
+
   _clearIsolateCommandItems(_allocatedMercuryIsolates[contextId]!);
 }
 
-void flushIsolateCommandWithContextId(int contextId) {
+void flushIsolateCommandWithContextId(double contextId, Pointer<NativeBindingObject> selfPointer) {
   MercuryController? controller = MercuryController.getControllerOfJSContextId(contextId);
   if (controller != null) {
-    flushIsolateCommand(controller.context);
+    flushIsolateCommand(controller.context, selfPointer);
   }
 }
 
-void flushIsolateCommand(MercuryContextController context) {
+class _NativeCommandData {
+  static _NativeCommandData empty() {
+    return _NativeCommandData(0, 0, []);
+  }
+
+  int length;
+  int kindFlag;
+  List<int> rawMemory;
+
+  _NativeCommandData(this.kindFlag, this.length, this.rawMemory);
+}
+
+_NativeCommandData readNativeIsolateCommandMemory(double contextId) {
+  Pointer<Uint64> nativeCommandItemPointer = _getIsolateCommandItems(_allocatedMercuryIsolates[contextId]!);
+  int flag = _getIsolateCommandKindFlags(_allocatedMercuryIsolates[contextId]!);
+  int commandLength = _getIsolateCommandItemSize(_allocatedMercuryIsolates[contextId]!);
+
+  if (commandLength == 0 || nativeCommandItemPointer == nullptr) {
+    return _NativeCommandData.empty();
+  }
+
+  List<int> rawMemory =
+      nativeCommandItemPointer.cast<Int64>().asTypedList((commandLength) * nativeCommandSize).toList(growable: false);
+  _clearIsolateCommandItems(_allocatedMercuryIsolates[contextId]!);
+
+  return _NativeCommandData(flag, commandLength, rawMemory);
+}
+
+void flushIsolateCommand(MercuryContextController context, Pointer<NativeBindingObject> selfPointer) {
   assert(_allocatedMercuryIsolates.containsKey(context.contextId));
-  Pointer<Uint64> nativeCommandItems = _getIsolateCommandItems(_allocatedMercuryIsolates[context.contextId]!);
-  int commandLength = _getIsolateCommandItemSize(_allocatedMercuryIsolates[context.contextId]!);
+  if (context.disposed) return;
 
-  if (commandLength == 0 || nativeCommandItems == nullptr) {
-    return;
+  // if (enableMercuryProfileTracking) {
+  //   MercuryProfiler.instance.startTrackIsolateCommand();
+  //   MercuryProfiler.instance.startTrackIsolateCommandStep('readNativeIsolateCommandMemory');
+  // }
+
+  _NativeCommandData rawCommands = readNativeIsolateCommandMemory(context.contextId);
+
+  // prof:
+  // if (enableMercuryProfileTracking) {
+  //   MercuryProfiler.instance.finishTrackIsolateCommandStep();
+  // }
+
+  List<IsolateCommand>? commands;
+  if (rawCommands.rawMemory.isNotEmpty) {
+    // prof:
+    // if (enableMercuryProfileTracking) {
+    //   MercuryProfiler.instance.startTrackIsolateCommandStep('nativeIsolateCommandToDart');
+    // }
+
+    commands = nativeIsolateCommandToDart(rawCommands.rawMemory, rawCommands.length, context.contextId);
+
+    // prof:
+    // if (enableMercuryProfileTracking) {
+    //   MercuryProfiler.instance.finishTrackIsolateCommandStep();
+    //   MercuryProfiler.instance.startTrackIsolateCommandStep('execIsolateCommands');
+    // }
+
+    execIsolateCommands(context, commands);
+
+    // prof:
+    // if (enableMercuryProfileTracking) {
+    //   MercuryProfiler.instance.finishTrackIsolateCommandStep();
+    // }
   }
 
-  List<IsolateCommand> commands = readNativeIsolateCommandToDart(nativeCommandItems, commandLength, context.contextId);
-
-  // For new isolate commands, we needs to tell engine to update frames.
-  for (int i = 0; i < commandLength; i++) {
-    IsolateCommand command = commands[i];
-    IsolateCommandType commandType = command.type;
-    Pointer nativePtr = command.nativePtr;
-
-    try {
-      switch (commandType) {
-        case IsolateCommandType.createGlobal:
-          context.initGlobal(context, nativePtr.cast<NativeBindingObject>());
-          break;
-        case IsolateCommandType.createEventTarget:
-          context.createEventTarget(context, command.args, nativePtr.cast<NativeBindingObject>());
-          break;
-        case IsolateCommandType.disposeBindingObject:
-          context.disposeBindingObject(context, nativePtr.cast<NativeBindingObject>());
-          break;
-        case IsolateCommandType.addEvent:
-          Pointer<AddEventListenerOptions> eventListenerOptions = command.nativePtr2.cast<AddEventListenerOptions>();
-          context.addEvent(nativePtr.cast<NativeBindingObject>(), command.args, addEventListenerOptions: eventListenerOptions);
-          break;
-        case IsolateCommandType.removeEvent:
-          bool isCapture = command.nativePtr2.address == 1;
-          context.removeEvent(nativePtr.cast<NativeBindingObject>(), command.args, isCapture: isCapture);
-          break;
-        default:
-          break;
-      }
-    } catch (e, stack) {
-      print('$e\n$stack');
-    }
-  }
+  // prof:
+  // if (enableMercuryProfileTracking) {
+  //   MercuryProfiler.instance.finishTrackIsolateCommand();
+  // }
 }

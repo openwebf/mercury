@@ -13,6 +13,8 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mercuryjs/devtools.dart';
 import 'package:mercuryjs/mercuryjs.dart';
+import 'package:mercuryjs/src/bridge/isolate_command.dart';
+import 'package:mercuryjs/src/bridge/multiple_thread.dart';
 
 // Error handler when load bundle failed.
 typedef LoadErrorHandler = void Function(FlutterError error, StackTrace stack);
@@ -40,8 +42,8 @@ abstract class DevToolsService {
   /// More detail see [InspectPageModule.handleReloadPage].
   static DevToolsService? prevDevTools;
 
-  static final Map<int, DevToolsService> _contextDevToolMap = {};
-  static DevToolsService? getDevToolOfContextId(int contextId) {
+  static final Map<double, DevToolsService> _contextDevToolMap = {};
+  static DevToolsService? getDevToolOfContextId(double contextId) {
     return _contextDevToolMap[contextId];
   }
 
@@ -110,19 +112,29 @@ class MercuryContextController {
 
   MercuryDispatcher? dispatcher;
 
+  final List<List<IsolateCommand>> pendingIsolateCommands = [];
+
+  MercuryThread runningThread;
+
+  bool firstLoad = true;
+
   MercuryContextController({
       this.enableDebug = false,
-      required this.rootController}) {
+      required this.rootController,
+      required this.runningThread}) {
+  }
+
+  Future<void> initialize() async {
     if (enableDebug) {
       debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
     }
     defineDispatcher();
     BindingBridge.setup();
-    _contextId = initBridge(this);
+    _contextId = await initBridge(this, runningThread);
 
     Future.microtask(() {
       // Execute IsolateCommand.createGlobal to initialize the global.
-      flushIsolateCommand(this);
+      flushIsolateCommand(this, global.pointer!);
     });
   }
 
@@ -146,8 +158,8 @@ class MercuryContextController {
   }
 
   // Index value which identify javascript runtime context.
-  late int _contextId;
-  int get contextId => _contextId;
+  late double _contextId;
+  double get contextId => _contextId;
 
   // Enable print debug message when rendering.
   bool enableDebug;
@@ -161,20 +173,28 @@ class MercuryContextController {
 
   void initGlobal(MercuryContextController context, Pointer<NativeBindingObject> pointer) {
     global = Global(BindingContext(context, _contextId, pointer));
+
+    firstLoad = false;
+
+    // 3 seconds should be enough for page loading, make sure the JavaScript GC was opened.
+    Timer(Duration(seconds: 3), () {
+      global.dispatchEvent(Event('gcopen'));
+    });
   }
 
-  void evaluateJavaScripts(String code) async {
+  Future<void> evaluateJavaScripts(String code) async {
     assert(!_disposed, 'Mercury have already disposed');
-    await evaluateScripts(_contextId, code);
+    List<int> data = utf8.encode(code);
+    await evaluateScripts(_contextId, Uint8List.fromList(data));
   }
 
   // Dispose controller and recycle all resources.
-  void dispose() {
+  Future<void> dispose() async {
     _disposed = true;
 
     clearIsolateCommand(_contextId);
 
-    disposeMercuryIsolate(_contextId);
+    await disposeMercuryIsolate(false, _contextId);
 
     _nativeObjects.forEach((key, object) {
       object.dispose();
@@ -237,12 +257,15 @@ class MercuryModuleController with TimerMixin {
   late ModuleManager _moduleManager;
   ModuleManager get moduleManager => _moduleManager;
 
-  MercuryModuleController(MercuryController controller, int contextId) {
+  MercuryModuleController(MercuryController controller, double contextId) {
     _moduleManager = ModuleManager(controller, contextId);
   }
 
+  bool _initialized = false;
   Future<void> initialize() async {
+    if (_initialized) return;
     await _moduleManager.initialize();
+    _initialized = true;
   }
 
   void dispose() {
@@ -252,12 +275,12 @@ class MercuryModuleController with TimerMixin {
 }
 
 class MercuryController {
-  static final Map<int, MercuryController?> _controllerMap = {};
-  static final Map<String, int> _nameIdMap = {};
+  static final Map<double, MercuryController?> _controllerMap = {};
+  static final Map<String, double> _nameIdMap = {};
 
   UriParser? uriParser;
 
-  static MercuryController? getControllerOfJSContextId(int? contextId) {
+  static MercuryController? getControllerOfJSContextId(double? contextId) {
     if (!_controllerMap.containsKey(contextId)) {
       return null;
     }
@@ -265,13 +288,13 @@ class MercuryController {
     return _controllerMap[contextId];
   }
 
-  static Map<int, MercuryController?> getControllerMap() {
+  static Map<double, MercuryController?> getControllerMap() {
     return _controllerMap;
   }
 
   static MercuryController? getControllerOfName(String name) {
     if (!_nameIdMap.containsKey(name)) return null;
-    int? contextId = _nameIdMap[name];
+    double? contextId = _nameIdMap[name];
     return getControllerOfJSContextId(contextId);
   }
 
@@ -301,7 +324,7 @@ class MercuryController {
   set name(String? value) {
     if (value == null) return;
     if (_name != null) {
-      int? contextId = _nameIdMap[_name];
+      double? contextId = _nameIdMap[_name];
       _nameIdMap.remove(_name);
       _nameIdMap[value] = contextId!;
     }
@@ -310,53 +333,64 @@ class MercuryController {
 
   // The mercury context entrypoint bundle.
   MercuryBundle? _entrypoint;
+  MercuryBundle? get entrypoint => _entrypoint;
 
-  MercuryController(
-    String? name, {
+  final MercuryThread runningThread;
+
+  bool externalController;
+
+  MercuryController({
+    String? name,
     bool showPerformanceOverlay = false,
     bool enableDebug = false,
     bool autoExecuteEntrypoint = true,
     MercuryMethodChannel? methodChannel,
-    MercuryBundle? entrypoint,
+    MercuryBundle? bundle,
+    MercuryThread? runningThread,
     this.onLoad,
     this.onLoadError,
     this.onJSError,
     this.httpClientInterceptor,
     this.devToolsService,
     this.uriParser,
+    this.externalController = true,
   })  : _name = name,
-        _entrypoint = entrypoint {
+        _entrypoint = bundle,
+        runningThread = runningThread ?? DedicatedThread() {
 
     _methodChannel = methodChannel;
     MercuryMethodChannel.setJSMethodCallCallback(this);
 
     _context = MercuryContextController(
       enableDebug: enableDebug,
+      runningThread: this.runningThread,
       rootController: this,
     );
 
-    final int contextId = _context.contextId;
+    _context.initialize().then((_) {
+      final double contextId = _context.contextId;
 
-    _module = MercuryModuleController(this, contextId);
+      _module = MercuryModuleController(this, contextId);
 
-    assert(!_controllerMap.containsKey(contextId), 'found exist contextId of MercuryController, contextId: $contextId');
-    _controllerMap[contextId] = this;
-    assert(!_nameIdMap.containsKey(name), 'found exist name of MercuryController, name: $name');
-    if (name != null) {
-      _nameIdMap[name] = contextId;
-    }
+      assert(!_controllerMap.containsKey(contextId), 'found exist contextId of MercuryController, contextId: $contextId');
+      _controllerMap[contextId] = this;
+      assert(!_nameIdMap.containsKey(name), 'found exist name of MercuryController, name: $name');
+      if (name != null) {
+        _nameIdMap[name] = contextId;
+      }
 
-    setupHttpOverrides(httpClientInterceptor, contextId: contextId);
+      setupHttpOverrides(httpClientInterceptor, contextId: contextId);
 
-    uriParser ??= UriParser();
+      uriParser ??= UriParser();
 
-    if (devToolsService != null) {
-      devToolsService!.init(this);
-    }
+      if (devToolsService != null) {
+        devToolsService!.init(this);
+      }
 
-    if (autoExecuteEntrypoint) {
-      executeEntrypoint();
-    }
+      if (autoExecuteEntrypoint) {
+        executeEntrypoint();
+      }
+    });
   }
 
   late MercuryContextController _context;
@@ -371,7 +405,7 @@ class MercuryController {
     return _module;
   }
 
-  static Uri fallbackBundleUri([int? id]) {
+  static Uri fallbackBundleUri([double? id]) {
     // The fallback origin uri, like `vm://bundle/0`
     return Uri(scheme: 'vm', host: 'bundle', path: id != null ? '$id' : null);
   }
@@ -382,15 +416,18 @@ class MercuryController {
 
     // Wait for next microtask to make sure C++ native Elements are GC collected.
     Completer completer = Completer();
-    Future.microtask(() {
+    Future.microtask(() async {
       _module.dispose();
-      _context.dispose();
+      await _context.dispose();
 
-      int oldId = _context.contextId;
+      double oldId = _context.contextId;
 
       _context = MercuryContextController(
           enableDebug: _context.enableDebug,
-          rootController: this,);
+          rootController: this,
+          runningThread: runningThread);
+
+      await _context.initialize();
 
       _module = MercuryModuleController(this, _context.contextId);
 
@@ -426,6 +463,9 @@ class MercuryController {
     }
 
     await unload();
+
+    flushIsolateCommand(context, nullptr);
+
     await executeEntrypoint();
 
     if (devToolsService != null) {
@@ -441,6 +481,8 @@ class MercuryController {
     }
 
     await unload();
+
+    flushIsolateCommand(context, nullptr);
 
     // Update entrypoint.
     _entrypoint = bundle;
@@ -505,7 +547,7 @@ class MercuryController {
         _module.initialize()
       ]);
       if (_entrypoint!.isResolved && shouldEvaluate) {
-        await _evaluateEntrypoint();
+        await evaluateEntrypoint();
       } else {
         throw FlutterError('Unable to resolve $_entrypoint');
       }
@@ -538,24 +580,26 @@ class MercuryController {
   }
 
   // Execute the content from entrypoint bundle.
-  Future<void> _evaluateEntrypoint() async {
+  Future<void> evaluateEntrypoint() async {
 
     assert(!_context._disposed, 'Mercury have already disposed');
     if (_entrypoint != null) {
       MercuryBundle entrypoint = _entrypoint!;
-      int contextId = _context.contextId;
+      double contextId = _context.contextId;
       assert(entrypoint.isResolved, 'The mercury bundle $entrypoint is not resolved to evaluate.');
 
       Uint8List data = entrypoint.data!;
       if (entrypoint.isJavascript) {
+        assert(isValidUTF8String(data), 'The JavaScript codes should be in UTF-8 encoding format');
         // Prefer sync decode in loading entrypoint.
-        await evaluateScripts(contextId, await resolveStringFromData(data, preferSync: true), url: url);
+        await evaluateScripts(contextId, data, url: url);
       } else if (entrypoint.isBytecode) {
-        evaluateQuickjsByteCode(contextId, data);
+        await evaluateQuickjsByteCode(contextId, data);
       } else if (entrypoint.contentType.primaryType == 'text') {
         // Fallback treating text content as JavaScript.
         try {
-          await evaluateScripts(contextId, await resolveStringFromData(data, preferSync: true), url: url);
+          assert(isValidUTF8String(data), 'The JavaScript codes should be in UTF-8 encoding format');
+          await evaluateScripts(contextId, data, url: url);
         } catch (error) {
           print('Fallback to execute JavaScript content of $url');
           rethrow;

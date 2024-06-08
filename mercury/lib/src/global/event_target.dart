@@ -6,9 +6,9 @@ import 'package:flutter/foundation.dart';
 import 'package:mercuryjs/src/global/event.dart';
 import 'package:mercuryjs/foundation.dart';
 
-typedef EventHandler = void Function(Event event);
+typedef EventHandler = Future<void> Function(Event event);
 
-abstract class EventTarget extends BindingObject {
+abstract class EventTarget extends DynamicBindingObject {
   EventTarget(BindingContext? context) : super(context);
 
   bool _disposed = false;
@@ -62,16 +62,16 @@ abstract class EventTarget extends BindingObject {
   }
 
   @mustCallSuper
-  void dispatchEvent(Event event) {
+  Future<void> dispatchEvent(Event event) async {
     if (_disposed) return;
     event.target = this;
 
-    _handlerCaptureEvent(event);
-    _dispatchEventInDOM(event);
+    await _handlerCaptureEvent(event);
+    await _dispatchEventInGlobal(event);
   }
-  void _handlerCaptureEvent(Event event) {
+  Future<void> _handlerCaptureEvent(Event event) async {
 
-    parentEventTarget?._handlerCaptureEvent(event);
+    await parentEventTarget?._handlerCaptureEvent(event);
     String eventType = event.type;
     List<EventHandler>? existHandler = _eventCaptureHandlers[eventType];
     if (existHandler != null) {
@@ -81,7 +81,7 @@ abstract class EventTarget extends BindingObject {
       // with error, copy the handlers here.
       try {
         for (EventHandler handler in [...existHandler]) {
-          handler(event);
+          await handler(event);
         }
       } catch (e, stack) {
         print('$e\n$stack');
@@ -90,7 +90,7 @@ abstract class EventTarget extends BindingObject {
     }
   }
   // Refs: https://github.com/WebKit/WebKit/blob/main/Source/WebCore/dom/EventDispatcher.cpp#L85
-  void _dispatchEventInDOM(Event event) {
+  Future<void> _dispatchEventInGlobal(Event event) async {
     // TODO: Invoke capturing event listeners in the reverse order.
 
     String eventType = event.type;
@@ -102,7 +102,7 @@ abstract class EventTarget extends BindingObject {
       // with error, copy the handlers here.
       try {
         for (EventHandler handler in [...existHandler]) {
-          handler(event);
+          await handler(event);
         }
       } catch (e, stack) {
         print('$e\n$stack');
@@ -112,7 +112,7 @@ abstract class EventTarget extends BindingObject {
 
     // Invoke bubbling event listeners.
     if (event.bubbles && !event.propagationStopped) {
-      parentEventTarget?._dispatchEventInDOM(event);
+      await parentEventTarget?._dispatchEventInGlobal(event);
     }
   }
 

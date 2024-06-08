@@ -11,7 +11,10 @@ const String GLOBAL = 'GLOBAL';
 
 class Global extends EventTarget {
   Global(BindingContext? context)
-      : super(context);
+      : super(context) {
+    BindingBridge.listenEvent(this, 'load');
+    BindingBridge.listenEvent(this, 'gcopen');
+  }
 
   @override
   EventTarget? get parentEventTarget => null;
@@ -25,11 +28,11 @@ class Global extends EventTarget {
   }
 
   @override
-  void dispatchEvent(Event event) {
+  Future<void> dispatchEvent(Event event) async {
     if (contextId != null && event.type == EVENT_LOAD || event.type == EVENT_ERROR) {
-      flushIsolateCommandWithContextId(contextId!);
+      flushIsolateCommandWithContextId(contextId!, pointer!);
     }
-    super.dispatchEvent(event);
+    return super.dispatchEvent(event);
   }
 
   @override

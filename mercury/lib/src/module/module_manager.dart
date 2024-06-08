@@ -47,7 +47,7 @@ void _defineModule(ModuleCreator moduleCreator) {
 }
 
 class ModuleManager {
-  final int contextId;
+  final double contextId;
   final MercuryController controller;
   final Map<String, BaseModule> _moduleMap = {};
   bool disposed = false;

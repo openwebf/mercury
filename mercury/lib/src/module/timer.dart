@@ -4,6 +4,7 @@
  */
 
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 
 /// A [Timer] that can be paused, resumed.
 class PausablePeriodicTimer implements Timer {
@@ -57,17 +58,21 @@ class PausablePeriodicTimer implements Timer {
 }
 
 mixin TimerMixin {
-  int _timerId = 1;
   final Map<int, Timer> _timerMap = {};
 
-  int setTimeout(int timeout, void Function() callback) {
+  bool _isPaused = false;
+  final List<VoidCallback> _pendingUnFinishedCallbacks = [];
+
+  void setTimeout(int newTimerId, int timeout, void Function() callback) {
     Duration timeoutDurationMS = Duration(milliseconds: timeout);
-    int id = _timerId++;
-    _timerMap[id] = Timer(timeoutDurationMS, () {
+    _timerMap[newTimerId] = Timer(timeoutDurationMS, () {
+      if (_isPaused) {
+        _pendingUnFinishedCallbacks.add(callback);
+        return;
+      }
       callback();
-      _timerMap.remove(id);
+      _timerMap.remove(newTimerId);
     });
-    return id;
   }
 
   void clearTimeout(int timerId) {
@@ -78,29 +83,39 @@ mixin TimerMixin {
     }
   }
 
-  int setInterval(int timeout, void Function() callback) {
+  void setInterval(int newTimerId, int timeout, void Function() callback) {
     Duration timeoutDurationMS = Duration(milliseconds: timeout);
-    int id = _timerId++;
-    _timerMap[id] = PausablePeriodicTimer(timeoutDurationMS, (_) {
+    _timerMap[newTimerId] = PausablePeriodicTimer(timeoutDurationMS, (_) {
+      if (_isPaused) return;
       callback();
     });
-    return id;
   }
 
-  void pauseInterval() {
+  void pauseTimer() {
+    // Pause all intervals
     _timerMap.forEach((key, timer) {
       if (timer is PausablePeriodicTimer) {
         timer.pause();
       }
     });
+
+    _isPaused = true;
   }
 
-  void resumeInterval() {
+  void resumeTimer() {
+    // Resume all intervals
     _timerMap.forEach((key, timer) {
       if (timer is PausablePeriodicTimer) {
         timer.resume();
       }
     });
+
+    _pendingUnFinishedCallbacks.forEach((callback) {
+      callback();
+    });
+    _pendingUnFinishedCallbacks.clear();
+    _isPaused = false;
+
   }
 
   void disposeTimer() {
@@ -108,5 +123,6 @@ mixin TimerMixin {
       timer.cancel();
     });
     _timerMap.clear();
+    _pendingUnFinishedCallbacks.clear();
   }
 }

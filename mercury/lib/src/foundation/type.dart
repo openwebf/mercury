@@ -8,18 +8,3 @@ T castToType<T>(value) {
   assert(value is T, '$value is not or not a subtype of $T');
   return value as T;
 }
-
-class Dimension {
-  const Dimension(this.width, this.height);
-
-  final int width;
-  final int height;
-
-  @override
-  bool operator ==(Object other) {
-    return other is Dimension && other.width == width && other.height == height;
-  }
-
-  @override
-  int get hashCode => Object.hash(width, height);
-}

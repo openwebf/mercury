@@ -12,6 +12,8 @@ import 'package:mercuryjs/foundation.dart';
 import 'package:mercuryjs/launcher.dart';
 import 'package:mercuryjs/module.dart';
 
+// TODO: Remove DOM code from here.
+
 const String DEFAULT_URL = 'about:blank';
 const String UTF_8 = 'utf-8';
 
@@ -104,7 +106,7 @@ abstract class MercuryBundle {
   ContentType contentType = ContentType.text;
 
   @mustCallSuper
-  Future<void> resolve(int? contextId) async {
+  Future<void> resolve(double? contextId) async {
     if (isResolved) return;
 
     // Source is input by user, do not trust it's a valid URL.
@@ -197,7 +199,7 @@ class NetworkBundle extends MercuryBundle {
   Map<String, String>? additionalHttpHeaders = {};
 
   @override
-  Future<void> resolve(int? contextId) async {
+  Future<void> resolve(double? contextId) async {
     super.resolve(contextId);
     final HttpClientRequest request = await _sharedHttpClient.getUrl(_uri!);
 
@@ -236,7 +238,7 @@ class AssetsBundle extends MercuryBundle with _ExtensionContentTypeResolver {
   AssetsBundle(String url) : super(url);
 
   @override
-  Future<MercuryBundle> resolve(int? contextId) async {
+  Future<MercuryBundle> resolve(double? contextId) async {
     super.resolve(contextId);
     final Uri? _resolvedUri = resolvedUri;
     if (_resolvedUri != null) {
@@ -268,7 +270,7 @@ class FileBundle extends MercuryBundle with _ExtensionContentTypeResolver {
   FileBundle(String url) : super(url);
 
   @override
-  Future<MercuryBundle> resolve(int? contextId) async {
+  Future<MercuryBundle> resolve(double? contextId) async {
     super.resolve(contextId);
 
     Uri uri = _uri!;

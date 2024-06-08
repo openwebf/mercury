@@ -91,7 +91,7 @@ void allocateNewIsolate(double thread_identity,
                      int32_t sync_buffer_size,
                      void* ptr,
                      Dart_Handle dart_handle,
-                     AllocateNewPageCallback result_callback) {
+                     AllocateNewIsolateCallback result_callback) {
 #if ENABLE_LOG
   MERCURY_LOG(INFO) << "[Dispatcher]: allocateNewIsolate Call BEGIN";
 #endif

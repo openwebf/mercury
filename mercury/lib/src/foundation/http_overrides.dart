@@ -19,35 +19,35 @@ class MercuryHttpOverrides extends HttpOverrides {
     return _instance!;
   }
 
-  static int? getContextHeader(HttpHeaders headers) {
-    String? intVal = headers.value(HttpHeaderContext);
-    if (intVal == null) {
+  static double? getContextHeader(HttpHeaders headers) {
+    String? doubleVal = headers.value(HttpHeaderContext);
+    if (doubleVal == null) {
       return null;
     }
-    return int.tryParse(intVal);
+    return double.tryParse(doubleVal);
   }
 
-  static void setContextHeader(HttpHeaders headers, int contextId) {
+  static void setContextHeader(HttpHeaders headers, double contextId) {
     headers.set(HttpHeaderContext, contextId.toString());
   }
 
   final HttpOverrides? parentHttpOverrides = HttpOverrides.current;
-  final Map<int, HttpClientInterceptor> _contextIdToHttpClientInterceptorMap = <int, HttpClientInterceptor>{};
+  final Map<double, HttpClientInterceptor> _contextIdToHttpClientInterceptorMap = <double, HttpClientInterceptor>{};
 
-  void registerMercuryContext(int contextId, HttpClientInterceptor httpClientInterceptor) {
+  void registerMercuryContext(double contextId, HttpClientInterceptor httpClientInterceptor) {
     _contextIdToHttpClientInterceptorMap[contextId] = httpClientInterceptor;
   }
 
-  bool unregisterMercuryContext(int contextId) {
+  bool unregisterMercuryContext(double contextId) {
     // Returns true if [value] was in the map, false otherwise.
     return _contextIdToHttpClientInterceptorMap.remove(contextId) != null;
   }
 
-  bool hasInterceptor(int contextId) {
+  bool hasInterceptor(double contextId) {
     return _contextIdToHttpClientInterceptorMap.containsKey(contextId);
   }
 
-  HttpClientInterceptor getInterceptor(int contextId) {
+  HttpClientInterceptor getInterceptor(double contextId) {
     return _contextIdToHttpClientInterceptorMap[contextId]!;
   }
 
@@ -77,7 +77,7 @@ class MercuryHttpOverrides extends HttpOverrides {
   }
 }
 
-MercuryHttpOverrides setupHttpOverrides(HttpClientInterceptor? httpClientInterceptor, {required int contextId}) {
+MercuryHttpOverrides setupHttpOverrides(HttpClientInterceptor? httpClientInterceptor, {required double contextId}) {
   final MercuryHttpOverrides httpOverrides = MercuryHttpOverrides.instance();
 
   if (httpClientInterceptor != null) {
@@ -98,8 +98,8 @@ String getOrigin(Uri uri) {
 }
 
 // @TODO: Remove controller dependency.
-Uri getEntrypointUri(int? contextId) {
+Uri getEntrypointUri(double? contextId) {
   MercuryController? controller = MercuryController.getControllerOfJSContextId(contextId);
   String url = controller?.url ?? '';
-  return Uri.tryParse(url) ?? MercuryController.fallbackBundleUri(contextId ?? 0);
+  return Uri.tryParse(url) ?? MercuryController.fallbackBundleUri(contextId ?? 0.0);
 }

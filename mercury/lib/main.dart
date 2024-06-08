@@ -62,8 +62,9 @@ class Mercury {
       this.onLoadError,
       this.onJSError
     }) {
-      controller = MercuryController(shortHash(this),
-        entrypoint: bundle,
+      controller = MercuryController(
+        name: shortHash(this),
+        bundle: bundle,
         onLoad: onLoad,
         onLoadError: onLoadError,
         onJSError: onJSError,

@@ -7,6 +7,7 @@ import 'package:archive/archive.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/foundation.dart';
 import 'package:quiver/collection.dart';
+import 'package:quiver/core.dart';
 import 'package:mercuryjs/bridge.dart';
 import 'package:mercuryjs/foundation.dart';
 
@@ -58,7 +59,7 @@ class QuickJSByteCodeCacheObject {
 
     try {
       bytes = await cacheFile.readAsBytes();
-      int fileCheckSum = getCrc32(bytes!.toList());
+      int fileCheckSum = getCrc32(bytes as List<int>);
 
       bool isCheckSumExist = await _checksum.exists();
 
@@ -86,7 +87,7 @@ class QuickJSByteCodeCacheObject {
 
   Future<void> write() async {
     if (bytes != null) {
-      int fileSum = getCrc32(bytes!.toList());
+      int fileSum = getCrc32(bytes!);
       File tmp = File(path.join(cacheDirectory, '$hash.tmp'));
 
       await Future.wait([
@@ -132,19 +133,24 @@ class QuickJSByteCodeCache {
     return _cacheDirectory = cacheDirectory;
   }
 
-  static String _getCacheHash(String code) {
+  static String _getCacheHashSlow(Uint8List code) {
     MercuryInfo mercuryInfo = getMercuryInfo();
     // Uri uriWithoutFragment = uri;
     // return uriWithoutFragment.toString();
-    return '%${code.hashCode}_${mercuryInfo.appRevision}%';
+    return '%${hashObjects(code)}_${MercuryInfo.appRevision}%';
+  }
+
+  static String _getCacheHashFast(String originalCacheKey) {
+    MercuryInfo mercuryInfo = getMercuryInfo();
+    return '%${originalCacheKey}_${MercuryInfo.appRevision}%';
   }
 
   // Get the CacheObject by uri, no validation needed here.
-  static Future<QuickJSByteCodeCacheObject> getCacheObject(String code) async {
+  static Future<QuickJSByteCodeCacheObject> getCacheObject(Uint8List codeBytes, { String? cacheKey }) async {
     QuickJSByteCodeCacheObject cacheObject;
 
     // L2 cache in memory.
-    final String hash = _getCacheHash(code);
+    final String hash = cacheKey != null ? _getCacheHashFast(cacheKey) : _getCacheHashSlow(codeBytes);
     if (_caches.containsKey(hash)) {
       cacheObject = _caches[hash]!;
     } else {
@@ -159,8 +165,8 @@ class QuickJSByteCodeCache {
   }
 
   // Add or update the httpCacheObject to memory cache.
-  static void putObject(String code, Uint8List bytes) async {
-    final String key = _getCacheHash(code);
+  static Future<void> putObject(Uint8List codeBytes, Uint8List bytes, { String? cacheKey }) async {
+    final String key = cacheKey != null ? _getCacheHashFast(cacheKey) : _getCacheHashSlow(codeBytes);
 
     final Directory cacheDirectory = await getCacheDirectory();
     QuickJSByteCodeCacheObject cacheObject =
@@ -170,13 +176,8 @@ class QuickJSByteCodeCache {
     await cacheObject.write();
   }
 
-  static void removeObject(String code) {
-    final String key = _getCacheHash(code);
-    _caches.remove(key);
-  }
-
-  static bool isCodeNeedCache(String source) {
+  static bool isCodeNeedCache(Uint8List codeBytes) {
     return QuickJSByteCodeCacheObject.cacheMode == ByteCodeCacheMode.DEFAULT &&
-        source.length > 1024 * 10; // >= 50 KB
+        codeBytes.length > 1024 * 10; // >= 50 KB
   }
 }

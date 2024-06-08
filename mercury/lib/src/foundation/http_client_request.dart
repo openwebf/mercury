@@ -103,7 +103,7 @@ class ProxyHttpClientRequest extends HttpClientRequest {
 
   @override
   Future<HttpClientResponse> close() async {
-    int? contextId = MercuryHttpOverrides.getContextHeader(headers);
+    double? contextId = MercuryHttpOverrides.getContextHeader(headers);
     HttpClientRequest request = this;
 
     if (contextId != null) {

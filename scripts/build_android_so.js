@@ -9,7 +9,7 @@ const { copyFileSync } = require('fs');
 
 const buildTasks = [
   'git-submodule',
-  'android-so-clean',
+  // 'android-so-clean',
   'compile-polyfill',
   'generate-bindings-code',
   'build-android-mercury-lib'

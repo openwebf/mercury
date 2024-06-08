@@ -19,6 +19,7 @@ const uploader = require('./utils/uploader');
 
 program
 .option('--static-quickjs', 'Build quickjs as static library and bundled into mercury library.', false)
+.option('--enable-log', 'Enable log printing')
 .parse(process.argv);
 
 const SUPPORTED_JS_ENGINES = ['jsc', 'quickjs'];
@@ -122,6 +123,10 @@ task('build-darwin-mercury-lib', done => {
     externCmakeArgs.push('-DSTATIC_QUICKJS=true');
   }
 
+  if (program.enableLog) {
+    externCmakeArgs.push('-DENABLE_LOG=true');
+  }
+
   execSync(`cmake -DCMAKE_BUILD_TYPE=${buildType} ${externCmakeArgs.join(' ')} \
     -G "Unix Makefiles" -B ${paths.bridge}/cmake-build-macos-x86_64 -S ${paths.bridge}`, {
     cwd: paths.bridge,
@@ -221,6 +226,10 @@ task(`build-ios-mercury-lib`, (done) => {
 
   if (process.env.USE_SYSTEM_MALLOC === 'true') {
     externCmakeArgs.push('-DUSE_SYSTEM_MALLOC=true');
+  }
+
+  if (program.enableLog) {
+    externCmakeArgs.push('-DENABLE_LOG=true');
   }
 
   // generate build scripts for simulator
@@ -354,6 +363,10 @@ task('build-linux-mercury-lib', (done) => {
     externCmakeArgs.push('-DUSE_SYSTEM_MALLOC=true');
   }
 
+  if (program.enableLog) {
+    externCmakeArgs.push('-DENABLE_LOG=true');
+  }
+
   const soBinaryDirectory = path.join(paths.bridge, `build/linux/lib/`);
   const bridgeCmakeDir = path.join(paths.bridge, 'cmake-build-linux');
   // generate project
@@ -439,6 +452,10 @@ task('build-window-mercury-lib', (done) => {
     externCmakeArgs.push('-DUSE_SYSTEM_MALLOC=true');
   }
 
+  if (program.enableLog) {
+    externCmakeArgs.push('-DENABLE_LOG=true');
+  }
+
   const soBinaryDirectory = path.join(paths.bridge, `build/windows/lib/`);
   const bridgeCmakeDir = path.join(paths.bridge, 'cmake-build-windows');
   // generate project
@@ -508,6 +525,10 @@ task('build-android-mercury-lib', (done) => {
 
   if (process.env.USE_SYSTEM_MALLOC === 'true') {
     externCmakeArgs.push('-DUSE_SYSTEM_MALLOC=true');
+  }
+
+  if (program.enableLog) {
+    externCmakeArgs.push('-DENABLE_LOG=true');
   }
 
   // Bundle quickjs into mercury.
